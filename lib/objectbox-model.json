@@ -1,0 +1,223 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:2617362890201989764",
+      "lastPropertyId": "8:7091170100017291683",
+      "name": "ChatModel",
+      "properties": [
+        {
+          "id": "1:7807880226498698520",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4133682854709566597",
+          "name": "idChat",
+          "type": 6
+        },
+        {
+          "id": "3:8807375290531646823",
+          "name": "idConversation",
+          "type": 6
+        },
+        {
+          "id": "4:8620719327909597962",
+          "name": "idSender",
+          "type": 6
+        },
+        {
+          "id": "5:2522249012748665889",
+          "name": "idReceiver",
+          "type": 6
+        },
+        {
+          "id": "6:3136398464135854419",
+          "name": "text",
+          "type": 9
+        },
+        {
+          "id": "7:8181558102080200822",
+          "name": "sendStatus",
+          "type": 9
+        },
+        {
+          "id": "8:7091170100017291683",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:537327663400642605",
+      "lastPropertyId": "8:2358156270066709074",
+      "name": "ConversationModel",
+      "properties": [
+        {
+          "id": "1:4407016937660491071",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1451680902805366454",
+          "name": "idConversation",
+          "type": 6
+        },
+        {
+          "id": "3:1050243948999035998",
+          "name": "fullName",
+          "type": 9
+        },
+        {
+          "id": "4:4127337301530379116",
+          "name": "image",
+          "type": 9
+        },
+        {
+          "id": "5:6741606616559079108",
+          "name": "message",
+          "type": 9
+        },
+        {
+          "id": "6:8499427580369717432",
+          "name": "date",
+          "type": 9
+        },
+        {
+          "id": "7:1798234059809525173",
+          "name": "messageCout",
+          "type": 6
+        },
+        {
+          "id": "8:2358156270066709074",
+          "name": "idReceiver",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:3636392272907486324",
+      "lastPropertyId": "3:2750085124402894408",
+      "name": "Note",
+      "properties": [
+        {
+          "id": "1:831525273482604442",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6631310519448424802",
+          "name": "text",
+          "type": 9
+        },
+        {
+          "id": "3:2750085124402894408",
+          "name": "date",
+          "type": 10
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:5073461934191785218",
+      "lastPropertyId": "10:9141564249933411750",
+      "name": "UserModel",
+      "properties": [
+        {
+          "id": "1:6836424961400260588",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7733812419507250062",
+          "name": "userName",
+          "type": 9
+        },
+        {
+          "id": "3:3021367722960246740",
+          "name": "email",
+          "type": 9
+        },
+        {
+          "id": "4:8572729448446248808",
+          "name": "token",
+          "type": 9
+        },
+        {
+          "id": "5:8516929362775465282",
+          "name": "status",
+          "type": 9
+        },
+        {
+          "id": "6:6802331174161439454",
+          "name": "idInstall",
+          "type": 9
+        },
+        {
+          "id": "7:262709336685257515",
+          "name": "photo",
+          "type": 9
+        },
+        {
+          "id": "8:5699610211018257892",
+          "name": "phone",
+          "type": 9
+        },
+        {
+          "id": "9:2068277214091341088",
+          "name": "verification_code",
+          "type": 6
+        },
+        {
+          "id": "10:9141564249933411750",
+          "name": "enable",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:551286024786238351",
+      "lastPropertyId": "3:1027969147495256970",
+      "name": "UserPreferenceModel",
+      "properties": [
+        {
+          "id": "1:2461707581331192172",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5790859715451559556",
+          "name": "theme",
+          "type": 9
+        },
+        {
+          "id": "3:1027969147495256970",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "5:551286024786238351",
+  "lastIndexId": "0:0",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}
