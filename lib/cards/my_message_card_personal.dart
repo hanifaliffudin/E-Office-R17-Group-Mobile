@@ -1,109 +1,163 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:open_file/open_file.dart';
 
 
 class MyMessageCardPersonal extends StatelessWidget {
   final String message;
   final String date;
   final String sendStatus;
+  final String tipe;
+  final String filePath;
   final bool showTriangle;
+  final bool attachment;
 
   const MyMessageCardPersonal(
-    this.message,
-    this.date,
-    this.sendStatus,
-    this.showTriangle,
-  );
+      this.message,
+      this.date,
+      this.sendStatus,
+      this.tipe,
+      this.filePath,
+      this.showTriangle,
+      this.attachment
+      );
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Align(
-        alignment: Alignment.topRight,
-
-        child :  Column(
-        children: <Widget>[
-          Stack(
-            overflow: Overflow.visible,
-            children: <Widget>[
-              Container(
-                child:  Align(
-                  alignment: Alignment.topRight,
-                  child: Column(
-                  mainAxisSize: MainAxisSize.min,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(sendStatus,
+              style: TextStyle(
+                  fontSize: 11
+              ),),
+            Text(date,
+              style: TextStyle(
+                  fontSize: 11
+              ),)
+          ],
+        ),
+        Container(
+          child: Align(
+            alignment: Alignment.topRight,
+            child :  Column(
+              children: <Widget>[
+                Stack(
+                  overflow: Overflow.visible,
                   children: <Widget>[
-                  Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
-                    margin: EdgeInsets.symmetric(horizontal: 21,vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF2381d0),
-                      borderRadius: BorderRadius.circular(5),
+                    Container(
+                      child:  Align(
+                        alignment: Alignment.topRight,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            !attachment ?
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
+                              margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Color(0xFF2381d0),
+                                borderRadius: BorderRadius.circular(5),
 
-                    ),
-                    child:
-                      Text(
-                        message.length>9?message:message+'          ',
-                        style: TextStyle(fontSize: 16,color: Colors.white),
-                        textAlign: TextAlign.left,
+                              ),
+                              child: Container(
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.70),
+                                child: Text(
+                                  message,
+                                  style: TextStyle(fontSize: 16,color: Colors.white),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 100,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                            )
+                                : tipe == 'image' ?
+                            InkWell(
+                              onTap: (){
+                                OpenFile.open(filePath);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 3,vertical: 3,),
+                                margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF2381d0),
+                                  borderRadius: BorderRadius.circular(5),
+
+                                ),
+                                child: Container(
+                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.70),
+                                  child: Image(
+                                    image: Image.file(new File(filePath)).image,
+                                  ),
+                                ),
+                              ),
+                            )
+                                :
+                            InkWell(
+                              onTap: (){
+                                OpenFile.open(filePath);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
+                                margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF2381d0),
+                                  borderRadius: BorderRadius.circular(5),
+
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      child: Image(image: AssetImage('assets/images/pdf.png'),width: 40,),
+                                    ),
+                                    SizedBox(width: 5,),
+                                    Container(
+                                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.55),
+                                      child: Text(
+                                        message,
+                                        style: TextStyle(fontSize: 16,color: Colors.white),
+                                        textAlign: TextAlign.left,
+                                        maxLines: 100,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+
                       ),
 
-                  ),
-
-                    SizedBox(width: 5,),
-                  ],
-                ),
-
-                ),
-
-              ),
-              Container(
-                child:
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3,right:44),
-                      child:Align(
-                        alignment: Alignment.topRight,
-                        child: Text(
-                          date,
-                          style: TextStyle(fontSize: 10, color: Color(0xE8E8E8E5)),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 2,
+                      child: ClipPath(
+                        clipper: TriangleClipper2(),
+                        child: Container(
+                          height: 20,
+                          width: 30,
+                          color: showTriangle?Color(0xFF2381d0):Colors.transparent,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Positioned(
-                right: 6,
-                top: 2,
-                child: ClipPath(
-                  clipper: TriangleClipper2(),
-                  child: Container(
-                    height: 20,
-                    width: 30,
-                    color: showTriangle?Color(0xFF2381d0):Colors.transparent,
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 25,
-                top: 3,
-                child: Row(
-                  children: [
-                    Text(sendStatus,
-                      style: TextStyle(fontSize: 12, color: Color(0xE8E8E8E5),fontWeight: FontWeight.bold,
-                      )
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
-      ),
-
-      ),
+        ),
+      ],
     );
   }
 }

@@ -1,226 +1,950 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:io' as Io;
+
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:militarymessenger/ProfileInfo.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/cards/friend_message_card_personal.dart';
 import 'package:militarymessenger/cards/my_message_card_personal.dart';
+import 'package:swipe_to/swipe_to.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:open_file/open_file.dart';
+
 import 'objectbox.g.dart';
-//import 'DBHelpers.dart';
 import 'dart:async';
-import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
+int lastConnection = 0;
 
 class ChatScreen extends StatefulWidget {
   final ConversationModel? conversation;
   Store? store;
+  int roomId;
 
-  ChatScreen(this.conversation);
+  ChatScreen(this.conversation, this.roomId);
+
 
   @override
-  _ChatScreenState createState() => _ChatScreenState(conversation);
+  _ChatScreenState createState() => _ChatScreenState(conversation,roomId);
 }
 
 class _ChatScreenState extends State<ChatScreen> {
   final ConversationModel? conversation;
+  int? roomId;
   Store? store;
-  _ChatScreenState(this.conversation);
-  final int idUser = 1;
-  final int idConversation = 1;
-  final int idReceiver = 2;
+
+  _ChatScreenState(this.conversation, this.roomId);
+  int? idUser;
+  int? idReceiver;
+
   TextEditingController inputTextController = new TextEditingController();
 
+  String apiKey = homes.apiKeyCore;
+
+  Timer? timer;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    idUser = mains.objectbox.boxUser.get(1)?.userId;
+    idReceiver = conversation?.idReceiver;
+
+    //update others chat read when open chat
+    int checkChatsRead(){
+      var queryUnread = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idUser!) & (ChatModel_.idSender.equals(idReceiver!)))).build();
+      List<ChatModel> chatsUnread = queryUnread.find().toList();
+      return chatsUnread.length;
+    }
+    void setChatsToRead(){
+      var queryUnread = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idUser!) & (ChatModel_.idSender.equals(idReceiver!)))).build();
+      List<ChatModel> chatsUnread = queryUnread.find().toList();
+      for(int i=0;i<chatsUnread.length;i++){
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["type"] = "status_read";
+        msg["id_chat_model"] = chatsUnread[i].id;
+        msg["id_chat_model_friends"] = chatsUnread[i].idChatFriends;
+        msg["id_sender"] = chatsUnread[i].idSender;
+        msg["id_receiver"] = chatsUnread[i].idReceiver;
+        msg["msg_tipe"] = chatsUnread[i].tipe;
+        msg["room_id"] = conversation!.roomId;
+        String msgString = json.encode(msg);
+        homes.channel.sink.add(msgString);
+
+        //update status to read=1 deliver=1
+        final chat = ChatModel(
+          id: chatsUnread[i].id,
+          idChatFriends: chatsUnread[i].idChatFriends,
+          idSender: chatsUnread[i].idSender,
+          idReceiver: chatsUnread[i].idReceiver,
+          text: chatsUnread[i].text,
+          date: chatsUnread[i].date,
+          tipe: chatsUnread[i].tipe,
+          content: chatsUnread[i].content,
+          sendStatus: chatsUnread[i].sendStatus,
+          delivered: 1,
+          read: 1,
+          readDB: 0
+        );
+        mains.objectbox.boxChat.put(chat);
+      }
+    }
+    if(checkChatsRead() > 0){
+      setChatsToRead();
+    }
+
+    //update others chat read in db where chat read when offline
+    int checkChatsUnreadDb(){
+      var queryUnreadDb = mains.objectbox.boxChat.query(ChatModel_.read.equals(1) & ChatModel_.readDB.equals(0) & (ChatModel_.idReceiver.equals(idUser!) & (ChatModel_.idSender.equals(idReceiver!)))).build();
+      List<ChatModel> chatsUnreadDb = queryUnreadDb.find().toList();
+      return chatsUnreadDb.length;
+    }
+    void setChatsToReadDb(){
+      var queryUnreadDb = mains.objectbox.boxChat.query(ChatModel_.read.equals(1) & ChatModel_.readDB.equals(0) & (ChatModel_.idReceiver.equals(idUser!) & (ChatModel_.idSender.equals(idReceiver!)))).build();
+      List<ChatModel> chatsUnreadDb = queryUnreadDb.find().toList();
+
+      for(int i=0;i<chatsUnreadDb.length;i++){
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["type"] = "status_read";
+        msg["id_chat_model"] = chatsUnreadDb[i].id;
+        msg["id_chat_model_friends"] = chatsUnreadDb[i].idChatFriends;
+        msg["id_sender"] = chatsUnreadDb[i].idSender;
+        msg["id_receiver"] = chatsUnreadDb[i].idReceiver;
+        msg["msg_tipe"] = chatsUnreadDb[i].tipe;
+        msg["room_id"] = conversation!.roomId;
+        String msgString = json.encode(msg);
+        homes.channel.sink.add(msgString);
+      }
+    }
+    if(checkChatsUnreadDb() > 0){
+      setChatsToReadDb();
+    }
+
+    //get our chats where undelivered and unread for check in db
+    int checkChatsDelivNRead(){
+      var queryDelivNRead = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
+      List<ChatModel> chatsUndelivNUnread = queryDelivNRead.find().toList();
+      return chatsUndelivNUnread.length;
+    }
+    void getUndelUnreadChat(){
+      var queryDelivNRead = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
+      List<ChatModel> chatsUndelivNUnread = queryDelivNRead.find().toList();
+      print("chatsUndelivNUnread: ${chatsUndelivNUnread.map((e) => e.text)}");
+
+      for(int i=0;i<chatsUndelivNUnread.length;i++){
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["type"] = "check_status";
+        msg["id_chat_model"] = chatsUndelivNUnread[i].id;
+        msg["id_sender"] = chatsUndelivNUnread[i].idSender;
+        msg["id_receiver"] = chatsUndelivNUnread[i].idReceiver;
+        msg["msg_tipe"] = chatsUndelivNUnread[i].tipe;
+        msg["msg_data"] = chatsUndelivNUnread[i].text;
+        msg["date"] = chatsUndelivNUnread[i].date;
+        msg["room_id"] = conversation!.roomId;
+        String msgString = json.encode(msg);
+        // print(msgString);
+        homes.channel.sink.add(msgString);
+      }
+    }
+    if(checkChatsDelivNRead()>0){
+      getUndelUnreadChat();
+    }
+
+    //get our chats where failed to send
+    int checkChatsNotSent(){
+      var queryNotSent = mains.objectbox.boxChat.query(ChatModel_.sendStatus.equals("") & (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
+      List<ChatModel> chatsNotSent = queryNotSent.find().toList();
+      return chatsNotSent.length;
+    }
+    void getFailedChat(){
+      var queryNotSent = mains.objectbox.boxChat.query(ChatModel_.sendStatus.equals("") & (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
+      List<ChatModel> chatsNotSent = queryNotSent.find().toList();
+      for(int i=0;i<chatsNotSent.length;i++){
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["decrypt_key"] = "";
+        msg["id_chat_model"] = chatsNotSent[i].id;
+        msg["id_chat_db"] = chatsNotSent[i].idChat;
+        msg["type"] = "pm";
+        msg["id_sender"] = chatsNotSent[i].idSender;
+        msg["id_receiver"] = chatsNotSent[i].idReceiver;
+        msg["msg_tipe"] = chatsNotSent[i].tipe;
+        msg["msg_data"] = chatsNotSent[i].text;
+        msg["room_id"] = roomId;
+        if(chatsNotSent[i].tipe == "file"){
+          final bytes = Io.File(chatsNotSent[i].content!).readAsBytesSync();
+          String file64 = base64Encode(bytes);
+          msg["file"] = file64;
+        }else if(chatsNotSent[i].tipe == "image"){
+          final bytes = Io.File(chatsNotSent[i].content!).readAsBytesSync();
+          String img64 = base64Encode(bytes);
+          msg["image"] = img64;
+        }
+
+        String msgString = json.encode(msg);
+
+        homes.channel.sink.add(msgString);
+      }
+    }
+    if(checkChatsNotSent()>0){
+      getFailedChat();
+    }
+
+    //update conversation on open chat
+    final objConversation = ConversationModel(
+      id: conversation!.id,
+      message: conversation!.message,
+      date: conversation!.date,
+      idReceiver: conversation!.idReceiver,
+      fullName: conversation!.fullName,
+      image: conversation!.image,
+      photoProfile: conversation!.photoProfile,
+      messageCout: 0,
+      statusReceiver: conversation!.statusReceiver,
+      roomId: conversation!.roomId,
+    );
+    mains.objectbox.boxConversation.put(objConversation);
+
+    super.initState();
+    timer = Timer.periodic(Duration(seconds: 7), (Timer t) {
+      if(checkChatsRead() > 0){
+        setChatsToRead();
+      }
+      if(checkChatsUnreadDb() > 0){
+        setChatsToReadDb();
+      }
+      if(checkChatsDelivNRead()>0){
+        getUndelUnreadChat();
+      }
+      if(checkChatsNotSent()>0){
+        getFailedChat();
+      }
+    });
+  }
+
+  @override
+  void dispose(){
+    timer?.cancel();
+    super.dispose();
+  }
+
+  bool _isWriting = false;
+  bool firstTime = true;
+
+  //emoji
+  bool emojiShowing = false;
+  bool isKeyboardVisible = false;
+
+  _onEmojiSelected(Emoji emoji) {
+    inputTextController
+      ..text += emoji.emoji
+      ..selection = TextSelection.fromPosition(
+          TextPosition(offset: inputTextController.text.length));
+  }
+
+  _onBackspacePressed() {
+    inputTextController
+      ..text = inputTextController.text.characters.skipLast(1).toString()
+      ..selection = TextSelection.fromPosition(
+          TextPosition(offset: inputTextController.text.length));
+  }
+
+  final _focusNode = FocusNode();
+
+  @override
+  File? image;
+  Contact? contact;
+
+  Future getImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? imagePicked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 25);
+
+    if(imagePicked!=null)
+      cropImage(imagePicked.path);
+  }
+
+  Future getCamera() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? imageCamera = await _picker.pickImage(source: ImageSource.camera);
+
+    cropImage(imageCamera!.path);
+  }
+
+  Future cropImage(filePath) async {
+    File? croppedImage = await ImageCropper.cropImage(
+        sourcePath: filePath,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Crop image',
+            toolbarColor: Color(0xFF2481CF),
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        )
+    );
+
+    //send image chat
+    if (croppedImage != null) {
+      setState(() {
+        image = croppedImage;
+        final bytes = Io.File(croppedImage.path).readAsBytesSync();
+        String img64 = base64Encode(bytes);
+
+        // send image message
+        final chat = ChatModel (
+          idSender: idUser,
+          idReceiver: idReceiver,
+          text: "Photo",
+          date: DateTime.now().toString(),
+          tipe: "image",
+          content: croppedImage.path,
+          sendStatus: '',
+          delivered: 0,
+          read: 0,
+        );
+
+        int id = mains.objectbox.boxChat.put(chat);
+
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["decrypt_key"] = "";
+        msg["id_chat_model"] = id;
+        msg["type"] = "pm";
+        msg["id_sender"] = idUser;
+        msg["id_receiver"] = idReceiver;
+        msg["msg_tipe"] = 'image';
+        msg["msg_data"] = "Photo";
+        msg["room_id"] = roomId;
+        msg["image"] = img64;
+
+        String msgString = json.encode(msg);
+
+        homes.channel.sink.add(msgString);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      backgroundColor: Color(0xFFe8dfd8),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(63.0),
-        child: AppBar(
-          backgroundColor: Color(0xFF2381D0),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          titleSpacing: 0,
-          title: ListTile(
-            contentPadding: EdgeInsets.all(0),
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(conversation!.image!),
-            ),
-            title: Text(
-              conversation!.fullName!,
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            subtitle: Text(
-              conversation!.date!,
-              style: TextStyle(color: Colors.white.withOpacity(.7)),
-            ),
-          ),
-          actions: <Widget>[
-            Icon(Icons.videocam),
-            SizedBox(
-              width: 15,
-            ),
-            Icon(Icons.call),
-            SizedBox(
-              width: 15,
-            ),
-            Icon(Icons.more_vert),
-            SizedBox(
-              width: 5,
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: StreamBuilder<List<ChatModel>>(
-            stream: homes.listController.stream,
-              builder: (context, snapshot)
-              {
-                if (snapshot.data != null) {
-                  List<ChatModel> chats = mains.objectbox.boxChat.getAll().reversed.toList();
-                  return ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    reverse: true,
-                    shrinkWrap: false,
-                    padding: const EdgeInsets.all(2),
-                    itemCount: chats.length!=0 ? chats.length : 0,
-                    itemBuilder: (context, index) =>
-                    chats[index].idSender == idUser ?
-                    MyMessageCardPersonal(
-                      chats[index].text,
-                      DateFormat.Hms().format( DateTime.parse(chats[index].date) ),
-                      chats[index].sendStatus,
-                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                    )
-                        : FriendMessageCardPersonal(
-                      chats[index].text,
-                      DateFormat.Hms().format( DateTime.parse(chats[index].date) ),
-                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                    ),
-                  );}else{
+    DateTime dateTime = DateTime.parse(conversation!.date!);
+    String formattedDate = DateFormat('HH:mm').format(dateTime);
 
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(63.0),
+          child: AppBar(
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+            titleSpacing: 0,
+            title: InkWell(
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ProfileInfo(conversation, roomId)),
+                );
+              },
+              child: ListTile(
+                  contentPadding: EdgeInsets.all(0),
+                  leading:
+                  ClipOval(
+                      child: conversation!.photoProfile != null  ?  conversation!.photoProfile != '' ? CircleAvatar(
+                        backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                        backgroundColor: Color(0xffF2F1F6),
+                        radius: 20,
+                      ):
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Color(0xffdde1ea),
+                        child:  Icon(
+                          Icons.person,
+                          color: Colors.grey,
+                        ),
+                      ):
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Color(0xffdde1ea),
+                        child:  Icon(
+                          Icons.person,
+                          color: Colors.grey,
+                        ),
+                      )
+                  ),
+                  title: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: 220
+                    ),
+                    child: Text(
+                      conversation!.fullName!,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(color: Colors.white, fontSize: 15,),
+                    ),
+                  ),
+                  subtitle:Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Expanded(
+                            child: StreamBuilder<List<ConversationModel>>(
+                                stream: homes.listControllerConversation.stream,
+                                builder: (context, snapshot)
+                                {
+
+                                  var queryConv = mains.objectbox.boxConversation.query(ConversationModel_.id.equals(conversation!.id)).build();
+                                  //List<ConversationModel> queryConv = queryConv.find().reversed.toList();
+                                  if(queryConv.find().first.statusReceiver==''){
+                                    return Text(
+                                      formattedDate,
+                                      style: TextStyle(color: Colors.white.withOpacity(.7)),
+                                    );
+                                  }
+                                  else{
+                                    return Text(
+                                      queryConv.find().first.statusReceiver,
+                                      style: TextStyle(color: Color(0xFF25D366)),
+                                    );
+                                  }
+
+                                  //return const CircularProgressIndicator();
+                                }
+                            )),
+                      ]
+                  )
+              ),
+            ),
+            actions: <Widget>[
+              Icon(Icons.videocam),
+              SizedBox(
+                width: 15,
+              ),
+              Icon(Icons.call),
+              SizedBox(
+                width: 15,
+              ),
+            ],
+          ),
+        ),
+        body: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: 10, left: 10),
+                  child: StreamBuilder<List<ChatModel>>(
+                    stream: homes.listController.stream,
+                    builder: (context, snapshot)
+                    {
+                      if (snapshot.data != null) {
+                        //update chat read status when receive new chat and chatscreen standby
+                        var query2 = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idUser!) & (ChatModel_.idSender.equals(idReceiver!)))).build();
+                        List<ChatModel> chats2 = query2.find().toList();
+                        for(int i=0;i<chats2.length;i++){
+                          var msg = {};
+                          msg["api_key"] = apiKey;
+                          msg["type"] = "status_read";
+                          msg["id_chat_model"] = chats2[i].id;
+                          msg["id_chat_model_friends"] = chats2[i].idChatFriends;
+                          msg["id_sender"] = chats2[i].idSender;
+                          msg["id_receiver"] = chats2[i].idReceiver;
+                          msg["msg_tipe"] = chats2[i].tipe;
+                          msg["room_id"] = conversation!.roomId;
+                          String msgString = json.encode(msg);
+                          homes.channel.sink.add(msgString);
+
+                          //update status to read=1 deliver=1
+                          final chat = ChatModel(
+                            id: chats2[i].id,
+                            idSender: chats2[i].idSender,
+                            idReceiver: chats2[i].idReceiver,
+                            text: chats2[i].text,
+                            date: chats2[i].date,
+                            tipe: chats2[i].tipe,
+                            content: chats2[i].content,
+                            sendStatus: chats2[i].sendStatus,
+                            delivered: 1,
+                            read: 1,
+                          );
+                          mains.objectbox.boxChat.put(chat);
+                        }
+
+                        var query = mains.objectbox.boxChat.query( (ChatModel_.idReceiver.equals(idReceiver!) & ChatModel_.idSender.equals(idUser!)) | ChatModel_.idReceiver.equals(idUser!) & ChatModel_.idSender.equals(idReceiver!)).build();
+                        List<ChatModel> chats = query.find().reversed.toList();
+
+                        DateTime now = new DateTime.now();
+                        DateTime date = new DateTime(now.year, now.month, now.day);
+
+                        if(query.find().isNotEmpty & firstTime==false) {
+                          //update conversation count=0 when receive new chat and user create new chat (both when chatscreen standby)
+                          final objConversation = ConversationModel(
+                            id: conversation!.id,
+                            message: query.find().toList().length == 0 ? '' : query.find().last.text,
+                            date: query.find().toList().length == 0 ? conversation!.date : query.find().last.date,
+                            idReceiver: conversation!.idReceiver,
+                            fullName: conversation!.fullName,
+                            image: conversation!.image,
+                            photoProfile: conversation!.photoProfile,
+                            messageCout: 0,
+                            statusReceiver: conversation!.statusReceiver,
+                            roomId: conversation!.roomId,
+                          );
+                          mains.objectbox.boxConversation.put(objConversation);
+                        }
+                        firstTime = false;
+
+                        return ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            reverse: true,
+                            shrinkWrap: false,
+                            padding: const EdgeInsets.all(2),
+                            itemCount: chats.length!=0 ? chats.length : 0,
+                            itemBuilder: (context, index) =>
+                            chats[index].idSender == idUser ?
+                            SwipeTo(
+                                onLeftSwipe: () {
+                                },
+                                child: chats[index].tipe == 'text' ?
+                                //    text
+                                MyMessageCardPersonal(
+                                    chats[index].text,
+                                    chats[index].sendStatus == "" ?
+                                    ""
+                                    :
+                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                    chats[index].sendStatus,
+                                    chats[index].tipe!,
+                                    '',
+                                    index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                    false
+                                )
+                                    : chats[index].tipe == 'image' ?
+                                //    image
+                                MyMessageCardPersonal(
+                                    chats[index].content!,
+                                    chats[index].sendStatus == "" ?
+                                    ""
+                                        :
+                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                    chats[index].sendStatus,
+                                    chats[index].tipe!,
+                                    chats[index].content!,
+                                    false,
+                                    true
+                                )
+                                    :
+                                //    file
+                                MyMessageCardPersonal(
+                                    chats[index].text,
+                                    chats[index].sendStatus == "" ?
+                                    ""
+                                        :
+                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                    chats[index].sendStatus,
+                                    chats[index].tipe!,
+                                    chats[index].content!,
+                                    false,
+                                    true
+                                )
+
+                            )
+                                : chats[index].idSender == idReceiver ?
+                            chats[index].tipe == 'text' ?
+                            FriendMessageCardPersonal(
+                                chats[index].text,
+                                date.isBefore(DateTime.parse(chats[index].date))?
+                                DateFormat.Hm().format( DateTime.parse(chats[index].date) )
+                                :
+                                chats[index].date
+                                ,
+                                chats[index].tipe!,
+                                '',
+                                index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                false
+                            ) : chats[index].tipe == 'image' ?
+                            FriendMessageCardPersonal(
+                                chats[index].content!,
+                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                chats[index].tipe!,
+                                chats[index].content!,
+                                false,
+                                true
+                            )
+                                :
+                            FriendMessageCardPersonal(
+                                chats[index].text,
+                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                chats[index].tipe!,
+                                chats[index].content!,
+                                false,
+                                true
+                            )
+                                : Container()
+                        );
+                      }else{
                         if (snapshot.hasError) {
                           print(snapshot.error.toString());
                           return const Text("Error");
                         }
                         return const CircularProgressIndicator();
-
-                }},
-                ),
-                ),
-                Row(
-                children: <Widget>[
-              Stack(
-              overflow: Overflow.visible,
-                children: <Widget>[
-                Container(
-                padding: EdgeInsets.all(4),
-              margin: EdgeInsets.only(left: 10,bottom: 10,right: 1,top: 1),
-              height : 45,
-                decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                ),
-              child: Row(
-              children: <Widget>[
-                        Icon(
-                          Icons.tag_faces,
-                          color: Colors.grey,
-                          size: 35,
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Container(
-                          width: 245,
-                          child: TextField(
-                            controller: inputTextController,
-                            style: TextStyle(
-                              fontSize: 19.0,
-                              height: 2.0,
-                              color: Colors.black,
-                            ),
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Type a message',
-                                contentPadding: EdgeInsets.only(left: 5,top: -25,right:0),
-                                hintStyle: TextStyle(
-                                    color: Colors.grey, fontSize: 20)),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 0,
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.camera_alt,
-                            color: Colors.grey,
-                            size: 30,
-                          ),
-                          padding: EdgeInsets.all(0),
-                          onPressed: () {
-                            //print(inputTextController.text);
-                          },
-                        ),
-                      ],
-                    ),
+                      }},
                   ),
-                ],
+                ),
               ),
+              SizedBox(height: 10,),
               Container(
-                padding: EdgeInsets.all(0),
-                margin: EdgeInsets.only(left: 2,bottom: 9),
-                decoration: BoxDecoration(
-                    color: Color(0xFF2381D0), shape: BoxShape.circle),
-                child:
-                  IconButton(
-                    icon: Icon(
-                      Icons.send,
-                      color: Colors.white,
-                      size: 23,
+                color: Theme.of(context).backgroundColor,
+                padding: Platform.isAndroid ?
+                EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 10)
+                    :
+                EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
+
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 5,),
+                          Container(
+                            margin: EdgeInsets.only(bottom: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            constraints: BoxConstraints(
+                              minHeight: 25.0,
+                              maxHeight: 100,
+                              minWidth: MediaQuery.of(context).size.width,
+                              maxWidth: MediaQuery.of(context).size.width,
+                            ),
+                            child: Scrollbar(
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        emojiShowing = !emojiShowing;
+                                        if (emojiShowing) {
+                                          _focusNode.unfocus();
+                                        }
+                                        else {
+                                          FocusScope.of(context).requestFocus(_focusNode);
+                                        }
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.tag_faces,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: FocusScope(
+                                      child: Focus(
+                                        onFocusChange: (focus) {
+                                          if(focus){
+                                            emojiShowing = false;
+                                          }
+                                        },
+                                        child: TextField(
+                                          cursorColor: Colors.grey,
+                                          keyboardType: TextInputType.multiline,
+                                          controller: inputTextController,
+                                          focusNode: _focusNode,
+                                          onChanged: (text) {
+                                            if (!_isWriting){
+                                              _isWriting = true;
+
+                                              //update typing status when type messages
+                                              var msg = {};
+                                              msg["api_key"] = apiKey;
+                                              msg["type"] = "status_typing";
+                                              msg["id_sender"] = idUser;
+                                              msg["id_receiver"] = idReceiver;
+                                              msg["room_id"] = conversation!.roomId;
+                                              String msgString = json.encode(msg);
+                                              homes.channel.sink.add(msgString);
+
+                                              setState((){});
+                                              Future.delayed(Duration(milliseconds: 2000)).whenComplete((){
+                                                _isWriting = false;
+                                                setState((){});
+                                              });
+                                            }
+                                          },
+                                          maxLines: null,
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 16
+                                          ),
+                                          decoration: InputDecoration(
+                                              contentPadding: EdgeInsets.only(top: 13, bottom: 13),
+                                              border: InputBorder.none,
+                                              hintText: 'Type a message',
+                                              hintStyle: TextStyle(
+                                                  color: Color(0xff99999B),
+                                                  fontSize: 16
+                                              )
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Transform.rotate(
+                                    angle: 70,
+                                    child: IconButton(
+                                      onPressed: () {
+                                        showCupertinoModalPopup(
+                                            context: context,
+                                            builder: (context) => CupertinoActionSheet(
+                                              actions: <Widget>[
+                                                Container(
+                                                  color: Colors.white,
+                                                  child: CupertinoActionSheetAction(
+                                                    onPressed: () async {
+                                                      await getCamera();
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text(
+                                                      'Camera',
+                                                      style: TextStyle(
+                                                          color: Color(0xFF2481CF)
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  color: Colors.white,
+                                                  child: CupertinoActionSheetAction(
+                                                    onPressed: () {
+                                                      getImage();
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text(
+                                                      'Photo & Video Library',
+                                                      style: TextStyle(
+                                                          color: Color(0xFF2481CF)
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  color: Colors.white,
+                                                  child: CupertinoActionSheetAction(
+                                                    child: const Text(
+                                                      'Documents',
+                                                      style: TextStyle(
+                                                          color: Color(0xFF2481CF)
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      pickFile();
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                              cancelButton: Container(
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(10)
+                                                ),
+                                                child: CupertinoActionSheetAction(
+                                                  child: const Text(
+                                                    'Cancel',
+                                                    style: TextStyle(
+                                                        color: Color(0xFF2481CF)
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                              ),
+                                            )
+                                        );
+                                      },
+                                      icon: Icon(
+                                        Icons.attach_file_rounded,
+                                        size: 25,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    padding: EdgeInsets.all(0),
-                    onPressed: () async{
-                      final chat = ChatModel(
-                          text: inputTextController.text,
-                          date: DateTime.now().toString(),
-                          idConversation: idConversation,
-                          idReceiver: idReceiver  ,
-                          idSender: idUser,
-                          sendStatus: 'D'
-                      );
-                      int id = mains.objectbox.boxChat.put(chat);
-                      print(id);
+                    Container(
+                        margin: EdgeInsets.only(left: 8),
+                        child: IconButton(
+                          icon: Icon(Icons.send),
+                          onPressed: () async {
+                            if(inputTextController.text.trim().isEmpty) {
+                              print(conversation!.roomId!);
+                            }
+                            else {
+                              //send text message
+                              final chat = ChatModel (
+                                idSender: idUser,
+                                idReceiver: idReceiver,
+                                text: inputTextController.text,
+                                date: DateTime.now().toString(),
+                                tipe: 'text',
+                                sendStatus: '',
+                                delivered: 0,
+                                read: 0,
+                              );
 
-                      ChatModel? chats = mains.objectbox.boxChat.get(id);
-                      if(chats!=null)
-                      print(chats.text);
-                      inputTextController.clear();
-                      //int id = await DBHelpers.setChat(chat);
-                      //String? text = await DBHelpers.getChat(1);
-                      //final id = boxChat.put(chat);
-                      //print(id);
-                      //print(text);
+                              int id = mains.objectbox.boxChat.put(chat);
 
-                      //List<ChatModel> chats =await DBHelpers.getChatAll();
+                              var msg = {};
+                              msg["api_key"] = apiKey;
+                              msg["decrypt_key"] = "";
+                              msg["id_chat_model"] = id;
+                              msg["type"] = "pm";
+                              msg["id_sender"] = idUser;
+                              msg["id_receiver"] = idReceiver;
+                              msg["msg_data"] = chat.text;
+                              msg["msg_tipe"] = 'text';
+                              msg["room_id"] = roomId;
 
-                    },
-                  ),
-              )
+                              String msgString = json.encode(msg);
+
+                              homes.channel.sink.add(msgString);
+
+                              inputTextController.clear();
+                            }
+                          },
+                          color: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+                        )
+                    )
+                  ],
+                ),
+              ),
+              Offstage(
+                offstage: !emojiShowing,
+                child: SizedBox(
+                  height: 250,
+                  child: EmojiPicker(
+                      onEmojiSelected: (Category category, Emoji emoji) {
+                        _onEmojiSelected(emoji);
+                      },
+                      onBackspacePressed: _onBackspacePressed,
+                      config: Config(
+                          columns: 8,
+                          // Issue: https://github.com/flutter/flutter/issues/28894
+                          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                          verticalSpacing: 0,
+                          horizontalSpacing: 0,
+                          initCategory: Category.SMILEYS,
+                          bgColor: Theme.of(context).scaffoldBackgroundColor,
+                          indicatorColor: Colors.blue,
+                          iconColor: Colors.grey,
+                          iconColorSelected: Colors.blue,
+                          progressIndicatorColor: Colors.blue,
+                          backspaceColor: Colors.blue,
+                          skinToneDialogBgColor: Colors.white,
+                          skinToneIndicatorColor: Colors.grey,
+                          enableSkinTones: true,
+                          showRecentsTab: true,
+                          recentsLimit: 28,
+                          noRecentsText: 'No Recents',
+                          noRecentsStyle: const TextStyle(
+                              fontSize: 20, color: Colors.black26),
+                          tabIndicatorAnimDuration: kTabScrollDuration,
+                          categoryIcons: const CategoryIcons(),
+                          buttonMode: ButtonMode.MATERIAL)),
+                ),
+              ),
             ],
-          )
-        ],
+          ),
+        ),
       ),
     );
   }
-}
 
+
+  void pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['doc', 'pdf'],
+    );
+    if (result != null) {
+      // File file = File(result.files.single.path!);
+      PlatformFile file = result.files.first;
+      // print(file.extension);
+      final bytes = Io.File(file.path!).readAsBytesSync();
+      String file64 = base64Encode(bytes);
+
+      final chat = ChatModel (
+        idSender: idUser,
+        idReceiver: idReceiver,
+        text: file.name,
+        date: DateTime.now().toString(),
+        tipe: "file",
+        content: file.path,
+        sendStatus: '',
+        delivered: 0,
+        read: 0,
+      );
+
+      int id = mains.objectbox.boxChat.put(chat);
+
+      //send file message
+      var msg = {};
+      msg["api_key"] = apiKey;
+      msg["decrypt_key"] = "";
+      msg["id_chat_model"] = id;
+      msg["type"] = "pm";
+      msg["id_sender"] = idUser;
+      msg["id_receiver"] = idReceiver;
+      msg["msg_tipe"] = 'file';
+      msg["msg_data"] = file.name;
+      msg["room_id"] = roomId;
+      msg["file"] = file64;
+
+      String msgString = json.encode(msg);
+
+      homes.channel.sink.add(msgString);
+    } else {
+      return;
+    }
+
+    // PlatformFile? file = result!.files.first;
+
+  }
+
+  void viewFile(PlatformFile file) {
+    OpenFile.open(file.path);
+  }
+
+// void replyToMessage(ChatModel message) {
+//   setState(() {
+//     replyMessage = message;
+//   });
+// }
+
+}

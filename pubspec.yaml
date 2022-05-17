@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.3+7
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -33,7 +33,7 @@ dependencies:
   objectbox: ^1.2.1-dev.0
   objectbox_flutter_libs: ^1.2.0
   json_annotation: ^4.3.0
-  path_provider: ^2.0.6
+  path_provider: ^2.0.9
   rxdart: ^0.27.2
   intl: ^0.17.0
   email_validator: ^2.0.1
@@ -47,7 +47,22 @@ dependencies:
   badges: ^2.0.2
   syncfusion_flutter_pdfviewer: ^19.4.38-beta
   flutter_pin_code_fields:
-  timer_count_down: ^2.2.1
+  countdown_widget: ^2.0.0
+  flutter_native_contact_picker: ^0.0.3
+  image_picker: ^0.8.4+4
+  file_picker: ^4.3.3
+  open_file: ^3.2.1
+  image_cropper: ^1.4.1
+  firebase_messaging: ^11.2.5
+  firebase_core: ^1.11.0
+  flutter_local_notifications: ^9.2.0
+  firebase_storage: ^10.2.7
+  swipe_to: ^0.1.0-nullsafety.1
+  uuid: ^3.0.5
+  like_button: ^2.0.4
+  fluttertoast: ^8.0.8
+  emoji_picker_flutter: ^1.1.2
+  package_info_plus: ^1.4.2
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +83,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
+
 flutter:
 
   # The following line ensures that the Material Icons font is

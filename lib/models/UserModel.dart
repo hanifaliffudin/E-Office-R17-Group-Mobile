@@ -2,7 +2,9 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class UserModel {
-  int id = 0;
+  int id;
+  int? userId;
+  String? fcmToken;
   String? photo;
   String? userName;
   String? email;
@@ -15,6 +17,9 @@ class UserModel {
 
   UserModel(
       {
+        this.id = 0,
+        this.userId,
+        this.fcmToken,
         this.photo,
         this.userName,
         this.email,

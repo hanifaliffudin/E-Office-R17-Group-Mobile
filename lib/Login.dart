@@ -1,128 +1,165 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:militarymessenger/PinVerification.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'Home.dart' as homes;
 
 class Login extends StatefulWidget {
   @override
   LoginPageState createState() {
-    return new LoginPageState();
+    return LoginPageState();
   }
 }
 
 class LoginPageState extends State<Login>  {
+  var fcmToken;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    var messaging = FirebaseMessaging.instance;
+    messaging.getToken().then((value){
+      fcmToken = value;
+      // print(value);
+    });
+  }
   final TextEditingController _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String apiKey ='1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
+  String apiKey = homes.apiKeyCore;
 
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text('e-Office'.toUpperCase(),
-      style: TextStyle(
-        letterSpacing: 2.0,
-        fontWeight: FontWeight.bold,
-      ),),
+      title: Text('R17 Group',
+        style: TextStyle(
+          letterSpacing: 2.0,
+          fontWeight: FontWeight.bold,
+        ),),
       centerTitle: true,
-      backgroundColor: Color(0xFFFAFBF9),
-      foregroundColor: Color(0xFF2481CF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      foregroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
       elevation: 0,
     ),
-    body: Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Form(
-            key: _formKey,
-            child: TextFormField(
-              autofocus: true,
-              validator: (value) {
-                if (value == null || value.isEmpty || !EmailValidator.validate(value.trim())) {
-                  return 'Email is not valid!';
-                }
-                return null;
-              },
-              controller: _controller,
-              decoration: InputDecoration(
-                  labelText: 'Enter your email :',
-                labelStyle: TextStyle(
-                  color: Color(0xFF2481CF)
-                )
+    body: Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Form(
+              key: _formKey,
+              child: TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                cursorColor: Colors.grey,
+                autofocus: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty || !EmailValidator.validate(value.trim())) {
+                    return 'Email is not valid!';
+                  }
+                  return null;
+                },
+                controller: _controller,
+                decoration: InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    labelText: 'Email',
+                    labelStyle: TextStyle(
+                        color: Colors.grey
+                    )
                 ),
-              style: TextStyle(
-                fontSize: 19.0,
-                height: 1.3,
-                color: Colors.black,
+                style: TextStyle(
+                  fontSize: 16.0,
+                  height: 1.3,
+                  color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'PIN code will be sent to your email.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    ),
-
-    floatingActionButton: FloatingActionButton(
-      onPressed: () => showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          content: Container(
-            height: 110,
-            child: Column(
-              children: [
-                Text('We will be verifying the email address'),
-                SizedBox(
-                  height: 30,
+            ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _openDialog(context);
+                  };
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  elevation: 0,
+                  primary: Color(0xFF2481CF),
                 ),
-                Text('Is this OK or would you like to edit the email address?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'Cancel'),
-              child: const Text('Edit'),
-            ),
-            TextButton(
-              onPressed: _submit,
-              child: const Text('Yes'),
-            ),
+                child: Text(
+                  'Next',
+                  style: TextStyle(
+                      color: Colors.white
+                  ),
+                )),
           ],
         ),
       ),
-      child: const Icon(Icons.send),
     ),
   );
 
-  void _submit(){
-    if (_formKey.currentState!.validate()) {
-      /*ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sedang memproses.')),
-      );*/
-      //kirim email
+  void _openDialog(ctx) {
+    showCupertinoDialog(
+        context: ctx,
+        builder: (_) => CupertinoAlertDialog(
+          title: Text("Verify Email"),
+          content: Row(
+            children: [
+              Flexible(
+                child: Text("PIN code will be sent to " + _controller.text),
+              ),
+            ],
+          ),
+          actions: [
+            // Close the dialog
+            // You can use the CupertinoDialogAction widget instead
+            CupertinoButton(
+                child: Text('Edit',
+                  style: TextStyle(
+                      color: Color(0xFF2481CF)
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                }),
+            CupertinoButton(
+              child: Text('Verify',
+                style: TextStyle(
+                    color: Colors.red
+                ),
+              ),
+              onPressed: () {
+                //kirim email
 
-      sendEmail(_controller.text.trim());
+                sendEmail(_controller.text.trim());
 
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim())),
-      );
-    }
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim())),
+                );
+              },
+            )
+          ],
+        ));
   }
 
   Future<http.Response> sendEmail(String email) async {
+    print(fcmToken);
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
-      'api_key': this.apiKey,
-      'email': email
+      'api_key': apiKey,
+      'email': email,
+      'fcm_token': fcmToken
     };
     //encode Map to JSON
     var body = json.encode(data);
@@ -133,13 +170,11 @@ class LoginPageState extends State<Login>  {
     );
 
     if(response.statusCode == 200){
-      print("${response.body}");
-      Map<String, dynamic> userMap = jsonDecode(response.body);
+      print(response.body);
+      // Map<String, dynamic> userMap = json.decode(response.body);
 
       //print (userMap.error);
       //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
-
-
     }
     else{
       pinFailedSnackBar(context,"Email gagal dikirim!");

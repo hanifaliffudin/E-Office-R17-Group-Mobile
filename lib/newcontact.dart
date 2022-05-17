@@ -1,4 +1,3 @@
-import 'package:militarymessenger/contact.dart';
 import 'package:flutter/material.dart';
 
 class NewContactPage extends StatefulWidget {

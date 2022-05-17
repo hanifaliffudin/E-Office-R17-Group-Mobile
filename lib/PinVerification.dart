@@ -1,15 +1,11 @@
+import 'package:countdown_widget/countdown_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:militarymessenger/models/UserModel.dart';
 import 'package:pinput/pin_put/pin_put.dart';
-import 'package:pinput/pin_put/pin_put_state.dart';
 import 'package:militarymessenger/Home.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:timer_count_down/timer_controller.dart';
-import 'package:timer_count_down/timer_count_down.dart';
 
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -25,16 +21,24 @@ class PinVerification extends StatefulWidget {
   }
 
   @override
-  PinVerificationState createState() => PinVerificationState();
+  PinVerificationState createState() => PinVerificationState(email);
 }
 
 class PinVerificationState extends State<PinVerification> {
+  var fcmToken;
   final _formKey = GlobalKey<FormState>();
   final _pinPutController = TextEditingController();
   final _pinPutFocusNode = FocusNode();
   final _pageController = PageController();
 
-  String apiKey ='1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
+  String email = '';
+
+  PinVerificationState(String email){
+    this.email = email;
+    globalEmail = email;
+  }
+
+  String apiKey = homes.apiKeyCore;
 
   int _pageIndex = 0;
 
@@ -48,15 +52,18 @@ class PinVerificationState extends State<PinVerification> {
     const Color.fromRGBO(43, 46, 66, 1),
   ];
 
-  final CountdownController _controller =
-  new CountdownController(autoStart: true);
-
   @override
   void initState() {
     _pinPuts.addAll([
       onlySelectedBorderPinPut(),
     ]);
     super.initState();
+  }
+
+  late CountDownController _countDownController;
+
+  void restart() {
+    _countDownController.restart();
   }
 
   @override
@@ -68,35 +75,37 @@ class PinVerificationState extends State<PinVerification> {
             letterSpacing: 2.0,
             fontWeight: FontWeight.bold,
           ),),
-        automaticallyImplyLeading: false,
+        // automaticallyImplyLeading: false,
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF2481CF),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
         elevation: 0,
       ),
-      body: Stack(
-        fit: StackFit.passthrough,
-        children: <Widget>[
-          AnimatedContainer(
-            color: _bgColors[_pageIndex],
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.only(top:0,bottom: 40,left: 40,right: 40),
-            child: PageView(
-              scrollDirection: Axis.vertical,
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() => _pageIndex = index);
-              },
-              children: _pinPuts.map((p) {
-                return FractionallySizedBox(
-                  heightFactor: 1.0,
-                  child: Center(child: p),
-                );
-              }).toList(),
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: <Widget>[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.only(top:0,bottom: 40,left: 40,right: 40),
+              child: PageView(
+                scrollDirection: Axis.vertical,
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() => _pageIndex = index);
+                },
+                children: _pinPuts.map((p) {
+                  return FractionallySizedBox(
+                    heightFactor: 1.0,
+                    child: Center(child: p),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
-          //_bottomAppBar,
-        ],
+            //_bottomAppBar,
+          ],
+        ),
       ),
     );
   }
@@ -114,7 +123,7 @@ class PinVerificationState extends State<PinVerification> {
             height: 50,
           ),
           Text(
-            'Enter 6 digit code we sent to your email.',
+            'Enter 6 digit code we sent to ' + email,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),
           ),
@@ -157,21 +166,85 @@ class PinVerificationState extends State<PinVerification> {
           SizedBox(
             height: 20,
           ),
-          Countdown(
-            seconds: 20,
-            build: (_, double time) => Text(
-              time.toString(),
-              style: TextStyle(
-                fontSize: 15
-              ),
-            ),
-            onFinished: () {
-
+          CountDownWidget(
+            duration: Duration(seconds: 40),
+            builder: (context, duration) {
+              return Column(
+                children: [
+                  Text('00.' + duration.inSeconds.toString(),
+                    style: TextStyle(
+                        color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                        fontSize: 14
+                    ),
+                  ),
+                  SizedBox(height: 30,),
+                  Visibility(
+                      visible: duration.inSeconds == 0,
+                      child: Column(
+                        children: [
+                          Text('Haven\'t recieved the code?',
+                            style: TextStyle(
+                                color: Colors.grey
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          InkWell(
+                            onTap: () {
+                              restart();
+                              _submit();
+                            },
+                            child: Text('Resend code',
+                              style: TextStyle(
+                                color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),),
+                          ),
+                        ],
+                      )
+                  )
+                ],
+              );
             },
-          ),
+            onControllerReady: (controller) {
+              _countDownController = controller;
+            },
+            onDurationRemainChanged: (duration) {
+              print('duration:${duration.toString()}');
+            },
+          )
         ],
       ),
     );
+  }
+
+  Future<http.Response> sendEmail(String email) async {
+    print(fcmToken);
+    String url ='https://chat.dev.r17.co.id/send_email.php';
+    Map data = {
+      'api_key': this.apiKey,
+      'email': email,
+      'fcm_token': fcmToken
+    };
+    //encode Map to JSON
+    var body = json.encode(data);
+
+    var response = await http.post(Uri.parse(url),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body
+    );
+
+    if(response.statusCode == 200){
+      print("${response.body}");
+      // Map<String, dynamic> userMap = json.decode(response.body);
+
+      //print (userMap.error);
+      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
+    }
+    else{
+      pinFailedSnackBar(context,"Email gagal dikirim!");
+    }
+    return response;
   }
 
   Widget darkRoundedPinPut() {
@@ -226,6 +299,12 @@ class PinVerificationState extends State<PinVerification> {
     );
   }
 
+  void _submit() {
+    //kirim email
+
+    sendEmail(email);
+  }
+
   Future<http.Response> postRequest(String pin) async {
     String url ='https://chat.dev.r17.co.id/register.php';
     Map data = {
@@ -243,23 +322,27 @@ class PinVerificationState extends State<PinVerification> {
 
 
     if(response.statusCode == 200){
-      //print("${response.body}");
+
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
       //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
-
-      if(pin.toString() == userMap['verification_code'].toString()) {
+      //response.user_id;
+      //if(pin.toString() == userMap['verification_code'].toString()) {
+      //print(userMap['code_status']);
+      if(userMap['code_status']==0) {
 
         //Send data to server
 
-        if(await postRegister(pin.toString())){
-            final user = UserModel(
-              userName: globalEmail,
-              email: globalEmail,
-            );
-            int id = mains.objectbox.boxUser.put(user);
-            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home()), (Route<dynamic> route) => false);
-        }
+        final user = UserModel(
+          userId: userMap['user_id'],
+          userName: globalEmail,
+          email: globalEmail,
+        );
+        int id = mains.objectbox.boxUser.put(user);
+        print(user.id);
+
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home()), (Route<dynamic> route) => false);
+
       }
       else{
         pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
@@ -271,36 +354,6 @@ class PinVerificationState extends State<PinVerification> {
     return response;
   }
 
-  Future<bool> postRegister(String pin) async {
-    String url ='https://chat.dev.r17.co.id/register.php';
-    Map<String, dynamic> data = {
-      'api_key': this.apiKey,
-      'email': globalEmail,
-      'pin': pin,
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
-    var response = await http.post(Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(data),
-    );
-    if(response.statusCode == 200){
-      //print("${response.body}");
-      Map<String, dynamic> userMap = jsonDecode(response.body);
-      if(userMap['code_status'] == 0){
-        return true;
-      }else{
-        pinFailedSnackBar(context,"PIN yang dimasukkan salah!");
-      }
-    }
-    else{
-      pinFailedSnackBar(context,"Gagal terhubung ke server!");
-    }
-
-    return false;
-  }
 }
 
 void pinFailedSnackBar(context,text){

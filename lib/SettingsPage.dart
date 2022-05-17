@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:militarymessenger/settings/chat.dart';
 import 'package:militarymessenger/settings/help.dart';
 import 'package:militarymessenger/settings/notification.dart';
-import 'package:militarymessenger/AboutPage.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text('Settings'.toUpperCase()),
-      centerTitle: true,
-      backgroundColor: Color(0xFFF8FAFC),
-      foregroundColor: Color(0xFF2481CF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      foregroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
       elevation: 0,
+      title: Text('Settings'.toUpperCase(),
+        style: TextStyle(
+          fontSize: 17,
+        ),),
+      centerTitle: true,
     ),
     body: Container(
       padding: EdgeInsets.all(20),
@@ -31,7 +33,7 @@ class SettingsPage extends StatelessWidget {
           InkWell(
             onTap: () {
               Navigator.push(context,
-                MaterialPageRoute(builder: (context) => ChatPage()),
+                MaterialPageRoute(builder: (context) => ChatSettingPage()),
               );
             },
             child: Container(
@@ -40,6 +42,7 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.message_outlined,
+                    color: Colors.grey,
                   ),
                   Container(
                     margin: EdgeInsets.only(left: 15),
@@ -61,6 +64,7 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.notifications_none_rounded,
+                    color: Colors.grey,
                   ),
                   Container(
                     margin: EdgeInsets.only(left: 15),
@@ -80,6 +84,7 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.lock_outline_rounded,
+                    color: Colors.grey,
                   ),
                   Container(
                     margin: EdgeInsets.only(left: 15),
@@ -110,6 +115,7 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.help_outline_rounded,
+                    color: Colors.grey,
                   ),
                   Container(
                     margin: EdgeInsets.only(left: 15),

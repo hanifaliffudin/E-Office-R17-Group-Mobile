@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:militarymessenger/ChatScreen.dart';
-import 'package:militarymessenger/models/ConversationModel.dart';
 import 'objectbox.g.dart';
 
 class CallTabScreen extends StatelessWidget {
@@ -9,8 +7,8 @@ class CallTabScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Column(
+    return Scaffold(
+      body: Column(
         children: [
           Column(
             children: [
@@ -35,7 +33,15 @@ class CallTabScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Ramadhan Akbar',style: TextStyle(fontWeight: FontWeight.bold),),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth: 200
+                                  ),
+                                  child: Text('Ramadhan Akbar',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(fontWeight: FontWeight.bold),),
+                                ),
                                 SizedBox(height: 5,),
                                 Row(
                                   children: [
@@ -81,7 +87,15 @@ class CallTabScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Hanif Aliffudin',style: TextStyle(fontWeight: FontWeight.bold),),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth: 200
+                                  ),
+                                  child: Text('Hanif Aliffudin',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(fontWeight: FontWeight.bold),),
+                                ),
                                 SizedBox(height: 5,),
                                 Row(
                                   children: [
@@ -124,7 +138,15 @@ class CallTabScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Penunjukan Menteri Dalam Negeri',style: TextStyle(fontWeight: FontWeight.bold),),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth: 200
+                                  ),
+                                  child: Text('Penunjukan Menteri Dalam Negeri',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(fontWeight: FontWeight.bold),),
+                                ),
                                 SizedBox(height: 5,),
                                 Text('yesterday'),
                               ],

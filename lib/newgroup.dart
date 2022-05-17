@@ -1,5 +1,3 @@
-import 'package:militarymessenger/contact.dart';
-import 'package:militarymessenger/Home.dart';
 import 'package:flutter/material.dart';
 
 class LabeledCheckbox extends StatelessWidget {

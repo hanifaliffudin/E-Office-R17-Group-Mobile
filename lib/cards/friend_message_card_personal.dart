@@ -1,80 +1,142 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 
 
 class FriendMessageCardPersonal extends StatelessWidget {
   final String message;
   final String date;
+  final String tipe;
+  final String filePath;
   final bool showTriangle;
+  final bool attachment;
+
 
   const FriendMessageCardPersonal(
-    this.message,
-    this.date,
-    this.showTriangle,
-  );
+      this.message,
+      this.date,
+      this.tipe,
+      this.filePath,
+      this.showTriangle,
+      this.attachment
+      );
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           Stack(
             overflow: Overflow.visible,
             children: <Widget>[
+              !attachment ?
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
-                margin: EdgeInsets.symmetric(horizontal: 21,vertical: 2),
+                margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xFFEEEEEE),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Flexible(
+                    Container(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.70),
                       child:
                       Text(
-                        message.length>9?message:message+'          ',
-                        style: TextStyle(fontSize: 16),
+                        message,
+                        style: TextStyle(fontSize: 16, color: Colors.black),
                         textAlign: TextAlign.left,
                       ),
                     ),
                     SizedBox(width: 5,),
                   ],
                 ),
-              ),
-              Container(
-                child:
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3,left:34),
-                      child:Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          date,
-                          style: TextStyle(fontSize: 10, color: Colors.grey),
+              )
+                  : tipe == 'image' ?
+              InkWell(
+                onTap: (){
+                  OpenFile.open(filePath);
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 3,vertical: 3,),
+                  margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFEEEEEE),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.70),
+                        child: Image(
+                          image: Image.file(new File(filePath)).image,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              )
+                  :
+              InkWell(
+                onTap: (){
+                  OpenFile.open(filePath);
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
+                  margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFEEEEEE),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        child: Image(image: AssetImage('assets/images/pdf.png'),width: 40,),
+                      ),
+                      SizedBox(width: 5),
+                      Container(
+                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.55),
+                        child: Text(
+                          message,
+                          style: TextStyle(fontSize: 16,color: Colors.black),
+                          textAlign: TextAlign.left,
+                          maxLines: 100,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
                 ),
               ),
               Positioned(
-                left:7,
+                left:0,
                 top: 2,
                 child: ClipPath(
                   clipper: TriangleClipper(),
                   child: Container(
                     height: 20,
                     width: 30,
-                    color: showTriangle?Colors.white:Colors.transparent,
+                    color: showTriangle?Color(0xFFEEEEEE):Colors.transparent,
                   ),
                 ),
               )
             ],
           ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(date,
+                style: TextStyle(
+                  fontSize: 11,
+                ),),
+            ],
+          )
         ],
       ),
     );

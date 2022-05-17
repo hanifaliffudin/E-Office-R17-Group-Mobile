@@ -1,7 +1,8 @@
+import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/models/UserModel.dart';
+import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/models/UserPreferenceModel.dart';
-import 'main.dart' as mains;
 
 import 'models/ChatModel.dart';
 import 'objectbox.g.dart'; // created by `flutter pub run build_runner build`
@@ -18,24 +19,43 @@ class ObjectBox {
   late final Box<UserModel> boxUser;
   late final Box<ConversationModel> boxConversation;
   late final Box<UserPreferenceModel> boxUserPreference;
+  late final Box<ContactModel> boxContact;
+  late final Box<SuratModel> boxSurat;
 
   /// A stream of all notes ordered by date.
   late final Stream<Query<ChatModel>> queryStreamChat;
+  late final Stream<Query<UserModel>> queryStreamUser;
   late final Stream<Query<ConversationModel>> queryStreamConversation;
+  late final Stream<Query<ContactModel>> queryStreamContact;
+  late final Stream<Query<SuratModel>> queryStreamSurat;
 
   ObjectBox._create(this.store) {
     boxChat = Box<ChatModel>(store);
     boxUser = Box<UserModel>(store);
     boxConversation = Box<ConversationModel>(store);
     boxUserPreference = Box<UserPreferenceModel>(store);
+    boxContact = Box<ContactModel>(store);
+    boxSurat = Box<SuratModel>(store);
 
     final qBuilderChat = boxChat.query()
       ..order(ChatModel_.id, flags: Order.descending);
     queryStreamChat = qBuilderChat.watch(triggerImmediately: true);
 
+    final qBuilderUser = boxUser.query()
+      ..order(UserModel_.id, flags: Order.descending);
+    queryStreamUser = qBuilderUser.watch(triggerImmediately: true);
+
     final qBuilderConversation = boxConversation.query()
       ..order(ConversationModel_.id, flags: Order.descending);
     queryStreamConversation = qBuilderConversation.watch(triggerImmediately: true);
+
+    final qBuilderContact = boxContact.query()
+      ..order(ContactModel_.id, flags: Order.descending);
+    queryStreamContact = qBuilderContact.watch(triggerImmediately: true);
+
+    final qBuilderSurat = boxSurat.query()
+      ..order(SuratModel_.id, flags: Order.descending);
+    queryStreamSurat = qBuilderSurat.watch(triggerImmediately: true);
 
     // Add some demo data if the box is empty.
     //if (mains.objectbox.boxConversation.isEmpty()) {
