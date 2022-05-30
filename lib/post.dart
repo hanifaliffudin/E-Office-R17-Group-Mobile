@@ -361,7 +361,6 @@ class _PostPageState extends State<PostPage> {
                                                       crossAxisAlignment: CrossAxisAlignment.end,
                                                       children: <Widget>[
                                                         Stack(
-                                                          overflow: Overflow.visible,
                                                           children: <Widget>[
                                                             Container(
                                                               padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),

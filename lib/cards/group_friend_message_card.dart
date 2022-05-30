@@ -34,7 +34,6 @@ class FriendMessageCardGroup extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           Stack(
-            overflow: Overflow.visible,
             children: <Widget>[
               !attachment ?
               //    text bubble

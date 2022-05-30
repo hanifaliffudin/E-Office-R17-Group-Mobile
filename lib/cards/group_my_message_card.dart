@@ -51,7 +51,6 @@ class MyMessageCardGroup extends StatelessWidget {
             child :  Column(
               children: <Widget>[
                 Stack(
-                  overflow: Overflow.visible,
                   children: <Widget>[
                     Container(
                       child:  Align(
