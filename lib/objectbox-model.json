@@ -334,7 +334,7 @@
     },
     {
       "id": "7:2414097441055247438",
-      "lastPropertyId": "11:4059827562741519930",
+      "lastPropertyId": "12:7243353478283009898",
       "name": "SuratModel",
       "properties": [
         {
@@ -392,12 +392,91 @@
           "id": "11:4059827562741519930",
           "name": "url",
           "type": 9
+        },
+        {
+          "id": "12:7243353478283009898",
+          "name": "tipeSurat",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:1659164793470694369",
+      "lastPropertyId": "15:6758258271224412572",
+      "name": "NewsModel",
+      "properties": [
+        {
+          "id": "1:4440483160157372965",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5266240421401450988",
+          "name": "idNews",
+          "type": 6
+        },
+        {
+          "id": "3:9153946842474633628",
+          "name": "idUploader",
+          "type": 6
+        },
+        {
+          "id": "4:6921228264730041036",
+          "name": "text",
+          "type": 9
+        },
+        {
+          "id": "5:5377500313065700559",
+          "name": "image",
+          "type": 9
+        },
+        {
+          "id": "6:5489921537954394931",
+          "name": "video",
+          "type": 9
+        },
+        {
+          "id": "7:5660824499055901576",
+          "name": "file",
+          "type": 9
+        },
+        {
+          "id": "8:3124958487426662058",
+          "name": "created_at",
+          "type": 9
+        },
+        {
+          "id": "9:2101983489881466793",
+          "name": "updated_at",
+          "type": 9
+        },
+        {
+          "id": "12:3589412226842210869",
+          "name": "nameUploader",
+          "type": 9
+        },
+        {
+          "id": "13:3034809589954845587",
+          "name": "count_like",
+          "type": 6
+        },
+        {
+          "id": "14:726881662980747091",
+          "name": "status_like",
+          "type": 1
+        },
+        {
+          "id": "15:6758258271224412572",
+          "name": "comments",
+          "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "7:2414097441055247438",
+  "lastEntityId": "8:1659164793470694369",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -405,7 +484,10 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    4809186185575546396,
+    4729195407902185397
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
@@ -54,7 +55,18 @@ class _InboxPageState extends State<InboxPage> {
           else{
             var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox')).build();
             List<SuratModel> listSurat = queryInbox.find().toList();
-            return Container(
+            if(listSurat.length==0)
+              return Container(
+                  margin: const EdgeInsets.only(top: 15.0),
+                  width: MediaQuery.of(context).size.width,
+                  child :Text(
+                    'No inbox yet.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                  )
+              );
+            else
+              return Container(
               padding: EdgeInsets.all(20),
               child: ListView.builder(
                 scrollDirection: Axis.vertical,
@@ -64,7 +76,7 @@ class _InboxPageState extends State<InboxPage> {
                   InkWell(
                     onTap: (){
                       Navigator.push(
-                        context, MaterialPageRoute(builder: (context) => DocumentPage()),
+                        context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
                       );
                     },
                     child: Container(
@@ -141,7 +153,7 @@ class _InboxPageState extends State<InboxPage> {
                                 child: Padding(
                                     padding: const EdgeInsets.only(left: 20),
                                     child: Text(
-                                      '13.45',
+                                      DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
                                       style: TextStyle(
                                           fontSize: 11
                                       ),
@@ -167,10 +179,8 @@ class _InboxPageState extends State<InboxPage> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/getSuratMasuk';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
-        'id_user': '20',
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -185,26 +195,35 @@ class _InboxPageState extends State<InboxPage> {
       //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
+      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox')).build();
+      if(query.find().isNotEmpty) {
+        mains.objectbox.boxSurat.remove(query.find().first.id);
+      }
+
       if(suratMap['code'] == 0){
         if(suratMap['count']>0){
-          print(suratMap['data']);
-          var listSurat = suratMap['data'];
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-            print(dataSurat['id']);
             var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('inbox')).build();
             if(query.find().isNotEmpty) {
-              // final surat = SuratModel(
-              //   id: query.find().first.id,
-              //   idSurat: query.find().first.idSurat,
-              //   namaSurat: query.find().first.namaSurat,
-              //   nomorSurat: query.find().first.nomorSurat,
-              //   pengirim: query.find().first.pengirim,
-              //   perihal: query.find().first.perihal,
-              //   status: query.find().first.status,
-              //   tglSelesai: query.find().first.tglSelesai,
-              // );
+              final surat = SuratModel(
+                id: query.find().first.id,
+                idSurat: dataSurat['id'],
+                namaSurat: dataSurat['perihal'],
+                nomorSurat: dataSurat['nomor'],
+                pengirim: dataSurat['pengirim'],
+                perihal: dataSurat['perihal'],
+                status: dataSurat['status'],
+                tglSelesai: dataSurat['tgl_selesai'],
+                kategori: 'inbox',
+                url: dataSurat['path'],
+                tipeSurat: dataSurat['tipe_surat'],
+              );
 
+              mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
               // mains.objectbox.boxSurat.remove(query.find().first.id);
             }
             else{
@@ -217,12 +236,19 @@ class _InboxPageState extends State<InboxPage> {
                 status: dataSurat['status'],
                 tglSelesai: dataSurat['tgl_selesai'],
                 kategori: 'inbox',
-                url: dataSurat['url'],
+                url: dataSurat['path'],
+                tipeSurat: dataSurat['tipe_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
             }
           }
+        }
+        else{
+          print("inbox kosong");
         }
       }
       else{

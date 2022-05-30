@@ -1,19 +1,38 @@
+import 'dart:convert';
+
+import 'package:militarymessenger/models/SuratModel.dart';
+import 'package:militarymessenger/objectbox.g.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'main.dart' as mains;
+import 'Home.dart' as homes;
+
 
 class DocumentPage extends StatefulWidget {
-  const DocumentPage({Key? key}) : super(key: key);
+  SuratModel? surat;
+
+  DocumentPage(this.surat);
 
   @override
-  State<DocumentPage> createState() => _DocumentPageState();
+  State<DocumentPage> createState() => _DocumentPageState(surat);
 }
 
 class _DocumentPageState extends State<DocumentPage> {
+  SuratModel? surat;
+
+  _DocumentPageState(this.surat);
+
   int groupValue = 0;
   bool detailVisible = true;
   bool editorVisible = false;
   bool approverVisible = false;
+
+  TextEditingController inputTextControllerApprove = new TextEditingController();
+  TextEditingController inputTextControllerReturn = new TextEditingController();
+  TextEditingController inputTextControllerReject = new TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +42,7 @@ class _DocumentPageState extends State<DocumentPage> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         elevation: 0,
-        title: Text('Penunjukan Menteri Dalam Negeri.pdf',
+        title: Text(surat!.perihal!,
           style: TextStyle(
               fontSize: 16
           ),),
@@ -44,9 +63,16 @@ class _DocumentPageState extends State<DocumentPage> {
                       color: Color(0xFFD1D1D6),
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: SfPdfViewer.asset('assets/files/file.pdf',
+                        child: surat!.kategori == 'inbox' ?
+                        SfPdfViewer.network('http://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
                           pageLayoutMode: PdfPageLayoutMode.single,
-                          scrollDirection: PdfScrollDirection.horizontal,),
+                          scrollDirection: PdfScrollDirection.horizontal,
+                        )
+                        :
+                        SfPdfViewer.network('${surat!.url!}',
+                          pageLayoutMode: PdfPageLayoutMode.single,
+                          scrollDirection: PdfScrollDirection.horizontal,
+                        ),
                       ),
                     ),
                     SizedBox(height: 10,),
@@ -105,7 +131,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                     ),
                                   ),
                                   SizedBox(width: 10,),
-                                  Text('821.1/4837/SJ',
+                                  Text(surat!.nomorSurat!,
                                     style: TextStyle(
                                         fontSize: 12
                                     ),
@@ -138,7 +164,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                   SizedBox(width: 10,),
                                   SizedBox(
                                     width: 200,
-                                    child: Text('Penunjukan Menteri Dalam Negeri Ad Interim',
+                                    child: Text(surat!.perihal!,
                                       style: TextStyle(
                                         fontSize: 12,
                                         overflow: TextOverflow.ellipsis,
@@ -440,6 +466,7 @@ class _DocumentPageState extends State<DocumentPage> {
                 ),
               ),
             ),
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "needApprove"?
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -706,11 +733,11 @@ class _DocumentPageState extends State<DocumentPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              width: 90,
-                              height: 90,
+                              width: 50,
+                              height: 50,
                               decoration: BoxDecoration(
                                   image: DecorationImage(
-                                      image: AssetImage('assets/icons/complete.png')
+                                      image: AssetImage('assets/icons/checkCircle_icon.png')
                                   )
                               ),
                             ),
@@ -743,6 +770,7 @@ class _DocumentPageState extends State<DocumentPage> {
                             Scrollbar(
                               child: TextField(
                                 maxLines: 4,
+                                controller: inputTextControllerApprove,
                                 cursorColor: Colors.grey,
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
@@ -782,7 +810,14 @@ class _DocumentPageState extends State<DocumentPage> {
                                       borderRadius: BorderRadius.circular(6)
                                   ),
                                   child: TextButton(
-                                    onPressed: () => Navigator.pop(context, 'Confirm'),
+                                    onPressed: () {
+                                      if(inputTextControllerApprove.text == ""){
+                                      }else{
+                                        print(inputTextControllerApprove.text);
+                                        approve(surat!.idSurat!, inputTextControllerApprove.text);
+                                        // inputTextControllerApprove.clear();
+                                      }
+                                    },
                                     child: const Text('Confirm',
                                       style: TextStyle(
                                           color: Colors.white
@@ -812,6 +847,56 @@ class _DocumentPageState extends State<DocumentPage> {
                   ),
                 ),
               ],
+            )
+            :
+            Container(
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 1,
+                  minWidth: MediaQuery.of(context).size.width * 1,
+                  minHeight: 48,
+                  maxHeight: 50
+              ),
+              decoration: BoxDecoration(
+                color: Color(0xFFECFDF5)
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                      Icons.check,
+                    color: Color(0xFF1FA463),
+                    size: 16,
+                  ),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                      'Approved',
+                    style: TextStyle(
+                      color: Color(0xFF1FA463),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16
+                    ),
+                  ),
+                ],
+              )
+              // ElevatedButton.icon(
+              //   onPressed: null,
+              //   style: ElevatedButton.styleFrom(
+              //       primary: Color(0xFF1FA463),
+              //       elevation: 0
+              //   ),
+              //   icon: Icon(
+              //       Icons.check,
+              //       size: 13,
+              //       color: Colors.white
+              //   ),
+              //   label: Text("Approved",
+              //     style: TextStyle(
+              //         color: Colors.white,
+              //         fontSize: 16
+              //     ),),
+              // ),
             ),
             SizedBox(height: 10,)
           ],
@@ -836,4 +921,67 @@ class _DocumentPageState extends State<DocumentPage> {
       ),
     );
   }
+
+  Future<http.Response> approve(String id_surat, String catatan) async {
+
+    String url ='http://eoffice.dev.digiprimatera.co.id/api/approve';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        'id_surat': id_surat,
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
+        'catatan': catatan,
+      }
+    };
+
+    print(catatan);
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      Map<String, dynamic> approveMap = jsonDecode(response.body);
+
+      if(approveMap['code'] != 95){
+        if(approveMap['code'] == 0){
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
+          if(query.find().isNotEmpty) {
+            final surat = SuratModel(
+              id: query.find().first.id,
+              idSurat: query.find().first.idSurat,
+              namaSurat: query.find().first.namaSurat,
+              nomorSurat: query.find().first.nomorSurat,
+              pengirim: query.find().first.pengirim,
+              perihal: query.find().first.perihal,
+              status: query.find().first.status,
+              tglSelesai: query.find().first.tglSelesai,
+              url: query.find().first.url,
+              kategori: 'Approved',
+              tglBuat: query.find().first.tglBuat,
+              tipeSurat: query.find().first.tipeSurat,
+            );
+
+            mains.objectbox.boxSurat.put(surat);
+            setState(() {});
+            Navigator.pop(context);
+          }
+        }
+      }
+      else{
+        print(approveMap['code']);
+        print(approveMap['message']);
+        print(response.statusCode);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+      print(response.statusCode);
+    }
+    return response;
+  }
+
 }

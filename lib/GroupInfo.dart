@@ -107,7 +107,7 @@ class _GroupInfoState extends State<GroupInfo> {
                   if(snapshot.data!=null){
                     List<ContactGroupModel> listContactGroup = snapshot.data!.toList();
                     listContactGroup.sort((a,b)=> a.userName!.toLowerCase().compareTo(b.userName!.toLowerCase()));
-                    List<int?> tes = listContactGroup.map((e) => e.userId).toList();
+                    List<int?> listId = listContactGroup.map((e) => e.userId).toList();
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +182,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                   children: [
                                     InkWell(
                                         onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>AddParticipantsGroup(conversation, roomId, tes)));
+                                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>AddParticipantsGroup(conversation, roomId, listId)));
                                         },
                                         child: Container(
                                             width: 10000,

@@ -13,6 +13,7 @@ class SuratModel {
   String? status;
   String? kategori;
   String? url;
+  int? tipeSurat;
 
   SuratModel(
       {
@@ -27,5 +28,6 @@ class SuratModel {
         this.status,
         this.kategori,
         this.url,
+        this.tipeSurat,
       });
 }

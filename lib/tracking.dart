@@ -5,14 +5,14 @@ import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
-class ApprovedPage extends StatefulWidget {
-  const ApprovedPage({Key? key}) : super(key: key);
+class TrackingPage extends StatefulWidget {
+  const TrackingPage({Key? key}) : super(key: key);
 
   @override
-  _ApprovedPageState createState() => _ApprovedPageState();
+  _TrackingPageState createState() => _TrackingPageState();
 }
 
-class _ApprovedPageState extends State<ApprovedPage> {
+class _TrackingPageState extends State<TrackingPage> {
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _ApprovedPageState extends State<ApprovedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Approved'.toUpperCase(),
+        title: Text('Tracking'.toUpperCase(),
           style: TextStyle(
               fontSize: 17
           ),

@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:militarymessenger/document.dart';
+import 'package:militarymessenger/models/SuratModel.dart';
+import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -34,183 +38,138 @@ class _SentPageState extends State<SentPage> {
         // backgroundColor: Color(0xFF2381d0),
       ),
       body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Container(
-                margin: EdgeInsets.only(bottom: 5),
-                height: 95,
-                width: 500,
-                child: Card(
-                  margin: EdgeInsets.symmetric(vertical: 3),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 5,
-                          child: CircleAvatar(
-                            radius: 25,
-                            backgroundColor: Colors.white,
-                            backgroundImage: AssetImage(
-                              'assets/images/defaultuser.png',
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 65,
-                          top: 5,
-                          bottom: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxWidth: 250
-                                ),
-                                child: Text(
-                                  "To: albertus@digiprimatera.co.id ",
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+        child: StreamBuilder<List<SuratModel>>(
+            stream: homes.listControllerSurat.stream,
+            builder: (context, snapshot) {
+              if(mains.objectbox.boxSurat.isEmpty()){
+                return Container(
+                    margin: const EdgeInsets.only(top: 15.0),
+                    width: MediaQuery.of(context).size.width,
+                    child :Text(
+                      'No sent yet.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                    )
+                );
+              }
+              else{
+                var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
+                List<SuratModel> listSurat = queryInbox.find().toList();
+                if(listSurat.length==0)
+                  return Container(
+                      margin: const EdgeInsets.only(top: 15.0),
+                      width: MediaQuery.of(context).size.width,
+                      child :Text(
+                        'No sent yet.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                      )
+                  );
+                else
+                  return Container(
+                    padding: EdgeInsets.all(20),
+                    child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: listSurat.length,
+                      itemBuilder:(BuildContext context,index)=>
+                          InkWell(
+                            onTap: (){
+                              Navigator.push(
+                                context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
+                              );
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 5),
+                              height: 95,
+                              width: 500,
+                              child: Card(
+                                margin: EdgeInsets.symmetric(vertical: 3),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Stack(
+                                    children: [
+                                      Positioned(
+                                        left: 0,
+                                        top: 5,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.white,
+                                          child: Icon(Icons.mail),
+                                          radius: 25,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        left: 65,
+                                        top: 5,
+                                        bottom: 5,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                  maxWidth: 250
+                                              ),
+                                              child: Text(
+                                                mains.objectbox.boxUser.get(1)!.userName!,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              listSurat[index].perihal!,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                height: 1.5,
+                                                // color: Color(0xFF171717),
+                                              ),
+                                            ),
+                                            Text(
+                                              listSurat[index].nomorSurat == null ?
+                                              ""
+                                                  :
+                                              listSurat[index].nomorSurat!,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5,
+                                                // color: Color(0xFF171717),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: 5,
+                                        top: 10,
+                                        child: Padding(
+                                            padding: const EdgeInsets.only(left: 20),
+                                            child: Text(
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                              style: TextStyle(
+                                                  fontSize: 11
+                                              ),
+                                            )
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              Text(
-                                "New Open Shift Available",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.5,
-                                  // color: Color(0xFF171717),
-                                ),
-                              ),
-                              Text(
-                                "Dear Albertus, a new open shift is available",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5,
-                                  // color: Color(0xFF171717),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: 5,
-                          top: 10,
-                          child: Padding(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Text(
-                                '09.45',
-                                style: TextStyle(
-                                    fontSize: 11
-                                ),
-                              )
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(bottom: 5),
-                height: 95,
-                width: 500,
-                child: Card(
-                  margin: EdgeInsets.symmetric(vertical: 3),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 5,
-                          child: CircleAvatar(
-                            radius: 25,
-                            backgroundColor: Colors.white,
-                            backgroundImage: AssetImage(
-                              'assets/images/defaultuser.png',
                             ),
                           ),
-                        ),
-                        Positioned(
-                          left: 65,
-                          top: 5,
-                          bottom: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxWidth: 250
-                                ),
-                                child: Text(
-                                  "To: albertus@digiprimatera.co.id ",
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                "Your Planning Shift DT",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.5,
-                                  // color: Color(0xFF171717),
-                                ),
-                              ),
-                              Text(
-                                "Dear Albertus, your planning shift DT is",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5,
-                                  // color: Color(0xFF171717),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: 5,
-                          top: 10,
-                          child: Padding(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Text(
-                                '09.45',
-                                style: TextStyle(
-                                    fontSize: 11
-                                ),
-                              )
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
-                ),
-              ),
-
-            ],
-          ),
+                  );
+              }
+            }
         ),
       ),
     );
@@ -224,7 +183,7 @@ class _SentPageState extends State<SentPage> {
       // 'api_key': this.apiKey,
       // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
-        'id_user': '22',
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -239,13 +198,54 @@ class _SentPageState extends State<SentPage> {
       //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
+      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
+      if(query.find().isNotEmpty) {
+        mains.objectbox.boxSurat.remove(query.find().first.id);
+      }
+
       if(suratMap['code'] == 0){
         if(suratMap['count']>0){
-          print(suratMap['data']);
-          var listSurat = suratMap['data'];
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-            print(dataSurat['surat_id']);
+            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('sent')).build();
+            if(query.find().isNotEmpty) {
+              final surat = SuratModel(
+                id: query.find().first.id,
+                idSurat: dataSurat['surat_id'],
+                perihal: dataSurat['perihal'],
+                namaSurat: dataSurat['perihal'],
+                nomorSurat: dataSurat['nomor'],
+                tglSelesai: dataSurat['tgl_selesai'],
+                tipeSurat: dataSurat['tipe_surat'],
+                url: dataSurat['isi_surat'],
+                kategori: 'sent',
+                tglBuat: dataSurat['tgl_buat'],
+              );
+
+              mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
+              // mains.objectbox.boxSurat.remove(query.find().first.id);
+            }
+            else{
+              final surat = SuratModel(
+                idSurat: dataSurat['surat_id'],
+                perihal: dataSurat['perihal'],
+                namaSurat: dataSurat['perihal'],
+                nomorSurat: dataSurat['nomor'],
+                tglSelesai: dataSurat['tgl_selesai'],
+                tipeSurat: dataSurat['tipe_surat'],
+                url: dataSurat['isi_surat'],
+                kategori: 'sent',
+                tglBuat: dataSurat['tgl_buat'],
+              );
+
+              mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
+            }
           }
         }
       }

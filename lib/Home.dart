@@ -18,6 +18,7 @@ import 'package:militarymessenger/SettingsPage.dart';
 import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
 import 'package:militarymessenger/main.dart';
+import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
 import 'package:militarymessenger/settings/chat.dart';
@@ -42,6 +43,7 @@ StreamController<List<ConversationModel>> listControllerConversation = new Behav
 StreamController<List<ContactModel>> listControllerContact = new BehaviorSubject();
 StreamController<List<UserModel>> listControllerUser = new BehaviorSubject();
 StreamController<List<SuratModel>> listControllerSurat = new BehaviorSubject();
+StreamController<List<NewsModel>> listControllerNews = new BehaviorSubject();
 
 String apiKeyCore = '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
 
@@ -281,7 +283,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       close();
     }
     channel = IOWebSocketChannel.connect(
-      Uri.parse('wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jhB33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
+      Uri.parse('wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
       pingInterval: Duration(
         seconds: 1,
       ),
@@ -412,6 +414,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     }
     else if(objMessage['type']=="insert_success"){
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
+      print(objMessage['id_chat_model']);
       final chat = ChatModel(
         id: cm.id,
         idChat: objMessage['id_chat_db'],
@@ -495,7 +498,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxConversation.put(objConversation);
 
         // Delete typing status after 2 seconds
-        setState((){});
+        // setState((){});
         Future.delayed(Duration(milliseconds: 2000)).whenComplete((){
           ConversationModel objConversation = ConversationModel(
               id: query.find().first.id,
@@ -509,7 +512,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               statusReceiver: '',
               roomId: query.find().first.roomId);
           mains.objectbox.boxConversation.put(objConversation);
-          setState((){});
+          // setState((){});
         });
 
       }

@@ -5,14 +5,14 @@ import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
-class DraftPage extends StatefulWidget {
-  const DraftPage({Key? key}) : super(key: key);
+class NeedSign extends StatefulWidget {
+  const NeedSign({Key? key}) : super(key: key);
 
   @override
-  _DraftPageState createState() => _DraftPageState();
+  _NeedSignState createState() => _NeedSignState();
 }
 
-class _DraftPageState extends State<DraftPage> {
+class _NeedSignState extends State<NeedSign> {
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _DraftPageState extends State<DraftPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Draft'.toUpperCase(),
+        title: Text('Need Sign'.toUpperCase(),
           style: TextStyle(
               fontSize: 17
           ),
@@ -52,9 +52,7 @@ class _DraftPageState extends State<DraftPage> {
                           top: 5,
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
-                            backgroundImage: AssetImage(
-                              'assets/images/defaultuser.png',
-                            ),
+                            child: Icon(Icons.person),
                             radius: 25,
                           ),
                         ),
@@ -76,7 +74,6 @@ class _DraftPageState extends State<DraftPage> {
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.red
                                   ),
                                 ),
                               ),
@@ -121,90 +118,7 @@ class _DraftPageState extends State<DraftPage> {
                   ),
                 ),
               ),
-              Container(
-                margin: EdgeInsets.only(bottom: 5),
-                height: 95,
-                width: 500,
-                child: Card(
-                  margin: EdgeInsets.symmetric(vertical: 3),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 5,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            backgroundImage: AssetImage(
-                              'assets/images/defaultuser.png',
-                            ),
-                            radius: 25,
-                          ),
-                        ),
-                        Positioned(
-                          left: 65,
-                          top: 5,
-                          bottom: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    maxWidth: 250
-                                ),
-                                child: Text(
-                                  "Draft",
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.red
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                "Email Subject",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5,
-                                ),
-                              ),
-                              Text(
-                                "Email Content",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          right: 5,
-                          top: 10,
-                          child: Padding(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Text(
-                                '09.45',
-                                style: TextStyle(
-                                    fontSize: 11
-                                ),
-                              )
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
             ],
           ),
         ),
@@ -217,10 +131,8 @@ class _DraftPageState extends State<DraftPage> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/getDraft';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
-        'id_user': '22',
+        'id_user': mains.objectbox.boxUser.get(1)!.userId!,
       }
     };
 
@@ -238,7 +150,6 @@ class _DraftPageState extends State<DraftPage> {
       if(suratMap['code'] == 0){
         if(suratMap['count']>0){
           print(suratMap['data']);
-          var listSurat = suratMap['data'];
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
             print(dataSurat['id']);

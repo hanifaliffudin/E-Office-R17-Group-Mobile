@@ -5,8 +5,8 @@ import 'package:militarymessenger/models/SuratModel.dart';
 import 'objectbox.g.dart';
 import 'package:badges/badges.dart';
 import 'document.dart';
-import 'package:militarymessenger/approved.dart';
-import 'package:militarymessenger/draft.dart';
+import 'package:militarymessenger/tracking.dart';
+import 'package:militarymessenger/needSign.dart';
 import 'package:militarymessenger/inbox.dart';
 import 'package:militarymessenger/sent.dart';
 import 'package:militarymessenger/document.dart';
@@ -27,7 +27,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    getBadgeInbox();
+    // getBadgeInbox();
     getDataSuratNeedApprove();
     super.initState();
   }
@@ -41,7 +41,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
             Padding(
               padding: EdgeInsets.all(20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   InkWell(
                     onTap: () {
@@ -122,7 +122,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => ApprovedPage()),
+                        MaterialPageRoute(builder: (context) => TrackingPage()),
                       );
                     },
                     child: Column(
@@ -147,7 +147,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                         ),
                         Text(
-                          'Approved',
+                          'Tracking',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -160,7 +160,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => DraftPage()),
+                        MaterialPageRoute(builder: (context) => NeedSign()),
                       );
                     },
                     child: Column(
@@ -185,7 +185,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                         ),
                         Text(
-                          'Draft',
+                          'Need Sign',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -198,199 +198,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                 ],
               ),
             ),
-            // Container(
-            //   padding: const EdgeInsets.only(top: 15, left: 20),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Padding(
-            //         padding: EdgeInsets.only(bottom: 15),
-            //         child: Text(
-            //           "Recently",
-            //           style: TextStyle(
-            //             fontSize: 14,
-            //             fontWeight: FontWeight.w600,
-            //           ),
-            //         ),
-            //       ),
-            //       SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: Row(
-            //           children: [
-            //             Container(
-            //               height: 200,
-            //               margin: EdgeInsets.only(right: 15),
-            //               child: Material(
-            //                 borderRadius: BorderRadius.circular(8),
-            //                 child: Padding(
-            //                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            //                   child: Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.center,
-            //                     children: [
-            //                       Container(
-            //                         height: 124,
-            //                         width: 124,
-            //                         decoration: BoxDecoration(
-            //                             borderRadius: BorderRadius.all(Radius.circular(8)),
-            //                             image: DecorationImage(
-            //                               image: AssetImage("assets/images/pdf.png"),
-            //                               fit: BoxFit.cover,
-            //                             )
-            //                         ),
-            //                       ),
-            //                       Container(
-            //                         margin: EdgeInsets.only(top: 5),
-            //                         width: 150,
-            //                         child: Material(
-            //                           child: Text(
-            //                             "Penunjukan Menteri Dalam Negeri.pdf",
-            //                             overflow: TextOverflow.ellipsis,
-            //                             maxLines: 2,
-            //                             style: TextStyle(
-            //                                 fontWeight: FontWeight.w500,
-            //                                 fontSize: 14,
-            //                                 height: 1.3
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                     ],
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //             Container(
-            //               height: 200,
-            //               margin: EdgeInsets.only(right: 15),
-            //               child: Material(
-            //                 borderRadius: BorderRadius.circular(8),
-            //                 child: Padding(
-            //                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            //                   child: Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.center,
-            //                     children: [
-            //                       Container(
-            //                         height: 124,
-            //                         width: 124,
-            //                         decoration: BoxDecoration(
-            //                             borderRadius: BorderRadius.all(Radius.circular(8)),
-            //                             image: DecorationImage(
-            //                               image: AssetImage("assets/images/pdf.png"),
-            //                               fit: BoxFit.cover,
-            //                             )
-            //                         ),
-            //                       ),
-            //                       Container(
-            //                         margin: EdgeInsets.only(top: 5),
-            //                         width: 150,
-            //                         child: Material(
-            //                           child: Text(
-            //                             "Penunjukan Menteri Dalam Negeri.pdf",
-            //                             overflow: TextOverflow.ellipsis,
-            //                             maxLines: 2,
-            //                             style: TextStyle(
-            //                                 fontWeight: FontWeight.w500,
-            //                                 fontSize: 14,
-            //                                 height: 1.3
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                     ],
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //             Container(
-            //               height: 200,
-            //               margin: EdgeInsets.only(right: 15),
-            //               child: Material(
-            //                 borderRadius: BorderRadius.circular(8),
-            //                 child: Padding(
-            //                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            //                   child: Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.center,
-            //                     children: [
-            //                       Container(
-            //                         height: 124,
-            //                         width: 124,
-            //                         decoration: BoxDecoration(
-            //                             borderRadius: BorderRadius.all(Radius.circular(8)),
-            //                             image: DecorationImage(
-            //                               image: AssetImage("assets/images/pdf.png"),
-            //                               fit: BoxFit.cover,
-            //                             )
-            //                         ),
-            //                       ),
-            //                       Container(
-            //                         margin: EdgeInsets.only(top: 5),
-            //                         width: 150,
-            //                         child: Material(
-            //                           child: Text(
-            //                             "Penunjukan Menteri Dalam Negeri.pdf",
-            //                             overflow: TextOverflow.ellipsis,
-            //                             maxLines: 2,
-            //                             style: TextStyle(
-            //                                 fontWeight: FontWeight.w500,
-            //                                 fontSize: 14,
-            //                                 height: 1.3
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                     ],
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //             Container(
-            //               height: 200,
-            //               margin: EdgeInsets.only(right: 15),
-            //               child: Material(
-            //                 borderRadius: BorderRadius.circular(8),
-            //                 child: Padding(
-            //                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            //                   child: Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.center,
-            //                     children: [
-            //                       Container(
-            //                         height: 124,
-            //                         width: 124,
-            //                         decoration: BoxDecoration(
-            //                             borderRadius: BorderRadius.all(Radius.circular(8)),
-            //                             image: DecorationImage(
-            //                               image: AssetImage("assets/images/pdf.png"),
-            //                               fit: BoxFit.cover,
-            //                             )
-            //                         ),
-            //                       ),
-            //                       Container(
-            //                         margin: EdgeInsets.only(top: 5),
-            //                         width: 150,
-            //                         child: Material(
-            //                           child: Text(
-            //                             "Penunjukan Menteri Dalam Negeri.pdf",
-            //                             overflow: TextOverflow.ellipsis,
-            //                             maxLines: 2,
-            //                             style: TextStyle(
-            //                                 fontWeight: FontWeight.w500,
-            //                                 fontSize: 14,
-            //                                 height: 1.3
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                     ],
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       )
-            //     ],
-            //   ),
-            // ),
             Container(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -434,8 +241,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                         );
                       }
                       else{
-                        var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove')).build();
-                        List<SuratModel> listSurat = queryNeedApprove.find().toList();
+                        var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove'))..order(SuratModel_.tglBuat);
+                        var query = queryNeedApprove.build();
+                        List<SuratModel> listSurat = query.find().reversed.toList();
                         return Column(
                           children: [
                             ListView.builder(
@@ -444,7 +252,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                 itemBuilder:(BuildContext context,index)=>
                                     InkWell(
                                       onTap: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage()),
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
                                         );
                                       },
                                       child: Card(
@@ -513,10 +321,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/needApprover';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
-        'id_user': '20',
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -531,24 +337,39 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
+      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove')).build();
+      if(query.find().isNotEmpty) {
+        mains.objectbox.boxSurat.remove(query.find().first.id);
+      }
+
       if(suratMap['message'] == 'success'){
         if(suratMap['count']>0){
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
             var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('needApprove')).build();
             if(query.find().isNotEmpty) {
-              // final surat = SuratModel(
-              //   id: query.find().first.id,
-              //   idSurat: query.find().first.idSurat,
-              //   namaSurat: query.find().first.namaSurat,
-              //   nomorSurat: query.find().first.nomorSurat,
-              //   pengirim: query.find().first.pengirim,
-              //   perihal: query.find().first.perihal,
-              //   status: query.find().first.status,
-              //   tglSelesai: query.find().first.tglSelesai,
-              // );
+              final surat = SuratModel(
+                id: query.find().first.id,
+                idSurat: dataSurat['id'],
+                namaSurat: query.find().first.namaSurat,
+                nomorSurat: dataSurat['nomor'],
+                pengirim: query.find().first.pengirim,
+                perihal: dataSurat['perihal'],
+                status: query.find().first.status,
+                tglSelesai: query.find().first.tglSelesai,
+                url: dataSurat['isi_surat'],
+                kategori: 'needApprove',
+                tglBuat: dataSurat['tgl_buat'],
+                tipeSurat: dataSurat['tipe_surat'],
+              );
 
+
+              mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
               // mains.objectbox.boxSurat.remove(query.find().first.id);
+
             }
             else{
               final surat = SuratModel(
@@ -557,10 +378,14 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                 perihal: dataSurat['perihal'],
                 tglBuat: dataSurat['tgl_buat'],
                 kategori: 'needApprove',
-                url: dataSurat['url'],
+                url: dataSurat['isi_surat'],
+                tipeSurat: dataSurat['tipe_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
+              setState(() {
+
+              });
             }
           }
         }
@@ -568,7 +393,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       else{
         print(suratMap['code']);
         print(suratMap['message']);
-        print(response.statusCode);
       }
     }
     else{
@@ -581,10 +405,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeInbox';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
+
       'payload': {
-        'users_id': '22',
+        'users_id': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -616,10 +439,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeSent';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
+
       'payload': {
-        'users_id': '22',
+        'users_id': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -651,10 +473,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeApproved';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
+
       'payload': {
-        'users_id': '22',
+        'users_id': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -686,10 +507,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
-        'users_id': '22',
+        'users_id': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 

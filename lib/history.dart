@@ -25,9 +25,9 @@ class HistoryPage extends StatelessWidget {
               width: 500,
               child: InkWell(
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => DocumentPage()),
-                  );
+                  // Navigator.push(context,
+                  //   MaterialPageRoute(builder: (context) => DocumentPage()),
+                  // );
                 },
                 child: Card(
                   margin: EdgeInsets.symmetric(vertical: 3),
@@ -100,9 +100,9 @@ class HistoryPage extends StatelessWidget {
               width: 500,
               child: InkWell(
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => DocumentPage()),
-                  );
+                  // Navigator.push(context,
+                  //   MaterialPageRoute(builder: (context) => DocumentPage()),
+                  // );
                 },
                 child: Card(
                   margin: EdgeInsets.symmetric(vertical: 3),

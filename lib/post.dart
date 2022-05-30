@@ -1,19 +1,61 @@
+import 'dart:convert';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:intl/intl.dart';
 import 'package:like_button/like_button.dart';
+import 'package:militarymessenger/models/NewsModel.dart';
+import 'package:http/http.dart' as http;
+import 'package:militarymessenger/objectbox.g.dart';
+import 'main.dart' as mains;
+import 'Home.dart' as homes;
 
 import 'package:militarymessenger/provider/theme_provider.dart';
 
 class PostPage extends StatefulWidget {
+  NewsModel? news;
+
+  PostPage(this.news);
 
   @override
-  _PostPageState createState() => _PostPageState();
+  _PostPageState createState() => _PostPageState(news);
 }
 
+
 class _PostPageState extends State<PostPage> {
+  NewsModel? news;
+
+  _PostPageState(this.news);
+
   final _focusNode = FocusNode();
   bool isLiked = false;
   int likeCount = 0;
   bool likeButton = false;
+
+  List<Comment> bubbleComments = [];
+  List listComments = [];
+
+  TextEditingController inputTextController = new TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    listComments = jsonDecode(news!.comments!);
+    for(int i=0;i<listComments.length;i++){
+      var dataComments = Map<String, dynamic>.from(listComments[i]);
+      bubbleComments.add(
+          Comment(
+            commenter_id: dataComments['commenter_id'].runtimeType == String ? int.parse(dataComments['commenter_id']) : dataComments['commenter_id'],
+            name: dataComments['nama'],
+            comment: dataComments['comment'],
+            created_at: dataComments['created_at'],
+            updated_at: dataComments['updated_at'],
+          )
+      );
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +76,15 @@ class _PostPageState extends State<PostPage> {
                     Container(
                       padding: EdgeInsets.all(15),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
                               CircleAvatar(
                                 backgroundColor: Colors.grey,
-                                backgroundImage: AssetImage(
-                                    'assets/images/avatar3.png'
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.white,
                                 ),
                               ),
                               SizedBox(width: 10,),
@@ -48,7 +92,7 @@ class _PostPageState extends State<PostPage> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Nurul Rizal',
+                                  Text(news!.nameUploader!,
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14
@@ -56,7 +100,7 @@ class _PostPageState extends State<PostPage> {
                                   ),
                                   Row(
                                     children: [
-                                      Text('Jul 17, 2021',
+                                      Text(DateFormat('dd MMM yyyy').format(DateTime.parse(news!.created_at!)).toString(),
                                         style: TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.w400,
@@ -64,8 +108,8 @@ class _PostPageState extends State<PostPage> {
                                             height: 2
                                         ),
                                       ),
-                                      SizedBox(width: 15,),
-                                      Text('09.10',
+                                      SizedBox(width: 7,),
+                                      Text(DateFormat.Hm().format(DateTime.parse(news!.created_at!)).toString(),
                                         style: TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.w400,
@@ -80,38 +124,29 @@ class _PostPageState extends State<PostPage> {
                             ],
                           ),
                           SizedBox(height: 10,),
-                          Text('Mendagri: Pemda Sulawesi Tenggara Siap Percepat Vaksinasi Covid-19',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                              height: 1.3,
-                            ),
-                          ),
-                          SizedBox(height: 10,),
                           Row(
                             children: [
                               Expanded(
-                                  child: Container(
+                                  child: news!.image==null?
+                                  Container()
+                                      :
+                                  Container(
                                     height: MediaQuery.of(context).size.width * 0.45,
                                     width: MediaQuery.of(context).size.width * 1,
                                     decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: AssetImage("assets/images/news1.png"),
-                                        fit: BoxFit.cover,
-                                      ),
-                                      // borderRadius: BorderRadius.circular(6)
+                                        image: DecorationImage(
+                                          image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${news!.image}'),
+                                          // image: AssetImage("assets/images/news1.png"),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6)
                                     ),
                                   )
                               ),
                             ],
                           ),
                           SizedBox(height: 10,),
-                          Text(
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Erat ornare enim, interdum pretium. Odio semper pellentesque in leo nullam nulla sed molestie aliquet. Tortor, leo ipsum dui quis. Non varius sed ultricies tempus sapien. Mattis arcu in in accumsan dignissim eu maecenas. Vulputate est commodo aliquam risus vitae amet eget vitae magnis. Lacus, aliquam urna nisi, sit quis ante. Pharetra ut turpis interdum faucibus magna amet dignissim elit egestas. Maecenas non aliquam viverra nibh diam.',
-                            textAlign: TextAlign.justify,
-                          ),
+                          Html(data: "${news!.text!}"),
                           SizedBox(height: 10,),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -121,20 +156,23 @@ class _PostPageState extends State<PostPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.thumb_up_outlined,
-                                      color: Color(0xFF94A3B8),
+                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
                                       size: 15,
                                     ),
                                     SizedBox(width: 5,),
-                                    Text('12',
+                                    Text(mains.objectbox.boxNews.get(news!.id)!.count_like.toString(),
                                       style: TextStyle(
-                                          color: Color(0xFF94A3B8),
+                                          color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w400
                                       ),
                                     )
                                   ],
                                 ),
-                                Text('100 Comments',
+                                Text(jsonDecode(news!.comments!).length == 0 ?
+                                "0 Comments"
+                                    :
+                                "${jsonDecode(news!.comments!).length.toString()} Comments",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontSize: 10,
@@ -153,37 +191,20 @@ class _PostPageState extends State<PostPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TextButton.icon(
-                                onPressed: () => setState(() => likeButton = !likeButton),
+                                onPressed: () {
+                                  like(news!.idNews!);
+                                },
                                 icon: Icon(Icons.thumb_up_outlined,
-                                  color: likeButton ? Color(0xFF2481CF) : Colors.grey,
+                                  color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
                                   size: 15,
                                 ),
                                 label: Text("Like",
                                   style: TextStyle(
-                                      color: likeButton ? Color(0xFF2481CF) : Colors.grey,
+                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
                                       fontSize: 14
                                   ),
                                 ),
                               ),
-                              // LikeButton(
-                              //   size: 20,
-                              //   isLiked: isLiked,
-                              //   likeCount: likeCount,
-                              //   likeCountPadding: EdgeInsets.only(left: 7),
-                              //   circleColor: CircleColor(
-                              //     start: Color(0xFF2481CF),
-                              //     end: Color(0xFF2481CF)
-                              //   ),
-                              //   bubblesColor: BubblesColor(
-                              //     dotPrimaryColor: Color(0xFF2481CF),
-                              //     dotSecondaryColor: Color(0xFF2481CF)
-                              //   ),
-                              //   onTap: (isLiked) async {
-                              //     this.isLiked = !isLiked;
-                              //     likeCount += this.isLiked ? 1 : -1;
-                              //     return !isLiked;
-                              //   },
-                              // ),
                               TextButton.icon(
                                 onPressed: () {
 
@@ -201,108 +222,107 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 30,),
-                          Container(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Reactions',
-                                  style: TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                                SizedBox(height: 10,),
-                                Row(
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: Colors.grey,
-                                          backgroundImage: AssetImage(
-                                              'assets/images/avatar1.png'
-                                          ),
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: EdgeInsets.all(3),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              color: Color(0xFFEAF6FF),
-                                            ),
-                                            child: Icon(
-                                              Icons.thumb_up_alt_outlined,
-                                              color: Color(0xFF2481CF),
-                                              size: 12,
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    SizedBox(width: 10,),
-                                    Stack(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: Colors.grey,
-                                          backgroundImage: AssetImage(
-                                              'assets/images/avatar2.png'
-                                          ),
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: EdgeInsets.all(3),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              color: Color(0xFFEAF6FF),
-                                            ),
-                                            child: Icon(
-                                              Icons.thumb_up_alt_outlined,
-                                              color: Color(0xFF2481CF),
-                                              size: 12,
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    SizedBox(width: 10,),
-                                    Stack(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundColor: Colors.grey,
-                                          backgroundImage: AssetImage(
-                                              'assets/images/avatar3.png'
-                                          ),
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: EdgeInsets.all(3),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              color: Color(0xFFEAF6FF),
-                                            ),
-                                            child: Icon(
-                                              Icons.thumb_up_alt_outlined,
-                                              color: Color(0xFF2481CF),
-                                              size: 12,
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 30,),
+                          SizedBox(height: 10,),
+                          // Container(
+                          //   child: Column(
+                          //     mainAxisAlignment: MainAxisAlignment.start,
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       Text('Reactions',
+                          //         style: TextStyle(
+                          //             color: Color(0xFF94A3B8),
+                          //             fontSize: 10,
+                          //             fontWeight: FontWeight.w400
+                          //         ),
+                          //       ),
+                          //       SizedBox(height: 10,),
+                          //       Row(
+                          //         children: [
+                          //           Stack(
+                          //             children: [
+                          //               CircleAvatar(
+                          //                 backgroundColor: Colors.grey,
+                          //                 backgroundImage: AssetImage(
+                          //                     'assets/images/avatar1.png'
+                          //                 ),
+                          //               ),
+                          //               Positioned(
+                          //                 bottom: 0,
+                          //                 right: 0,
+                          //                 child: Container(
+                          //                   padding: EdgeInsets.all(3),
+                          //                   decoration: BoxDecoration(
+                          //                     borderRadius: BorderRadius.circular(10),
+                          //                     color: Color(0xFFEAF6FF),
+                          //                   ),
+                          //                   child: Icon(
+                          //                     Icons.thumb_up_alt_outlined,
+                          //                     color: Color(0xFF2481CF),
+                          //                     size: 12,
+                          //                   ),
+                          //                 ),
+                          //               )
+                          //             ],
+                          //           ),
+                          //           SizedBox(width: 10,),
+                          //           Stack(
+                          //             children: [
+                          //               CircleAvatar(
+                          //                 backgroundColor: Colors.grey,
+                          //                 backgroundImage: AssetImage(
+                          //                     'assets/images/avatar2.png'
+                          //                 ),
+                          //               ),
+                          //               Positioned(
+                          //                 bottom: 0,
+                          //                 right: 0,
+                          //                 child: Container(
+                          //                   padding: EdgeInsets.all(3),
+                          //                   decoration: BoxDecoration(
+                          //                     borderRadius: BorderRadius.circular(10),
+                          //                     color: Color(0xFFEAF6FF),
+                          //                   ),
+                          //                   child: Icon(
+                          //                     Icons.thumb_up_alt_outlined,
+                          //                     color: Color(0xFF2481CF),
+                          //                     size: 12,
+                          //                   ),
+                          //                 ),
+                          //               )
+                          //             ],
+                          //           ),
+                          //           SizedBox(width: 10,),
+                          //           Stack(
+                          //             children: [
+                          //               CircleAvatar(
+                          //                 backgroundColor: Colors.grey,
+                          //                 backgroundImage: AssetImage(
+                          //                     'assets/images/avatar3.png'
+                          //                 ),
+                          //               ),
+                          //               Positioned(
+                          //                 bottom: 0,
+                          //                 right: 0,
+                          //                 child: Container(
+                          //                   padding: EdgeInsets.all(3),
+                          //                   decoration: BoxDecoration(
+                          //                     borderRadius: BorderRadius.circular(10),
+                          //                     color: Color(0xFFEAF6FF),
+                          //                   ),
+                          //                   child: Icon(
+                          //                     Icons.thumb_up_alt_outlined,
+                          //                     color: Color(0xFF2481CF),
+                          //                     size: 12,
+                          //                   ),
+                          //                 ),
+                          //               )
+                          //             ],
+                          //           ),
+                          //         ],
+                          //       )
+                          //     ],
+                          //   ),
+                          // ),
                           Container(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -316,118 +336,92 @@ class _PostPageState extends State<PostPage> {
                                   ),
                                 ),
                                 SizedBox(height: 20,),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.grey,
-                                      backgroundImage: AssetImage(
-                                          'assets/images/avatar1.png'
-                                      ),
-                                    ),
-                                    SizedBox(width: 15,),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: <Widget>[
-                                        Stack(
-                                          overflow: Overflow.visible,
-                                          children: <Widget>[
-                                            Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
-                                              // margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFEEEEEE),
-                                                borderRadius: BorderRadius.circular(5),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  Container(
-                                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
-                                                    child:
-                                                    Text(
-                                                      'They’re holding a meeting right now. Wait, I’ll send you a snap. I\’m hearing them talking about you.',
-                                                      style: TextStyle(fontSize: 14, color: Colors.black),
-                                                      textAlign: TextAlign.left,
-                                                    ),
+                                ListView.builder(
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: bubbleComments.length,
+                                    itemBuilder: (BuildContext context, index)=>
+                                        Column(
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                CircleAvatar(
+                                                  backgroundColor: Colors.grey,
+                                                  child: Icon(
+                                                      Icons.person,
+                                                    color: Colors.white,
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                                SizedBox(width: 15,),
+                                                Column(
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                                      children: <Widget>[
+                                                        Stack(
+                                                          overflow: Overflow.visible,
+                                                          children: <Widget>[
+                                                            Container(
+                                                              padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
+                                                              // margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                                                              decoration: BoxDecoration(
+                                                                color: Color(0xFFEEEEEE),
+                                                                borderRadius: BorderRadius.circular(5),
+                                                              ),
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Text( bubbleComments[index].commenter_id == mains.objectbox.boxUser.get(1)!.userId ?
+                                                                  mains.objectbox.boxUser.get(1)!.userName!
+                                                                    :
+                                                                  bubbleComments[index].name!,
+                                                                    style: TextStyle(
+                                                                      fontWeight: FontWeight.bold,
+                                                                      fontSize: 15
+                                                                    ),
+                                                                  ),
+                                                                  SizedBox(height: 5,),
+                                                                  Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: <Widget>[
+                                                                      Container(
+                                                                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
+                                                                        child:
+                                                                        Text(
+                                                                          bubbleComments[index].comment!,
+                                                                          style: TextStyle(fontSize: 14, color: Colors.black),
+                                                                          textAlign: TextAlign.left,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(width: 5,),
+                                                        Column(
+                                                          mainAxisAlignment: MainAxisAlignment.end,
+                                                          children: [
+                                                            Text(DateFormat.Hm().format(DateTime.parse(bubbleComments[index].created_at!)).toString(),
+                                                              style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  color: Color(0xFF94A3B8)
+                                                              ),),
+                                                          ],
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
                                             ),
+                                            SizedBox(height: 10,)
                                           ],
                                         ),
-                                        SizedBox(width: 5,),
-                                        Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            Text('09.20',
-                                              style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Color(0xFF94A3B8)
-                                              ),),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 15,),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.grey,
-                                      backgroundImage: AssetImage(
-                                          'assets/images/avatar2.png'
-                                      ),
-                                    ),
-                                    SizedBox(width: 15,),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: <Widget>[
-                                        Stack(
-                                          overflow: Overflow.visible,
-                                          children: <Widget>[
-                                            Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
-                                              // margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFEEEEEE),
-                                                borderRadius: BorderRadius.circular(5),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  Container(
-                                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
-                                                    child:
-                                                    Text(
-                                                      'They’re holding a meeting right now. Wait, I’ll send you a snap. I\’m hearing them talking about you.',
-                                                      style: TextStyle(fontSize: 14, color: Colors.black),
-                                                      textAlign: TextAlign.left,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 5,),
-                                        Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            Text('09.20',
-                                              style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Color(0xFF94A3B8)
-                                              ),),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
@@ -435,72 +429,258 @@ class _PostPageState extends State<PostPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      color: Theme.of(context).backgroundColor,
-                      padding: EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Container(
-                              margin: EdgeInsets.only(top: 10, bottom: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              constraints: BoxConstraints(
-                                minHeight: 25.0,
-                                maxHeight: 100,
-                                minWidth: MediaQuery.of(context).size.width,
-                                maxWidth: MediaQuery.of(context).size.width,
-                              ),
-                              child: Scrollbar(
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        focusNode: _focusNode,
-                                        cursorColor: Color(0xFF2481CF),
-                                        keyboardType: TextInputType.multiline,
-                                        maxLines: null,
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        decoration: InputDecoration(
-                                            contentPadding: EdgeInsets.all(13),
-                                            border: InputBorder.none,
-                                            hintText: 'Type something...',
-                                            hintStyle: TextStyle(
-                                                color: Color(0xff99999B),
-                                                fontSize: 12
-                                            )
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              margin: EdgeInsets.only(left: 20, right: 8),
-                              child: Text('Post',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).floatingActionButtonTheme.backgroundColor
-                                ),
-                              )
-                          )
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
             ),
+            Container(
+              color: Theme.of(context).backgroundColor,
+              padding: EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Container(
+                      margin: EdgeInsets.only(top: 10, bottom: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      constraints: BoxConstraints(
+                        minHeight: 25.0,
+                        maxHeight: 100,
+                        minWidth: MediaQuery.of(context).size.width,
+                        maxWidth: MediaQuery.of(context).size.width,
+                      ),
+                      child: Scrollbar(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                focusNode: _focusNode,
+                                cursorColor: Color(0xFF2481CF),
+                                keyboardType: TextInputType.multiline,
+                                controller: inputTextController,
+                                maxLines: null,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
+                                decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(13),
+                                    border: InputBorder.none,
+                                    hintText: 'Type something...',
+                                    hintStyle: TextStyle(
+                                        color: Color(0xff99999B),
+                                        fontSize: 12
+                                    )
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(left: 20, right: 8),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          textStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).floatingActionButtonTheme.backgroundColor
+                          ),
+                        ),
+                        onPressed: (){
+                          if(inputTextController.text == ""){
+
+                          }else{
+                            List comments = jsonDecode(news!.comments!);
+                            print(comments);
+                            comments.add(
+                                {
+                                  "comment": inputTextController.text,
+                                  "commenter_id": mains.objectbox.boxUser.get(1)!.userId.toString(),
+                                  "created_at": DateTime.now().toString(),
+                                  "updated_at": DateTime.now().toString(),
+                                  "nama": mains.objectbox.boxUser.get(1)!.userName,
+                                }
+                            );
+                            postComment(news!.idNews!, inputTextController.text, jsonEncode(comments));
+                            inputTextController.clear();
+                          }
+                        },
+                        child: Text('Post'),
+                      )
+                  )
+                ],
+              ),
+            ),
+
           ],
         ),
       ),
     );
   }
+
+  Future<http.Response> like(int id_news) async {
+
+    String url ='http://eoffice.dev.digiprimatera.co.id/api/likes';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        'id_news': id_news,
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
+      }
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      Map<String, dynamic> likeMap = jsonDecode(response.body);
+
+      if(likeMap['code'] != 95){
+        if(likeMap['code'] == 1){
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          if(query.find().isNotEmpty) {
+            final news = NewsModel(
+              id: query.find().first.id,
+              idNews: query.find().first.idNews,
+              idUploader: query.find().first.idUploader,
+              nameUploader: query.find().first.nameUploader,
+              text: query.find().first.text,
+              image: query.find().first.image,
+              video: query.find().first.video,
+              file: query.find().first.file,
+              created_at: query.find().first.created_at,
+              updated_at: query.find().first.updated_at,
+              count_like: query.find().first.count_like+1,
+              status_like: true,
+              comments: query.find().first.comments,
+            );
+
+            mains.objectbox.boxNews.put(news);
+            setState(() {});
+          }
+        }
+        else{
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          if(query.find().isNotEmpty) {
+            final news = NewsModel(
+              id: query.find().first.id,
+              idNews: query.find().first.idNews,
+              idUploader: query.find().first.idUploader,
+              nameUploader: query.find().first.nameUploader,
+              text: query.find().first.text,
+              image: query.find().first.image,
+              video: query.find().first.video,
+              file: query.find().first.file,
+              created_at: query.find().first.created_at,
+              updated_at: query.find().first.updated_at,
+              count_like: query.find().first.count_like-1,
+              status_like: false,
+              comments: query.find().first.comments,
+            );
+
+            mains.objectbox.boxNews.put(news);
+            setState(() {});
+          }
+        }
+      }
+      else{
+        print(likeMap['code']);
+        print(likeMap['message']);
+        print(response.statusCode);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+      print(response.statusCode);
+    }
+    return response;
+  }
+
+  Future<http.Response> postComment(int id_news, String comment, String comments) async {
+
+    String url ='http://eoffice.dev.digiprimatera.co.id/api/postComment';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        'id_news': id_news,
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
+        'comment': comment,
+      }
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      Map<String, dynamic> postCommentMap = jsonDecode(response.body);
+
+      if(postCommentMap['code'] != 95){
+        if(postCommentMap['code'] == 0){
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          if(query.find().isNotEmpty) {
+            final news = NewsModel(
+              id: query.find().first.id,
+              idNews: query.find().first.idNews,
+              idUploader: query.find().first.idUploader,
+              nameUploader: query.find().first.nameUploader,
+              text: query.find().first.text,
+              image: query.find().first.image,
+              video: query.find().first.video,
+              file: query.find().first.file,
+              created_at: query.find().first.created_at,
+              updated_at: query.find().first.updated_at,
+              count_like: query.find().first.count_like,
+              status_like: query.find().first.status_like,
+              comments: comments,
+            );
+
+            bubbleComments.add(
+                Comment(
+                  commenter_id: mains.objectbox.boxUser.get(1)!.userId,
+                  name: mains.objectbox.boxUser.get(1)!.userName,
+                  comment: comment,
+                  created_at: DateTime.now().toString(),
+                  updated_at: DateTime.now().toString(),
+                )
+            );
+
+            mains.objectbox.boxNews.put(news);
+            setState(() {});
+          }
+        }
+      }
+      else{
+        print(postCommentMap['code']);
+        print(postCommentMap['message']);
+        print(response.statusCode);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+      print(response.statusCode);
+    }
+    return response;
+  }
+
 }
 
+class Comment{
+  int? commenter_id;
+  String? name;
+  String? comment;
+  String? created_at;
+  String? updated_at;
+
+  Comment({this.commenter_id, this.name, this.comment, this.created_at, this.updated_at});
+}

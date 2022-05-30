@@ -447,7 +447,8 @@ class _ChatGroupState extends State<ChatGroup> {
 
 
 
-                                var query = mains.objectbox.boxChat.query( ( ChatModel_.idRoom.equals(conversation!.roomId!)) ).build();
+                                var queryBuilder = mains.objectbox.boxChat.query( ( ChatModel_.idRoom.equals(conversation!.roomId!)) )..order(ChatModel_.date);
+                                var query = queryBuilder.build();
                                 List<ChatModel> chats = query.find().reversed.toList();
 
                                 if(query.find().isNotEmpty){
@@ -849,9 +850,6 @@ class _ChatGroupState extends State<ChatGroup> {
                             enableSkinTones: true,
                             showRecentsTab: true,
                             recentsLimit: 28,
-                            noRecentsText: 'No Recents',
-                            noRecentsStyle: const TextStyle(
-                                fontSize: 20, color: Colors.black26),
                             tabIndicatorAnimDuration: kTabScrollDuration,
                             categoryIcons: const CategoryIcons(),
                             buttonMode: ButtonMode.MATERIAL)),

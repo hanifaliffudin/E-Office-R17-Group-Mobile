@@ -1,5 +1,6 @@
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
+import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/UserModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/models/UserPreferenceModel.dart';
@@ -21,6 +22,7 @@ class ObjectBox {
   late final Box<UserPreferenceModel> boxUserPreference;
   late final Box<ContactModel> boxContact;
   late final Box<SuratModel> boxSurat;
+  late final Box<NewsModel> boxNews;
 
   /// A stream of all notes ordered by date.
   late final Stream<Query<ChatModel>> queryStreamChat;
@@ -28,6 +30,7 @@ class ObjectBox {
   late final Stream<Query<ConversationModel>> queryStreamConversation;
   late final Stream<Query<ContactModel>> queryStreamContact;
   late final Stream<Query<SuratModel>> queryStreamSurat;
+  late final Stream<Query<NewsModel>> queryStreamNews;
 
   ObjectBox._create(this.store) {
     boxChat = Box<ChatModel>(store);
@@ -36,6 +39,7 @@ class ObjectBox {
     boxUserPreference = Box<UserPreferenceModel>(store);
     boxContact = Box<ContactModel>(store);
     boxSurat = Box<SuratModel>(store);
+    boxNews = Box<NewsModel>(store);
 
     final qBuilderChat = boxChat.query()
       ..order(ChatModel_.id, flags: Order.descending);
@@ -56,6 +60,10 @@ class ObjectBox {
     final qBuilderSurat = boxSurat.query()
       ..order(SuratModel_.id, flags: Order.descending);
     queryStreamSurat = qBuilderSurat.watch(triggerImmediately: true);
+
+    final qBuilderNews = boxNews.query()
+      ..order(NewsModel_.id, flags: Order.descending);
+    queryStreamNews = qBuilderNews.watch(triggerImmediately: true);
 
     // Add some demo data if the box is empty.
     //if (mains.objectbox.boxConversation.isEmpty()) {

@@ -368,11 +368,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   contentPadding: EdgeInsets.all(0),
                   leading:
                   ClipOval(
-                      child: conversation!.photoProfile != null  ?  conversation!.photoProfile != '' ? CircleAvatar(
+                      child: conversation!.photoProfile != null  ?
+                      conversation!.photoProfile != '' ?
+                      CircleAvatar(
                         backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
                         backgroundColor: Color(0xffF2F1F6),
                         radius: 20,
-                      ):
+                        child: Image(
+                          image: Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                        ),
+                      )
+                          :
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: Color(0xffdde1ea),
@@ -489,7 +495,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           mains.objectbox.boxChat.put(chat);
                         }
 
-                        var query = mains.objectbox.boxChat.query( (ChatModel_.idReceiver.equals(idReceiver!) & ChatModel_.idSender.equals(idUser!)) | ChatModel_.idReceiver.equals(idUser!) & ChatModel_.idSender.equals(idReceiver!)).build();
+                        var queryBuilder = mains.objectbox.boxChat.query( (ChatModel_.idReceiver.equals(idReceiver!) & ChatModel_.idSender.equals(idUser!)) | ChatModel_.idReceiver.equals(idUser!) & ChatModel_.idSender.equals(idReceiver!))..order(ChatModel_.date);
+                        var query = queryBuilder.build();
                         List<ChatModel> chats = query.find().reversed.toList();
 
                         DateTime now = new DateTime.now();
@@ -506,7 +513,23 @@ class _ChatScreenState extends State<ChatScreen> {
                             image: conversation!.image,
                             photoProfile: conversation!.photoProfile,
                             messageCout: 0,
-                            statusReceiver: conversation!.statusReceiver,
+                            statusReceiver: '',
+                            roomId: conversation!.roomId,
+                          );
+                          mains.objectbox.boxConversation.put(objConversation);
+                        }
+                        else{
+                          // set statusreceiver supaya status mengetik hilang
+                          final objConversation = ConversationModel(
+                            id: conversation!.id,
+                            message: query.find().toList().length == 0 ? '' : query.find().last.text,
+                            date: query.find().toList().length == 0 ? conversation!.date : query.find().last.date,
+                            idReceiver: conversation!.idReceiver,
+                            fullName: conversation!.fullName,
+                            image: conversation!.image,
+                            photoProfile: conversation!.photoProfile,
+                            messageCout: 0,
+                            statusReceiver: '',
                             roomId: conversation!.roomId,
                           );
                           mains.objectbox.boxConversation.put(objConversation);
@@ -684,10 +707,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                               String msgString = json.encode(msg);
                                               homes.channel.sink.add(msgString);
 
-                                              setState((){});
-                                              Future.delayed(Duration(milliseconds: 2000)).whenComplete((){
+                                              // setState((){});
+                                              Future.delayed(Duration(milliseconds: 900)).whenComplete((){
                                                 _isWriting = false;
-                                                setState((){});
+                                                // setState((){});
                                               });
                                             }
                                           },
@@ -871,9 +894,6 @@ class _ChatScreenState extends State<ChatScreen> {
                           enableSkinTones: true,
                           showRecentsTab: true,
                           recentsLimit: 28,
-                          noRecentsText: 'No Recents',
-                          noRecentsStyle: const TextStyle(
-                              fontSize: 20, color: Colors.black26),
                           tabIndicatorAnimDuration: kTabScrollDuration,
                           categoryIcons: const CategoryIcons(),
                           buttonMode: ButtonMode.MATERIAL)),

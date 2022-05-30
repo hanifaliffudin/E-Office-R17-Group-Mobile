@@ -37,8 +37,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   //Delete widget
   bool isVisible = false;
 
-
   String apiKey = homes.apiKeyCore;
+
+  List<String?> pp = [];
 
   @override
   void initState() {
@@ -48,6 +49,10 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     List<ConversationModel> conversationList = builder.build().find().toList();
 
     List<int?> id_room = conversationList.map((e) => e.roomId).toList();
+
+    for(int i=0;i<conversationList.length;i++){
+      pp.add(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile);
+    }
 
     var msg = {};
     msg["api_key"] = apiKey;
@@ -63,7 +68,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   @override
   Widget build(BuildContext context) {
     return isVisible == true
-        ? GestureDetector(
+        ?
+    GestureDetector(
       onTap: () {
         setState(() {
           isVisible = !isVisible;
@@ -401,7 +407,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           }
       ),
     )
-        : StreamBuilder<List<ConversationModel>>(
+        :
+    StreamBuilder<List<ConversationModel>>(
         stream: homes.listControllerConversation.stream,
         builder: (context, snapshot){
           if(mains.objectbox.boxConversation.isEmpty()){
@@ -419,10 +426,6 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""))
               ..order(ConversationModel_.date, flags: Order.descending);
             List<ConversationModel> conversationList = builder.build().find().toList();
-
-            print(conversationList.map((e) => e.fullName));
-
-            //List<ConversationModel> conversationList = mains.objectbox.boxConversation.getAll().reversed.toList();
 
             return Column(
               children: [
@@ -494,7 +497,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                   child: Container(
                     padding: EdgeInsets.all(10),
                     child: ListView.builder(
-                        itemCount: conversationList.length,
+                        itemCount: pp.length,
                         itemBuilder:(BuildContext context,index)=>
                             InkWell(
                                 onTap: (){
@@ -581,9 +584,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                     )
                                                         :
                                                     CircleAvatar(
-                                                      backgroundImage: Image.memory(base64.decode(conversationList[index].photoProfile!)).image,
-                                                      backgroundColor: Colors.white,
+                                                      backgroundImage: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)).image,
+                                                      backgroundColor: Colors.transparent,
                                                       radius: 25,
+                                                      child: Image(
+                                                        image: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)).image,
+                                                      ),
                                                     )
                                                 ),
                                                 title: Row(
@@ -616,7 +622,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                               conversationList[index].statusReceiver,
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
-                                                              style: TextStyle(color: Color(0xFF25D366), fontSize: 14),
+                                                              style: TextStyle(color: Color(0xFF25D366), fontSize: 14, height: 1.5),
                                                             )
                                                             ,
                                                           ) :
@@ -760,6 +766,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     return response;
   }
 }
+
 
 void _openDialog(ctx) {
   showCupertinoDialog(
