@@ -65,6 +65,7 @@ dependencies:
   flutter_html: ^2.2.1
   another_flushbar: ^1.10.29
   flutter_easyloading: ^3.0.5
+#  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:

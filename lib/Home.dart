@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:location/location.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
 import 'package:militarymessenger/ChatTabScreen.dart';
@@ -431,6 +432,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   @override
   void initState()  {
+    // Location location = new Location();
+    // location.requestPermission().then((permissionStatus) {
+    //   if(permissionStatus == PermissionStatus.granted){
+    //     location.onLocationChanged.listen((locationData) {
+    //       if(locationData != null){
+    //         print('ini longitude: ${locationData.longitude}');
+    //         print('ini latitude: ${locationData.latitude}');
+    //       }
+    //     });
+    //   }
+    // });
+
     _tabController =  new TabController(initialIndex: 1,length: 4,vsync: this);
 
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
