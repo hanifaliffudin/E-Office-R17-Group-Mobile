@@ -36,12 +36,25 @@ class _ContactPageState extends State<ContactPage> {
   List<ContactModel> contactList = mains.objectbox.boxContact.getAll().toList();
 
   List<ContactModel> _foundContact = [];
+  List<ImageProvider<Object>?> _tempPP = [];
 
   get chat => null;
 
   @override
   void initState() {
+    List<ImageProvider<Object>?> temp = [];
+
+    for (var i = 0; i < contactList.length; i++) {
+      if (contactList[i].photo != '') {
+        temp.add(Image.memory(base64.decode(contactList[i].photo!)).image);
+      } else {
+        temp.add(null);
+      }
+    }
+
     _foundContact = contactList;
+    _tempPP = temp;
+
     super.initState();
   }
 
@@ -239,7 +252,7 @@ class _ContactPageState extends State<ContactPage> {
                                                     ) :CircleAvatar(
                                                       radius: 20,
                                                       backgroundColor: Color(0xffF2F1F6),
-                                                      backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!)).image,
+                                                      backgroundImage: _tempPP[index],
                                                     )
                                                 ),
                                                 Column(
