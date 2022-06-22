@@ -260,6 +260,12 @@ class _ChatGroupState extends State<ChatGroup> {
     });
   }
 
+  int daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+    return (to.difference(from).inHours / 24).round();
+  }
+
   @override
   Widget build(BuildContext context) {
     List<ContactModel> contactList = [];
@@ -450,6 +456,8 @@ class _ChatGroupState extends State<ChatGroup> {
                                 var queryBuilder = mains.objectbox.boxChat.query( ( ChatModel_.idRoom.equals(conversation!.roomId!)) )..order(ChatModel_.date);
                                 var query = queryBuilder.build();
                                 List<ChatModel> chats = query.find().reversed.toList();
+                                
+                                DateTime now = new DateTime.now();
 
                                 if(query.find().isNotEmpty){
                                   ConversationModel objConversation = ConversationModel(
@@ -492,98 +500,148 @@ class _ChatGroupState extends State<ChatGroup> {
                                     shrinkWrap: false,
                                     padding: const EdgeInsets.only(top: 2, bottom: 2),
                                     itemCount: chats.length!=0 ? chats.length : 0,
-                                    itemBuilder: (context, index) =>
-                                    chats[index].idSender == idUser ?
-                                    SwipeTo(
-                                        onLeftSwipe: () {
-                                        },
-                                        child: chats[index].tipe == 'text' ?
-                                        MyMessageCardGroup(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
+                                    itemBuilder: (context, index) {
+                                      var content = chats[index].idSender == idUser ?
+                                      SwipeTo(
+                                          onLeftSwipe: () {
+                                          },
+                                          child: chats[index].tipe == 'text' ?
+                                          MyMessageCardGroup(
+                                            chats[index].text,
+                                            chats[index].sendStatus == "" ?
+                                            ""
+                                                :
+                                            DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                            chats[index].read!,
+                                            chats[index].tipe!,
+                                            '',
+                                            index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                            false,
+                                          )
+                                              : chats[index].tipe == 'image' ?
+                                          MyMessageCardGroup(
+                                            chats[index].content!,
+                                            chats[index].sendStatus == "" ?
+                                            ""
+                                                :
+                                            DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                            chats[index].read!,
+                                            chats[index].tipe!,
+                                            chats[index].content!,
+                                            false,
+                                            true,
+                                          )
+                                              : chats[index].tipe == 'file' ?
+                                          MyMessageCardGroup(
+                                            chats[index].text,
+                                            chats[index].sendStatus == "" ?
+                                            ""
+                                                :
+                                            DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                            chats[index].read!,
+                                            chats[index].tipe!,
+                                            chats[index].content!,
+                                            false,
+                                            true,
+                                          )
                                               :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          '',
-                                          index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                          false,
-                                        )
-                                            : chats[index].tipe == 'image' ?
-                                        MyMessageCardGroup(
-                                          chats[index].content!,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true,
-                                        )
-                                            : chats[index].tipe == 'file' ?
-                                        MyMessageCardGroup(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true,
-                                        )
-                                            :
-                                        //    card system bubble
-                                        SystemMessage(
-                                          chats[index].text,
-                                        )
-                                    ) :
-                                    chats[index].tipe == 'text' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
-                                      chats[index].text,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
-                                      chats[index].tipe!,
-                                      '',
-                                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                      false,
-                                    )
-                                        : chats[index].tipe == 'image' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
-                                      chats[index].content!,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
-                                      chats[index].tipe!,
-                                      chats[index].content!,
-                                      false,
-                                      true,
-                                    )
-                                        : chats[index].tipe == 'file' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
-                                      chats[index].text,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
-                                      chats[index].tipe!,
-                                      chats[index].content!,
-                                      false,
-                                      true,
-                                    )
-                                        :
-                                    //    system bubble
-                                    SystemMessage(
-                                      chats[index].text,
-                                    )
+                                          //    card system bubble
+                                          SystemMessage(
+                                            chats[index].text,
+                                          )
+                                      ) :
+                                      chats[index].tipe == 'text' ?
+                                      FriendMessageCardGroup(
+                                        chats[index].idSender!,
+                                        chats[index].nameSender.toString(),
+                                        chats[index].text,
+                                        DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                        bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                        chats[index].tipe!,
+                                        '',
+                                        index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                        false,
+                                      )
+                                          : chats[index].tipe == 'image' ?
+                                      FriendMessageCardGroup(
+                                        chats[index].idSender!,
+                                        chats[index].nameSender.toString(),
+                                        chats[index].content!,
+                                        DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                        bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                        chats[index].tipe!,
+                                        chats[index].content!,
+                                        false,
+                                        true,
+                                      )
+                                          : chats[index].tipe == 'file' ?
+                                      FriendMessageCardGroup(
+                                        chats[index].idSender!,
+                                        chats[index].nameSender.toString(),
+                                        chats[index].text,
+                                        DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                        bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                        chats[index].tipe!,
+                                        chats[index].content!,
+                                        false,
+                                        true,
+                                      )
+                                          :
+                                      //    system bubble
+                                      SystemMessage(
+                                        chats[index].text,
+                                      );
+                                    
+                                      DateTime date2 = DateTime.parse(chats[index].date);
+                                      bool isLessThan7 = daysBetween(date2, now) <= 7;
+                                      bool isSame = false;
+                                      String desc = "";
 
+                                      if (index != chats.length-1) {
+                                        isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
+                                      }
+
+                                      if (!isSame) {
+                                        if (isLessThan7) {
+                                          bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                          bool isYesterday = daysBetween(date2, now) == 1;
+
+                                          if (isToday) {
+                                            desc = "Today";
+                                          } else if (isYesterday) {
+                                            desc = "Yesterday";
+                                          } else {
+                                            desc = DateFormat('E').format(DateTime.parse(chats[index].date));
+                                          }
+                                        } else {
+                                          desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                        }
+                                      }
+// DateTime lastDayOfMonth = new DateTime(now.year, now.month, (now.day+4)-6);
+                                      return Column(
+                                        children: [
+                                          !isSame ?
+                                          Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            margin: const EdgeInsets.symmetric(
+                                              vertical: 8.0,
+                                            ),
+                                            child: Text(
+                                              desc,
+                                              style: TextStyle(
+                                                fontSize: 12.0,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey,
+                                              borderRadius: BorderRadius.circular(10.0),
+                                            ),
+                                          ) : Container(),
+                                          content,
+                                        ],
+                                      );
+                                    }
                                 );
                               }else{
                                 if (snapshot.hasError) {

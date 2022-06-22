@@ -340,6 +340,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  int daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+    return (to.difference(from).inHours / 24).round();
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -542,83 +548,133 @@ class _ChatScreenState extends State<ChatScreen> {
                             shrinkWrap: false,
                             padding: const EdgeInsets.all(2),
                             itemCount: chats.length!=0 ? chats.length : 0,
-                            itemBuilder: (context, index) =>
-                            chats[index].idSender == idUser ?
-                            SwipeTo(
-                                onLeftSwipe: () {
-                                },
-                                child: chats[index].tipe == 'text' ?
-                                //    text
-                                MyMessageCardPersonal(
-                                    chats[index].text,
-                                    chats[index].sendStatus == "" ?
-                                    ""
-                                    :
-                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                    chats[index].sendStatus,
-                                    chats[index].tipe!,
-                                    '',
-                                    index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                    false
-                                )
-                                    : chats[index].tipe == 'image' ?
-                                //    image
-                                MyMessageCardPersonal(
-                                    chats[index].content!,
-                                    chats[index].sendStatus == "" ?
-                                    ""
-                                        :
-                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                    chats[index].sendStatus,
-                                    chats[index].tipe!,
-                                    chats[index].content!,
-                                    false,
-                                    true
-                                )
-                                    :
-                                //    file
-                                MyMessageCardPersonal(
-                                    chats[index].text,
-                                    chats[index].sendStatus == "" ?
-                                    ""
-                                        :
-                                    DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                    chats[index].sendStatus,
-                                    chats[index].tipe!,
-                                    chats[index].content!,
-                                    false,
-                                    true
-                                )
+                            itemBuilder: (context, index) {
+                              var content = chats[index].idSender == idUser ?
+                                  SwipeTo(
+                                      onLeftSwipe: () {
+                                      },
+                                      child: chats[index].tipe == 'text' ?
+                                      //    text
+                                      MyMessageCardPersonal(
+                                          chats[index].text,
+                                          chats[index].sendStatus == "" ?
+                                          ""
+                                          :
+                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                          chats[index].sendStatus,
+                                          chats[index].tipe!,
+                                          '',
+                                          index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                          false
+                                      )
+                                          : chats[index].tipe == 'image' ?
+                                      //    image
+                                      MyMessageCardPersonal(
+                                          chats[index].content!,
+                                          chats[index].sendStatus == "" ?
+                                          ""
+                                              :
+                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                          chats[index].sendStatus,
+                                          chats[index].tipe!,
+                                          chats[index].content!,
+                                          false,
+                                          true
+                                      )
+                                          :
+                                      //    file
+                                      MyMessageCardPersonal(
+                                          chats[index].text,
+                                          chats[index].sendStatus == "" ?
+                                          ""
+                                              :
+                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                          chats[index].sendStatus,
+                                          chats[index].tipe!,
+                                          chats[index].content!,
+                                          false,
+                                          true
+                                      )
 
-                            )
-                                : chats[index].idSender == idReceiver ?
-                            chats[index].tipe == 'text' ?
-                            FriendMessageCardPersonal(
-                                chats[index].text,
-                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                chats[index].tipe!,
-                                '',
-                                index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                false
-                            ) : chats[index].tipe == 'image' ?
-                            FriendMessageCardPersonal(
-                                chats[index].content!,
-                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                chats[index].tipe!,
-                                chats[index].content!,
-                                false,
-                                true
-                            )
-                                :
-                            FriendMessageCardPersonal(
-                                chats[index].text,
-                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                chats[index].tipe!,
-                                chats[index].content!,
-                                false,
-                                true
-                            )
-                                : Container()
+                                  )
+                                      : chats[index].idSender == idReceiver ?
+                                  chats[index].tipe == 'text' ?
+                                  FriendMessageCardPersonal(
+                                      chats[index].text,
+                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      chats[index].tipe!,
+                                      '',
+                                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      false
+                                  ) : chats[index].tipe == 'image' ?
+                                  FriendMessageCardPersonal(
+                                      chats[index].content!,
+                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      chats[index].tipe!,
+                                      chats[index].content!,
+                                      false,
+                                      true
+                                  )
+                                      :
+                                  FriendMessageCardPersonal(
+                                      chats[index].text,
+                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      chats[index].tipe!,
+                                      chats[index].content!,
+                                      false,
+                                      true
+                                  )
+                                      : Container();
+                              DateTime date2 = DateTime.parse(chats[index].date);
+                              bool isLessThan7 = daysBetween(date2, now) <= 7;
+                              bool isSame = false;
+                              String desc = "";
+
+                              if (index != chats.length-1) {
+                                isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
+                              }
+
+                              if (!isSame) {
+                                if (isLessThan7) {
+                                  bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                  bool isYesterday = daysBetween(date2, now) == 1;
+
+                                  if (isToday) {
+                                    desc = "Today";
+                                  } else if (isYesterday) {
+                                    desc = "Yesterday";
+                                  } else {
+                                    desc = DateFormat('E').format(DateTime.parse(chats[index].date));
+                                  }
+                                } else {
+                                  desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                }
+                              }
+// DateTime lastDayOfMonth = new DateTime(now.year, now.month, (now.day+4)-6);
+                              return Column(
+                                children: [
+                                  !isSame ?
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 8.0,
+                                    ),
+                                    child: Text(
+                                      desc,
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                  ) : Container(),
+                                  content,
+                                ],
+                              );
+                            }
                         );
                       }else{
                         if (snapshot.hasError) {
