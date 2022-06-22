@@ -64,7 +64,7 @@ class _NewGroupDetailState extends State<NewGroupDetail> {
   }
 
   Future cropImage(filePath) async {
-    File? croppedImage = await ImageCropper.cropImage(
+    File? croppedImage = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: [
           CropAspectRatioPreset.square,

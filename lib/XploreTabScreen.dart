@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'objectbox.g.dart';
 import 'package:badges/badges.dart';
@@ -13,7 +14,6 @@ import 'package:militarymessenger/document.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
-
 
 
 class XploreTabScreen extends StatefulWidget {
@@ -29,6 +29,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     // TODO: implement initState
     // getBadgeInbox();
     getDataSuratNeedApprove();
+    getBadgeInbox();
+    getBadgeSign();
     super.initState();
   }
 
@@ -52,24 +54,25 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     child: Column(
                       children: [
                         Badge(
-                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          badgeContent: Text(
-                            '3',
-                            style: TextStyle(
-                                color: Colors.white,
+                              position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                              showBadge: mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true,
+                              badgeContent: Text(
+                                mains.objectbox.boxBadge.get(1)!.badgeInbox.toString(),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                ),
+                              ),
+                              badgeColor: Color(0xFFE2574C),
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Color(0xFF5584AC),
+                                child: CircleAvatar(
+                                  backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
+                                  backgroundColor: Color(0xFF5584AC),
+                                  radius: 20,
+                                ),
+                              ),
                             ),
-                          ),
-                          badgeColor: Color(0xFFE2574C),
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Color(0xFF5584AC),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
-                              backgroundColor: Color(0xFF5584AC),
-                              radius: 20,
-                            ),
-                          ),
-                        ),
                         Text(
                           'Inbox',
                           style: TextStyle(
@@ -89,23 +92,13 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     },
                     child: Column(
                       children: [
-                        Badge(
-                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          badgeContent: Text(
-                            '3',
-                            style: TextStyle(
-                                color: Colors.white
-                            ),
-                          ),
-                          badgeColor: Color(0xFFE2574C),
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Color(0xFFE49D23),
                           child: CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
                             backgroundColor: Color(0xFFE49D23),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
-                              backgroundColor: Color(0xFFE49D23),
-                              radius: 20,
-                            ),
+                            radius: 20,
                           ),
                         ),
                         Text(
@@ -127,23 +120,13 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     },
                     child: Column(
                       children: [
-                        Badge(
-                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          badgeContent: Text(
-                            '3',
-                            style: TextStyle(
-                                color: Colors.white
-                            ),
-                          ),
-                          badgeColor: Color(0xFFE2574C),
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Color(0xFF3B8880),
                           child: CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
                             backgroundColor: Color(0xFF3B8880),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
-                              backgroundColor: Color(0xFF3B8880),
-                              radius: 20,
-                            ),
+                            radius: 20,
                           ),
                         ),
                         Text(
@@ -167,8 +150,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       children: [
                         Badge(
                           position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: mains.objectbox.boxBadge.get(1)!.badgeNeedSign == 0 ? false : true,
                           badgeContent: Text(
-                            '3',
+                            mains.objectbox.boxBadge.get(1)!.badgeNeedSign.toString(),
                             style: TextStyle(
                                 color: Colors.white
                             ),
@@ -214,15 +198,15 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          "More",
-                          style: TextStyle(
-                              color: Color(0xFF2481CF),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              height: 1.3
-                          ),
-                        )
+                        // Text(
+                        //   "More",
+                        //   style: TextStyle(
+                        //       color: Color(0xFF2481CF),
+                        //       fontSize: 12,
+                        //       fontWeight: FontWeight.w600,
+                        //       height: 1.3
+                        //   ),
+                        // )
                       ],
                     ),
                   ),
@@ -234,7 +218,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             margin: const EdgeInsets.only(top: 15.0),
                             width: MediaQuery.of(context).size.width,
                             child :Text(
-                              'No inbox yet.',
+                              'No need approve yet.',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                             )
@@ -244,6 +228,17 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                         var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove'))..order(SuratModel_.tglBuat);
                         var query = queryNeedApprove.build();
                         List<SuratModel> listSurat = query.find().reversed.toList();
+                        if(listSurat.length==0)
+                          return Container(
+                              margin: const EdgeInsets.only(top: 15.0),
+                              width: MediaQuery.of(context).size.width,
+                              child :Text(
+                                'No need approve yet.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                              )
+                          );
+                        else
                         return Column(
                           children: [
                             ListView.builder(
@@ -338,14 +333,16 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove')).build();
-      if(query.find().isNotEmpty) {
-        mains.objectbox.boxSurat.remove(query.find().first.id);
+      List<SuratModel> suratList = query.find().toList();
+      for(var surat in suratList){
+        mains.objectbox.boxSurat.remove(surat.id);
       }
 
       if(suratMap['message'] == 'success'){
         if(suratMap['count']>0){
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
+
             var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('needApprove')).build();
             if(query.find().isNotEmpty) {
               final surat = SuratModel(
@@ -353,7 +350,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                 idSurat: dataSurat['id'],
                 namaSurat: query.find().first.namaSurat,
                 nomorSurat: dataSurat['nomor'],
-                pengirim: query.find().first.pengirim,
+                editor: dataSurat['editor'],
                 perihal: dataSurat['perihal'],
                 status: query.find().first.status,
                 tglSelesai: query.find().first.tglSelesai,
@@ -361,6 +358,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                 kategori: 'needApprove',
                 tglBuat: dataSurat['tgl_buat'],
                 tipeSurat: dataSurat['tipe_surat'],
+                approver: jsonEncode(dataSurat['approv']),
+                penerima: jsonEncode(dataSurat['penerima']),
               );
 
 
@@ -380,6 +379,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                 kategori: 'needApprove',
                 url: dataSurat['isi_surat'],
                 tipeSurat: dataSurat['tipe_surat'],
+                editor: dataSurat['editor'],
+                approver: jsonEncode(dataSurat['approv']),
+                penerima: jsonEncode(dataSurat['penerima']),
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -391,7 +393,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
         }
       }
       else{
-        print(suratMap['code']);
         print(suratMap['message']);
       }
     }
@@ -423,7 +424,28 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       if(suratMap['message'] == 'success'){
-          // print(suratMap['count unread']);
+          var query = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
+          if(query.find().isNotEmpty) {
+            var badge = BadgeModel(
+              id: 1,
+              badgeInbox: suratMap['count unread'],
+              badgeNeedSign: query.find().first.badgeNeedSign,
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {
+
+            });
+          }else{
+            var badge = BadgeModel(
+              badgeInbox: suratMap['count unread'],
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {
+
+            });
+          }
       }
       else{
         print(suratMap['message']);
@@ -435,13 +457,14 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     }
     return response;
   }
-  Future<http.Response> getBadgeSent() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeSent';
+
+  Future<http.Response> getBadgeSign() async {
+    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeSign';
 
     Map<String, dynamic> data = {
 
       'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId,
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
 
@@ -456,8 +479,25 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
-      if(suratMap['message'] == 'success'){
-          // print(suratMap['count unread']);
+      if(suratMap['message'] == 'success' || suratMap['message'] == 'No Document'){
+          var query = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
+          if(query.find().isNotEmpty) {
+            var badge = BadgeModel(
+              id: 1,
+              badgeInbox: query.find().first.badgeInbox,
+              badgeNeedSign: suratMap['data'],
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }else{
+            var badge = BadgeModel(
+              badgeNeedSign: suratMap['data'],
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }
       }
       else{
         print(suratMap['message']);
@@ -469,74 +509,5 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     }
     return response;
   }
-  Future<http.Response> getBadgeApproved() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeApproved';
-
-    Map<String, dynamic> data = {
-
-      'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId,
-      }
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
-    if(response.statusCode == 200){
-      //print("${response.body}");
-      Map<String, dynamic> suratMap = jsonDecode(response.body);
-
-      if(suratMap['message'] == 'success'){
-          print(suratMap['count unread']);
-      }
-      else{
-        print(suratMap['message']);
-        print(response.statusCode);
-      }
-    }
-    else{
-      print("Gagal terhubung ke server!");
-    }
-    return response;
-  }
-  Future<http.Response> getBadgeNeedApprove() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
-
-    Map<String, dynamic> data = {
-      'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId,
-      }
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
-    if(response.statusCode == 200){
-      //print("${response.body}");
-      Map<String, dynamic> suratMap = jsonDecode(response.body);
-
-      if(suratMap['message'] == 'success'){
-          print(suratMap['count unread']);
-      }
-      else{
-        print(suratMap['message']);
-        print(response.statusCode);
-      }
-    }
-    else{
-      print("Gagal terhubung ke server!");
-    }
-    return response;
-  }
-
-
 
 }

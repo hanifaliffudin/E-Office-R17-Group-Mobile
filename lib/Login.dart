@@ -61,7 +61,14 @@ class LoginPageState extends State<Login>  {
                 cursorColor: Colors.grey,
                 autofocus: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty || !EmailValidator.validate(value.trim())) {
+                  if(value == null || value.isEmpty){
+                    return 'Email is not valid!';
+                  }else if(!value.contains('@r17.co.id')){
+                    if(!value.contains('@digiprimatera.co.id')){
+                      return "Only the email accounts of R17 and Digiprimatera can login!";
+                    }
+                  }
+                  else if (!EmailValidator.validate(value.trim())) {
                     return 'Email is not valid!';
                   }
                   return null;

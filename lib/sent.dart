@@ -69,6 +69,7 @@ class _SentPageState extends State<SentPage> {
                   return Container(
                     padding: EdgeInsets.all(20),
                     child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       itemCount: listSurat.length,
@@ -94,7 +95,7 @@ class _SentPageState extends State<SentPage> {
                                         top: 5,
                                         child: CircleAvatar(
                                           backgroundColor: Colors.white,
-                                          child: Icon(Icons.mail),
+                                          child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
                                           radius: 25,
                                         ),
                                       ),
@@ -110,7 +111,7 @@ class _SentPageState extends State<SentPage> {
                                                   maxWidth: 250
                                               ),
                                               child: Text(
-                                                mains.objectbox.boxUser.get(1)!.userName!,
+                                                listSurat[index].perihal!,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
                                                 style: TextStyle(
@@ -120,7 +121,7 @@ class _SentPageState extends State<SentPage> {
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].perihal!,
+                                              mains.objectbox.boxUser.get(1)!.userName!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: TextStyle(
@@ -199,8 +200,9 @@ class _SentPageState extends State<SentPage> {
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
-      if(query.find().isNotEmpty) {
-        mains.objectbox.boxSurat.remove(query.find().first.id);
+      List<SuratModel> suratList = query.find().toList();
+      for(var surat in suratList){
+        mains.objectbox.boxSurat.remove(surat.id);
       }
 
       if(suratMap['code'] == 0){
@@ -220,6 +222,9 @@ class _SentPageState extends State<SentPage> {
                 url: dataSurat['isi_surat'],
                 kategori: 'sent',
                 tglBuat: dataSurat['tgl_buat'],
+                approver: jsonEncode(dataSurat['approv']),
+                penerima: jsonEncode(dataSurat['penerima']),
+                editor: dataSurat['editor'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -239,9 +244,13 @@ class _SentPageState extends State<SentPage> {
                 url: dataSurat['isi_surat'],
                 kategori: 'sent',
                 tglBuat: dataSurat['tgl_buat'],
+                approver: jsonEncode(dataSurat['approv']),
+                penerima: jsonEncode(dataSurat['penerima']),
+                editor: dataSurat['editor'],
               );
 
               mains.objectbox.boxSurat.put(surat);
+
               setState(() {
 
               });

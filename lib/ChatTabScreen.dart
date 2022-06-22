@@ -304,7 +304,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                       )
                                                           :
                                                       CircleAvatar(
-                                                        backgroundImage: Image.memory(base64.decode(conversationList[index].photoProfile!)).image,
+                                                        backgroundImage: Image.memory(base64.decode(conversationList[index].photoProfile!), gaplessPlayback: true,).image,
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -584,11 +584,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                     )
                                                         :
                                                     CircleAvatar(
-                                                      backgroundImage: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)).image,
+                                                      backgroundImage: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!), gaplessPlayback: true,).image,
                                                       backgroundColor: Colors.transparent,
                                                       radius: 25,
                                                       child: Image(
-                                                        image: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)).image,
+                                                        image: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!), gaplessPlayback: true).image,
                                                       ),
                                                     )
                                                 ),

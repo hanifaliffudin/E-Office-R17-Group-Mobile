@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.7+11
+version: 1.0.14+18
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -30,28 +30,22 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.4
-#  objectbox: ^1.2.1-dev.0
   objectbox: ^1.5.0
-#  objectbox_flutter_libs: ^1.2.0
   objectbox_flutter_libs: ^1.5.0
-#  json_annotation: ^4.3.0
   json_annotation: ^4.5.0
-#  path_provider: ^2.0.9
   path_provider: ^2.0.10
-#  rxdart: ^0.27.2
   rxdart: ^0.27.4
   intl: ^0.17.0
   email_validator: ^2.0.1
-  pinput: ^1.2.2
+  pinput: ^2.2.9
   http: ^0.13.4
-#  web_socket_channel: ^2.1.0
   web_socket_channel: ^2.2.0
   #socket_io_client: ^1.0.2
   #socket_io: ^1.0.1
   #shared_preferences: ^2.0.8
   #back_button_interceptor: ^5.0.2
   badges: ^2.0.2
-  syncfusion_flutter_pdfviewer: ^19.4.38-beta
+  syncfusion_flutter_pdfviewer: ^20.1.57-beta
   countdown_widget: ^2.0.0
   flutter_native_contact_picker: ^0.0.3
   image_picker: ^0.8.5+3
@@ -69,6 +63,8 @@ dependencies:
   emoji_picker_flutter: ^1.2.1
   package_info_plus: ^1.4.2
   flutter_html: ^2.2.1
+  another_flushbar: ^1.10.29
+  flutter_easyloading: ^3.0.5
 
 dev_dependencies:
   flutter_test:
@@ -104,7 +100,6 @@ flutter:
 
   assets:
     - assets/
-    - assets/files/
     - assets/icons/
     - assets/images/
 

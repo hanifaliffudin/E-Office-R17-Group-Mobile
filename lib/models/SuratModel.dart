@@ -9,11 +9,14 @@ class SuratModel {
   String? nomorSurat;
   String? tglBuat;
   String? tglSelesai;
-  String? pengirim;
+  String? editor;
   String? status;
   String? kategori;
   String? url;
   int? tipeSurat;
+  String? approver;
+  String? penerima;
+
 
   SuratModel(
       {
@@ -24,10 +27,12 @@ class SuratModel {
         this.nomorSurat,
         this.tglBuat,
         this.tglSelesai,
-        this.pengirim,
+        this.editor,
         this.status,
         this.kategori,
         this.url,
         this.tipeSurat,
+        this.approver,
+        this.penerima,
       });
 }

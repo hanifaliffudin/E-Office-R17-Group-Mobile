@@ -194,7 +194,7 @@ class _ChatGroupState extends State<ChatGroup> {
   }
 
   Future cropImage(filePath) async {
-    File? croppedImage = await ImageCropper.cropImage(
+    File? croppedImage = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: [
           CropAspectRatioPreset.square,

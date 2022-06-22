@@ -271,7 +271,10 @@ class _NewGroupPageState extends State<AddParticipantsGroup> {
                                             CircleAvatar(
                                               radius: 20,
                                               backgroundColor: Color(0xffF2F1F6),
-                                              backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!)).image,
+                                              backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!), gaplessPlayback: true,).image,
+                                              child: Image(
+                                                image: Image.memory(base64.decode(_foundContact[index].photo!), gaplessPlayback: true,).image,
+                                              ),
                                             )
                                         ),
                                         Column(

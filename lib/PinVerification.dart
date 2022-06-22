@@ -1,11 +1,11 @@
 import 'package:countdown_widget/countdown_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:militarymessenger/models/UserModel.dart';
-import 'package:pinput/pin_put/pin_put.dart';
 import 'package:militarymessenger/Home.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pinput/pinput.dart';
 
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -134,32 +134,48 @@ class PinVerificationState extends State<PinVerification> {
             onLongPress: () {
               print(_formKey.currentState?.validate());
             },
-            child: PinPut(
-              validator: (s) {
-                if (s != null && s.contains('1')) return null;
-                return 'NOT VALID';
-              },
+            child: Pinput(
+              // validator: (s) {
+              //   if (s != null && s.contains('1')) return null;
+              //   return 'NOT VALID';
+              // },
+              onCompleted: (String pin) => postRequest(pin),
               useNativeKeyboard: true,
-              autovalidateMode: AutovalidateMode.always,
-              withCursor: true,
-              fieldsCount: 6,
-              fieldsAlignment: MainAxisAlignment.spaceAround,
-              textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
-              eachFieldMargin: EdgeInsets.all(0),
-              eachFieldWidth: 45.0,
-              eachFieldHeight: 55.0,
-              onSubmit: (String pin) => postRequest(pin),
+              pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+              showCursor: true,
+              length: 6,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              defaultPinTheme: PinTheme(
+                textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
+                margin: EdgeInsets.all(0),
+                width: 45,
+                height: 55,
+                decoration: pinPutDecoration,
+              ),
+              onSubmitted: (String pin) => postRequest(pin),
               focusNode: _pinPutFocusNode,
               controller: _pinPutController,
-              submittedFieldDecoration: pinPutDecoration,
-              selectedFieldDecoration: pinPutDecoration.copyWith(
-                color: Colors.white,
-                border: Border.all(
-                  width: 2,
-                  color: const Color.fromRGBO(160, 215, 220, 1),
-                ),
+              focusedPinTheme: PinTheme(
+                textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
+                margin: EdgeInsets.all(0),
+                width: 45,
+                height: 55,
+                decoration: pinPutDecoration.copyWith(
+                    color: Colors.white,
+                    border: Border.all(
+                      width: 2,
+                      color: const Color.fromRGBO(160, 215, 220, 1),
+                    ),
+                  ),
               ),
-              followingFieldDecoration: pinPutDecoration,
+              // selectedFieldDecoration: pinPutDecoration.copyWith(
+              //   color: Colors.white,
+              //   border: Border.all(
+              //     width: 2,
+              //     color: const Color.fromRGBO(160, 215, 220, 1),
+              //   ),
+              // ),
+              // followingFieldDecoration: pinPutDecoration,
               pinAnimationType: PinAnimationType.scale,
             ),
           ),
@@ -252,21 +268,30 @@ class PinVerificationState extends State<PinVerification> {
       color: const Color(0xFF2381d0),
       borderRadius: BorderRadius.circular(15.0),
     );
-    return PinPut(
-      eachFieldWidth: 50.0,
-      eachFieldHeight: 50.0,
-      withCursor: true,
-      fieldsCount: 4,
+    return Pinput(
+      defaultPinTheme: PinTheme(
+        textStyle: const TextStyle(color: Colors.white, fontSize: 20.0, height: 1),
+        margin: EdgeInsets.symmetric(horizontal: 10),
+        width: 50,
+        height: 50,
+        decoration: pinPutDecoration,
+      ),
+      showCursor: true,
+      length: 4,
       focusNode: _pinPutFocusNode,
       controller: _pinPutController,
-      eachFieldMargin: EdgeInsets.symmetric(horizontal: 10),
-      onSubmit: (String pin) => postRequest(pin),
-      submittedFieldDecoration: pinPutDecoration,
-      selectedFieldDecoration: pinPutDecoration,
-      followingFieldDecoration: pinPutDecoration,
+      onSubmitted: (String pin) => postRequest(pin),
+      focusedPinTheme: PinTheme(
+        textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
+        margin: EdgeInsets.all(0),
+        width: 45,
+        height: 55,
+        decoration: pinPutDecoration
+      ),
+      // submittedFieldDecoration: pinPutDecoration,
+      // selectedFieldDecoration: pinPutDecoration,
+      // followingFieldDecoration: pinPutDecoration,
       pinAnimationType: PinAnimationType.scale,
-      textStyle:
-      const TextStyle(color: Colors.white, fontSize: 20.0, height: 1),
     );
   }
 

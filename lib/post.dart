@@ -136,7 +136,6 @@ class _PostPageState extends State<PostPage> {
                                     decoration: BoxDecoration(
                                         image: DecorationImage(
                                           image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${news!.image}'),
-                                          // image: AssetImage("assets/images/news1.png"),
                                           fit: BoxFit.cover,
                                         ),
                                         borderRadius: BorderRadius.circular(6)
@@ -146,7 +145,14 @@ class _PostPageState extends State<PostPage> {
                             ],
                           ),
                           SizedBox(height: 10,),
-                          Html(data: "${news!.text!}"),
+                          Html(
+                              data: "${news!.text!}",
+                            customRender: {
+                                "table": (context, child){
+                                  return Container();
+                                }
+                            },
+                          ),
                           SizedBox(height: 10,),
                           Padding(
                             padding: const EdgeInsets.all(8.0),

@@ -12,12 +12,14 @@ import 'package:militarymessenger/ChatTabScreen.dart';
 import 'package:militarymessenger/FeedTabScreen.dart';
 import 'package:militarymessenger/Login.dart';
 import 'package:militarymessenger/XploreTabScreen.dart';
-import 'package:militarymessenger/CallTabScreen.dart';
+import 'package:militarymessenger/History.dart';
 import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/SettingsPage.dart';
 import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
+import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/main.dart';
+import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
@@ -44,6 +46,7 @@ StreamController<List<ContactModel>> listControllerContact = new BehaviorSubject
 StreamController<List<UserModel>> listControllerUser = new BehaviorSubject();
 StreamController<List<SuratModel>> listControllerSurat = new BehaviorSubject();
 StreamController<List<NewsModel>> listControllerNews = new BehaviorSubject();
+StreamController<List<BadgeModel>> listControllerBadge = new BehaviorSubject();
 
 String apiKeyCore = '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
 
@@ -97,7 +100,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               android: AndroidNotificationDetails(
               message.data['id'],
                 message.notification!.title!,
-            // 'Notification Channel for vendor. All the new trips notifications will arrive here.',
             // style: AndroidNotificationStyle.BigText,
             icon: "@mipmap/ic_launcher",
             styleInformation: BigTextStyleInformation(
@@ -109,15 +111,197 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             htmlFormatSummaryText: true
               ),
               )
-            )
+            ),
+          payload: jsonEncode(message.data),
         );
       }
     });
+
+    var android = AndroidInitializationSettings('mipmap/ic_launcher');
+    var ios =  IOSInitializationSettings();
+    var platform = InitializationSettings(android: android, iOS: ios);
+    flutterLocalNotificationsPlugin.initialize(platform,
+      onSelectNotification: (payload) {
+
+        var dataPayload = jsonDecode(payload!);
+
+        if (dataPayload['type'] == 'dokumen') {
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataPayload['id']) & SuratModel_.kategori.equals(dataPayload['kategori'])).build();
+          if(query.find().isNotEmpty) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
+          }
+          else{
+            final surat = SuratModel(
+              idSurat: dataPayload['id'],
+              namaSurat: dataPayload['perihal'],
+              nomorSurat: dataPayload['nomor'],
+              editor: dataPayload['editor'],
+              perihal: dataPayload['perihal'],
+              status: dataPayload['status'],
+              tglSelesai: dataPayload['tgl_selesai'],
+              url: dataPayload['isi_surat'],
+              kategori: dataPayload['kategori'],
+              tglBuat: dataPayload['tgl_buat'],
+              tipeSurat: dataPayload['tipe_surat'].runtimeType == int ? dataPayload['tipe_surat'] : int.parse(dataPayload['tipe_surat']) ,
+              approver: dataPayload['approv'],
+              penerima: dataPayload['penerima'],
+            );
+
+            mains.objectbox.boxSurat.put(surat);
+
+            setState(() {});
+
+            Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),);
+          }
+        }
+
+        if (dataPayload['type'] == 'pm') {
+          //  get id conversation from message data and then query find to object box conversation,
+          var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(dataPayload['id_sender']))).build();
+          if(query.find().isNotEmpty) {
+            int? count = query
+                .find()
+                .first
+                .messageCout;
+            if (count == null)
+              count = 1;
+            else
+              count = count + 1;
+
+            ConversationModel objConversation2 = ConversationModel(
+                id: query.find().first.id,
+                idReceiver: int.parse(dataPayload['id_sender']),
+                fullName: query.find().first.fullName,
+                image: query.find().first.image,
+                photoProfile: query.find().first.photoProfile,
+                message: dataPayload['msg_data'],
+                date: dataPayload['msg_date'],
+                messageCout: count,
+                statusReceiver: query.find().first.statusReceiver,
+                roomId: int.parse(dataPayload['room_id'])
+            );
+            mains.objectbox.boxConversation.put(objConversation2);
+
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']))
+                ));
+
+          }
+          else{
+            ConversationModel objConversation2 = ConversationModel(
+                id: 0,
+                idReceiver: int.parse(dataPayload['id_sender']),
+                fullName: dataPayload['name_sender'],
+                image: '',
+                photoProfile: dataPayload['photo'],
+                message: dataPayload['msg_data'],
+                date: dataPayload['msg_date'],
+                messageCout: 1,
+                statusReceiver: '',
+                roomId: int.parse(dataPayload['room_id']));
+            mains.objectbox.boxConversation.put(objConversation2);
+
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']))
+                ));
+          }
+
+        }
+        else if(dataPayload['type'] == 'group'){
+          List<int> id_receivers = json.decode(dataPayload['id_receivers']).cast<int>();
+          id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
+          id_receivers.add(int.parse(dataPayload['id_sender']));
+          //  get id conversation from message data and then query find to object box conversation,
+          var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(int.parse(dataPayload['room_id']))).build();
+          if(query.find().isNotEmpty) {
+            int? count = query
+                .find()
+                .first
+                .messageCout;
+            if (count == null)
+              count = 1;
+            else
+              count = count + 1;
+
+            ConversationModel objConversation3 = ConversationModel(
+                id: query.find().first.id,
+                idReceiversGroup: json.encode(id_receivers),
+                fullName: query.find().first.fullName,
+                image: query.find().first.image,
+                photoProfile: query.find().first.photoProfile,
+                message: dataPayload['msg_data'],
+                date: dataPayload['msg_date'],
+                messageCout: count,
+                statusReceiver: query.find().first.statusReceiver,
+                roomId: query.find().first.roomId
+            );
+            mains.objectbox.boxConversation.put(objConversation3);
+
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(dataPayload['room_id']), "handle_notif")
+                ));
+          }
+          else{
+            ConversationModel objConversation3 = ConversationModel(
+              id: 0,
+              idReceiversGroup: json.encode(id_receivers),
+              fullName: dataPayload['group_name'],
+              image: '',
+              // photoProfile: message.data['photo'],
+              message: dataPayload['msg_data'],
+              date: dataPayload['msg_date'],
+              roomId: int.parse(dataPayload['room_id']),
+              messageCout: 1,
+              statusReceiver: '',
+            );
+            mains.objectbox.boxConversation.put(objConversation3);
+
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(dataPayload['room_id']), "false")
+                ));
+          }
+        }
+
+      },
+    );
+
+
   }
 
 
   void _handleMessage(RemoteMessage message) {
-      if (message.data['type'] == 'pm') {
+    if (message.data['type'] == 'dokumen') {
+      print(message.data);
+      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(message.data['id']) & SuratModel_.kategori.equals(message.data['kategori'])).build();
+      if(query.find().isNotEmpty) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
+      }
+      else{
+        final surat = SuratModel(
+          idSurat: message.data['id'],
+          namaSurat: message.data['perihal'],
+          nomorSurat: message.data['nomor'],
+          editor: message.data['editor'],
+          perihal: message.data['perihal'],
+          status: message.data['status'],
+          tglSelesai: message.data['tgl_selesai'],
+          url: message.data['isi_surat'],
+          kategori: message.data['kategori'],
+          tglBuat: message.data['tgl_buat'],
+          tipeSurat: message.data['tipe_surat'].runtimeType == int ? message.data['tipe_surat'] : int.parse(message.data['tipe_surat']) ,
+          approver: message.data['approv'],
+          penerima: message.data['penerima'],
+        );
+
+        mains.objectbox.boxSurat.put(surat);
+
+        setState(() {});
+
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),);
+      }
+    }
+
+    if (message.data['type'] == 'pm') {
         //  get id conversation from message data and then query find to object box conversation,
         var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(message.data['id_sender']))).build();
         if(query.find().isNotEmpty) {
@@ -169,7 +353,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         }
 
       }
-      else if(message.data['type'] == 'group'){
+    else if(message.data['type'] == 'group'){
         List<int> id_receivers = json.decode(message.data['id_receivers']).cast<int>();
         id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
         id_receivers.add(int.parse(message.data['id_sender']));
@@ -257,9 +441,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     super.initState();
 
     getListContact();
-
-    // getData();
-
     getDataUser();
 
     listController.addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
@@ -365,6 +546,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       else if(objMessage['msg_tipe']=="file"){
         var contentFile = _createFileFromUint(base64.decode(objMessage['file_data']));
 
+        print(objMessage['file_data']);
+
         final chat = ChatModel (
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
@@ -410,6 +593,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       String msgString = json.encode(msg);
       channel.sink.add(msgString);
 
+      // if(objMessage['otp'] != null){
+      //   print(objMessage['otp']);
+      // }
 
     }
     else if(objMessage['type']=="insert_success"){
@@ -901,7 +1087,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             FeedTabScreen(),
             ChatTabScreen(),
             XploreTabScreen(),
-            CallTabScreen(),
+            History(),
           ],
           controller: _tabController,
         ),

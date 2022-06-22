@@ -334,7 +334,7 @@
     },
     {
       "id": "7:2414097441055247438",
-      "lastPropertyId": "12:7243353478283009898",
+      "lastPropertyId": "15:695512295959142384",
       "name": "SuratModel",
       "properties": [
         {
@@ -374,11 +374,6 @@
           "type": 9
         },
         {
-          "id": "8:3922386874057685126",
-          "name": "pengirim",
-          "type": 9
-        },
-        {
           "id": "9:6284682870865015995",
           "name": "status",
           "type": 9
@@ -397,6 +392,21 @@
           "id": "12:7243353478283009898",
           "name": "tipeSurat",
           "type": 6
+        },
+        {
+          "id": "13:2270154861351091681",
+          "name": "editor",
+          "type": 9
+        },
+        {
+          "id": "14:5607974968273525624",
+          "name": "approver",
+          "type": 9
+        },
+        {
+          "id": "15:695512295959142384",
+          "name": "penerima",
+          "type": 9
         }
       ],
       "relations": []
@@ -474,9 +484,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "9:3436676157863920729",
+      "lastPropertyId": "3:3326000160112909143",
+      "name": "BadgeModel",
+      "properties": [
+        {
+          "id": "1:2161403780447848151",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1420119289849555680",
+          "name": "badgeInbox",
+          "type": 6
+        },
+        {
+          "id": "3:3326000160112909143",
+          "name": "badgeNeedSign",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "8:1659164793470694369",
+  "lastEntityId": "9:3436676157863920729",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -486,7 +520,8 @@
   "retiredIndexUids": [],
   "retiredPropertyUids": [
     4809186185575546396,
-    4729195407902185397
+    4729195407902185397,
+    3922386874057685126
   ],
   "retiredRelationUids": [],
   "version": 1

@@ -283,7 +283,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future cropImage(filePath) async {
-    File? croppedImage = await ImageCropper.cropImage(
+    File? croppedImage = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: [
           CropAspectRatioPreset.square,
@@ -595,11 +595,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             chats[index].tipe == 'text' ?
                             FriendMessageCardPersonal(
                                 chats[index].text,
-                                date.isBefore(DateTime.parse(chats[index].date))?
-                                DateFormat.Hm().format( DateTime.parse(chats[index].date) )
-                                :
-                                chats[index].date
-                                ,
+                                DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
                                 chats[index].tipe!,
                                 '',
                                 index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
@@ -855,6 +851,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               msg["room_id"] = roomId;
 
                               String msgString = json.encode(msg);
+                              print(msgString);
 
                               homes.channel.sink.add(msgString);
 

@@ -81,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future cropImage(filePath) async {
-    File? croppedImage = await ImageCropper.cropImage(
+    File? croppedImage = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: [
           CropAspectRatioPreset.square,

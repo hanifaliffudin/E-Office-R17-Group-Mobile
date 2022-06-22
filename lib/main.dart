@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:militarymessenger/Home.dart';
 import 'package:militarymessenger/Login.dart';
@@ -22,7 +23,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
-  print("Handling a background message: ${message.data}");
+  // print("Handling a background message: ${message.data}");
 }
 
 Future<void> main() async {
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
       theme: MyThemes.lightTheme,
       darkTheme: MyThemes.darkTheme,
       home: objectbox.boxUser.isEmpty() ? Login() : Home(),
+      builder: EasyLoading.init(),
       debugShowCheckedModeBanner: false,
     );
   }

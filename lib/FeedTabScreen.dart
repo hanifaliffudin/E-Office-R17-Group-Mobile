@@ -52,6 +52,10 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                   var queryBuilder = mains.objectbox.boxNews.query( ( NewsModel_.id.notNull()) )..order(NewsModel_.created_at);
                   var query = queryBuilder.build();
                   List<NewsModel> listNews = query.find().reversed.toList();
+
+                  DateTime now = new DateTime.now();
+                  DateTime date = new DateTime(now.year, now.month, now.day);
+
                   return Column(
                     children: [
                       ListView.builder(
@@ -89,6 +93,9 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                           ),
                                           Row(
                                             children: [
+                                              date.isBefore(DateTime.parse(listNews[index].created_at!))?
+                                              Container()
+                                                  :
                                               Text(DateFormat('dd MMM yyyy').format(DateTime.parse(listNews[index].created_at!)).toString(),
                                                 style: TextStyle(
                                                     color: Colors.grey,
@@ -113,30 +120,48 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                     ],
                                   ),
                                   SizedBox(height: 10,),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                          child: listNews[index].image==null?
-                                              Container()
-                                              :
-                                              Container(
-                                            height: MediaQuery.of(context).size.width * 0.45,
-                                            width: MediaQuery.of(context).size.width * 1,
-                                            decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${listNews[index].image}'),
-                                                  // image: AssetImage("assets/images/news1.png"),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                                borderRadius: BorderRadius.circular(6)
+                                  InkWell(
+                                    onTap: (){
+                                      Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) => PostPage(listNews[index])),
+                                      );
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                                child: listNews[index].image==null?
+                                                Container()
+                                                    :
+                                                Container(
+                                                  height: MediaQuery.of(context).size.width * 0.45,
+                                                  width: MediaQuery.of(context).size.width * 1,
+                                                  decoration: BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${listNews[index].image}'),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(6)
+                                                  ),
+                                                )
                                             ),
-                                          )
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 10,),
-                                  Html(
-                                    data: ("${listNews[index].text!}"),
+                                          ],
+                                        ),
+                                        SizedBox(height: 10,),
+                                        Container(
+                                          height: 100,
+                                          child: Html(
+                                            data: ("${listNews[index].text!}"),
+                                            customRender: {
+                                              "table": (context, child){
+                                                return Container();
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(height: 10,),
                                   Padding(
@@ -250,6 +275,11 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
     if(response.statusCode == 200){
       //print("${response.body}");
       Map<String, dynamic> newsMap = jsonDecode(response.body);
+
+      var query = mains.objectbox.boxNews.query(NewsModel_.id.notNull()).build();
+      if(query.find().isNotEmpty) {
+        mains.objectbox.boxNews.remove(query.find().first.id);
+      }
 
       if(newsMap['message'] == 'Success'){
           for(int i = 0; i < newsMap['data'].length; i++) {

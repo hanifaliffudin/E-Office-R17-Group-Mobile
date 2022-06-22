@@ -13,6 +13,7 @@ import 'package:objectbox/internal.dart'; // generated code can access "internal
 import 'package:objectbox/objectbox.dart';
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
 import 'models/ConversationModel.dart';
@@ -357,7 +358,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(7, 2414097441055247438),
       name: 'SuratModel',
-      lastPropertyId: const IdUid(12, 7243353478283009898),
+      lastPropertyId: const IdUid(15, 695512295959142384),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -396,11 +397,6 @@ final _entities = <ModelEntity>[
             type: 9,
             flags: 0),
         ModelProperty(
-            id: const IdUid(8, 3922386874057685126),
-            name: 'pengirim',
-            type: 9,
-            flags: 0),
-        ModelProperty(
             id: const IdUid(9, 6284682870865015995),
             name: 'status',
             type: 9,
@@ -419,6 +415,21 @@ final _entities = <ModelEntity>[
             id: const IdUid(12, 7243353478283009898),
             name: 'tipeSurat',
             type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(13, 2270154861351091681),
+            name: 'editor',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(14, 5607974968273525624),
+            name: 'approver',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(15, 695512295959142384),
+            name: 'penerima',
+            type: 9,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -496,6 +507,30 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(9, 3436676157863920729),
+      name: 'BadgeModel',
+      lastPropertyId: const IdUid(3, 3326000160112909143),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 2161403780447848151),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 1420119289849555680),
+            name: 'badgeInbox',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 3326000160112909143),
+            name: 'badgeNeedSign',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -519,13 +554,17 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(8, 1659164793470694369),
+      lastEntityId: const IdUid(9, 3436676157863920729),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [4809186185575546396, 4729195407902185397],
+      retiredPropertyUids: const [
+        4809186185575546396,
+        4729195407902185397,
+        3922386874057685126
+      ],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -891,9 +930,6 @@ ModelDefinition getObjectBoxModel() {
           final tglSelesaiOffset = object.tglSelesai == null
               ? null
               : fbb.writeString(object.tglSelesai!);
-          final pengirimOffset = object.pengirim == null
-              ? null
-              : fbb.writeString(object.pengirim!);
           final statusOffset =
               object.status == null ? null : fbb.writeString(object.status!);
           final kategoriOffset = object.kategori == null
@@ -901,7 +937,15 @@ ModelDefinition getObjectBoxModel() {
               : fbb.writeString(object.kategori!);
           final urlOffset =
               object.url == null ? null : fbb.writeString(object.url!);
-          fbb.startTable(13);
+          final editorOffset =
+              object.editor == null ? null : fbb.writeString(object.editor!);
+          final approverOffset = object.approver == null
+              ? null
+              : fbb.writeString(object.approver!);
+          final penerimaOffset = object.penerima == null
+              ? null
+              : fbb.writeString(object.penerima!);
+          fbb.startTable(16);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, idSuratOffset);
           fbb.addOffset(2, namaSuratOffset);
@@ -909,11 +953,13 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(4, nomorSuratOffset);
           fbb.addOffset(5, tglBuatOffset);
           fbb.addOffset(6, tglSelesaiOffset);
-          fbb.addOffset(7, pengirimOffset);
           fbb.addOffset(8, statusOffset);
           fbb.addOffset(9, kategoriOffset);
           fbb.addOffset(10, urlOffset);
           fbb.addInt64(11, object.tipeSurat);
+          fbb.addOffset(12, editorOffset);
+          fbb.addOffset(13, approverOffset);
+          fbb.addOffset(14, penerimaOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -935,13 +981,15 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 14),
               tglSelesai: const fb.StringReader(asciiOptimization: true)
                   .vTableGetNullable(buffer, rootOffset, 16),
-              pengirim: const fb.StringReader(asciiOptimization: true)
-                  .vTableGetNullable(buffer, rootOffset, 18),
+              editor: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 28),
               status:
                   const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 20),
               kategori: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 22),
               url: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 24),
-              tipeSurat: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 26));
+              tipeSurat: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 26),
+              approver: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 30),
+              penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32));
 
           return object;
         }),
@@ -1018,6 +1066,35 @@ ModelDefinition getObjectBoxModel() {
               status_like: const fb.BoolReader().vTableGetNullable(buffer, rootOffset, 30),
               nameUploader: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 26),
               comments: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32));
+
+          return object;
+        }),
+    BadgeModel: EntityDefinition<BadgeModel>(
+        model: _entities[8],
+        toOneRelations: (BadgeModel object) => [],
+        toManyRelations: (BadgeModel object) => {},
+        getId: (BadgeModel object) => object.id,
+        setId: (BadgeModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (BadgeModel object, fb.Builder fbb) {
+          fbb.startTable(4);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.badgeInbox);
+          fbb.addInt64(2, object.badgeNeedSign);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = BadgeModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              badgeInbox:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
+              badgeNeedSign:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0));
 
           return object;
         })
@@ -1289,25 +1366,33 @@ class SuratModel_ {
   static final tglSelesai =
       QueryStringProperty<SuratModel>(_entities[6].properties[6]);
 
-  /// see [SuratModel.pengirim]
-  static final pengirim =
-      QueryStringProperty<SuratModel>(_entities[6].properties[7]);
-
   /// see [SuratModel.status]
   static final status =
-      QueryStringProperty<SuratModel>(_entities[6].properties[8]);
+      QueryStringProperty<SuratModel>(_entities[6].properties[7]);
 
   /// see [SuratModel.kategori]
   static final kategori =
-      QueryStringProperty<SuratModel>(_entities[6].properties[9]);
+      QueryStringProperty<SuratModel>(_entities[6].properties[8]);
 
   /// see [SuratModel.url]
   static final url =
-      QueryStringProperty<SuratModel>(_entities[6].properties[10]);
+      QueryStringProperty<SuratModel>(_entities[6].properties[9]);
 
   /// see [SuratModel.tipeSurat]
   static final tipeSurat =
-      QueryIntegerProperty<SuratModel>(_entities[6].properties[11]);
+      QueryIntegerProperty<SuratModel>(_entities[6].properties[10]);
+
+  /// see [SuratModel.editor]
+  static final editor =
+      QueryStringProperty<SuratModel>(_entities[6].properties[11]);
+
+  /// see [SuratModel.approver]
+  static final approver =
+      QueryStringProperty<SuratModel>(_entities[6].properties[12]);
+
+  /// see [SuratModel.penerima]
+  static final penerima =
+      QueryStringProperty<SuratModel>(_entities[6].properties[13]);
 }
 
 /// [NewsModel] entity fields to define ObjectBox queries.
@@ -1362,4 +1447,19 @@ class NewsModel_ {
   /// see [NewsModel.comments]
   static final comments =
       QueryStringProperty<NewsModel>(_entities[7].properties[12]);
+}
+
+/// [BadgeModel] entity fields to define ObjectBox queries.
+class BadgeModel_ {
+  /// see [BadgeModel.id]
+  static final id =
+      QueryIntegerProperty<BadgeModel>(_entities[8].properties[0]);
+
+  /// see [BadgeModel.badgeInbox]
+  static final badgeInbox =
+      QueryIntegerProperty<BadgeModel>(_entities[8].properties[1]);
+
+  /// see [BadgeModel.badgeNeedSign]
+  static final badgeNeedSign =
+      QueryIntegerProperty<BadgeModel>(_entities[8].properties[2]);
 }

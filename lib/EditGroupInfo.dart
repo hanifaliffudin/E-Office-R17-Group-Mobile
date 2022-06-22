@@ -53,7 +53,7 @@ class _EditGroupInfoState extends State<EditGroupInfo> {
   }
 
   Future cropImage(filePath) async {
-    File? croppedImage = await ImageCropper.cropImage(
+    File? croppedImage = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: [
           CropAspectRatioPreset.square,
