@@ -40,6 +40,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   String apiKey = homes.apiKeyCore;
 
   List<String?> pp = [];
+  List<ImageProvider<Object>?> _tempPP = [];
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""));
     List<ConversationModel> conversationList = builder.build().find().toList();
 
-    List<int?> id_room = conversationList.map((e) => e.roomId).toList();
+    List<int?> idRoom = conversationList.map((e) => e.roomId).toList();
 
     for(int i=0;i<conversationList.length;i++){
       pp.add(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile);
@@ -57,7 +58,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     var msg = {};
     msg["api_key"] = apiKey;
     msg["type"] = "get_last_message";
-    msg["id_rooms"] = json.encode(id_room);
+    msg["id_rooms"] = json.encode(idRoom);
     msg["id_receiver"] = idUser;
     String msgString = json.encode(msg);
     homes.channel.sink.add(msgString);
@@ -95,6 +96,14 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
               var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""))
                 ..order(ConversationModel_.date, flags: Order.descending);
               List<ConversationModel> conversationList = builder.build().find().toList();
+
+              for (var i = 0; i < conversationList.length; i++) {
+                if (conversationList[i].photoProfile!='') {
+                  _tempPP.add(Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image);
+                } else {
+                  _tempPP.add(null);
+                }
+              }
 
               return Column(
                 children: [
@@ -304,7 +313,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                       )
                                                           :
                                                       CircleAvatar(
-                                                        backgroundImage: Image.memory(base64.decode(conversationList[index].photoProfile!), gaplessPlayback: true,).image,
+                                                        backgroundImage: _tempPP[index],
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -426,6 +435,14 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""))
               ..order(ConversationModel_.date, flags: Order.descending);
             List<ConversationModel> conversationList = builder.build().find().toList();
+            
+            for (var i = 0; i < conversationList.length; i++) {
+              if (conversationList[i].photoProfile!='') {
+                _tempPP.add(Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image);
+              } else {
+                _tempPP.add(null);
+              }
+            }
 
             return Column(
               children: [
@@ -501,6 +518,10 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                         itemBuilder:(BuildContext context,index)=>
                             InkWell(
                                 onTap: (){
+                                  print(conversationList.length);
+                                  print(pp.length);
+                                  print(_tempPP.length);
+
                                   if (isVisible == true) {
                                     setState(() {
                                       isChecked = true;
@@ -584,12 +605,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                     )
                                                         :
                                                     CircleAvatar(
-                                                      backgroundImage: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!), gaplessPlayback: true,).image,
+                                                      backgroundImage: _tempPP[index],
                                                       backgroundColor: Colors.transparent,
                                                       radius: 25,
-                                                      child: Image(
-                                                        image: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!), gaplessPlayback: true).image,
-                                                      ),
+                                                      // child: Image(
+                                                      //   image: _tempPP[index]!,
+                                                      // ),
                                                     )
                                                 ),
                                                 title: Row(
