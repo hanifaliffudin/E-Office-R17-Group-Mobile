@@ -43,17 +43,17 @@ class _ContactPageState extends State<ContactPage> {
 
   @override
   void initState() {
-    List<ImageProvider<Object>?> temp = [];
+    // List<ImageProvider<Object>?> temp = [];
 
-    for (var i = 0; i < contactList.length; i++) {
-      if (contactList[i].photo != '') {
-        temp.add(Image.memory(base64.decode(contactList[i].photo!)).image);
-      } else {
-        temp.add(null);
-      }
-    }
+    // // for (var i = 0; i < contactList.length; i++) {
+    // //   if (contactList[i].photo != '') {
+    // //     temp.add(Image.memory(base64.decode(contactList[i].photo!)).image);
+    // //   } else {
+    // //     temp.add(null);
+    // //   }
+    // // }
 
-    _tempPhoto = temp;
+    // // _tempPhoto = temp;
     _foundContact = contactList;
 
     super.initState();
@@ -267,7 +267,7 @@ class _ContactPageState extends State<ContactPage> {
                                                       radius: 20,
                                                       backgroundColor: Color(0xffF2F1F6),
                                                       // backgroundImage: _getPhoto(_foundContact[index]),
-                                                      backgroundImage: CacheImageProvider(_foundContact[index].id.toString(), base64.decode(_foundContact[index].photo!)),
+                                                      backgroundImage: CacheImageProvider(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
                                                     )
                                                 ),
                                                 Column(
