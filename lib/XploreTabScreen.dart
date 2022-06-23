@@ -55,9 +55,15 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       children: [
                         Badge(
                               position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                              showBadge: mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true,
+                              showBadge:mains.objectbox.boxBadge.get(1) != null ?
+                              mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true
+                                  :
+                              false,
                               badgeContent: Text(
-                                mains.objectbox.boxBadge.get(1)!.badgeInbox.toString(),
+                                mains.objectbox.boxBadge.get(1) != null ?
+                                mains.objectbox.boxBadge.get(1)!.badgeInbox.toString()
+                                    :
+                                '',
                                 style: TextStyle(
                                     color: Colors.white,
                                 ),
@@ -150,9 +156,15 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       children: [
                         Badge(
                           position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          showBadge: mains.objectbox.boxBadge.get(1)!.badgeNeedSign == 0 ? false : true,
+                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
+                          mains.objectbox.boxBadge.get(1)!.badgeNeedSign == 0 ? false : true
+                              :
+                          false,
                           badgeContent: Text(
-                            mains.objectbox.boxBadge.get(1)!.badgeNeedSign.toString(),
+                            mains.objectbox.boxBadge.get(1) != null ?
+                            mains.objectbox.boxBadge.get(1)!.badgeNeedSign.toString()
+                                :
+                            '',
                             style: TextStyle(
                                 color: Colors.white
                             ),
