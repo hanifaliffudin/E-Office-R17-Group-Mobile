@@ -92,9 +92,13 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
       }
     }
 
-    print('${_tempConv[indexFound].photoProfile} $indexFound');
+    // print('${_tempConv[indexFound].photoProfile} $indexFound');
 
     return _tempConv[indexFound].photoProfile!;
+  }
+  
+  String getIdUnique(ConversationModel conversation) {
+    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.idReceiversGroup!;
   }
 
   @override
@@ -348,7 +352,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           :
                                                       CircleAvatar(
                                                         // backgroundImage: _tempConv[index].photoProfile,
-                                                        backgroundImage: CacheImageProvider(conversationList[index].id.toString(), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                        backgroundImage: CacheImageProvider(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -666,7 +670,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         :
                                                     CircleAvatar(
                                                       // backgroundImage: _getPhoto(conversationList[index]),
-                                                      backgroundImage: CacheImageProvider(conversationList[index].id.toString(), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                      backgroundImage: CacheImageProvider(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                       backgroundColor: Colors.transparent,
                                                       radius: 25,
                                                       // child: Image(
