@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:location/location.dart';
+import 'package:location/location.dart';
+import 'package:militarymessenger/Attendance.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
 import 'package:militarymessenger/ChatTabScreen.dart';
@@ -432,15 +434,32 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   @override
   void initState()  {
-    // Location location = new Location();
+    double calculateDistance(lat1, lon1, lat2, lon2){
+      var p = 0.017453292519943295;
+      var c = cos;
+      var a = 0.5 - c((lat2 - lat1) * p)/2 +
+          c(lat1 * p) * c(lat2 * p) *
+              (1 - c((lon2 - lon1) * p))/2;
+      return 12742 * asin(sqrt(a));
+    }
+
+    Location location = new Location();
     // location.requestPermission().then((permissionStatus) {
     //   if(permissionStatus == PermissionStatus.granted){
-    //     location.onLocationChanged.listen((locationData) {
-    //       if(locationData != null){
-    //         print('ini longitude: ${locationData.longitude}');
-    //         print('ini latitude: ${locationData.latitude}');
-    //       }
-    //     });
+        location.onLocationChanged.listen((locationData) {
+          if(locationData != null){
+            print('ini longitude: ${locationData.longitude}');
+            print('ini latitude: ${locationData.latitude}');
+
+            double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
+
+            if(distanceOnMeter > 100){
+              print('lebih dari 100 meter');
+            }else{
+              print('masih area 100 meter di sekitar R17 group');
+            }
+          }
+        });
     //   }
     // });
 
@@ -984,6 +1003,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
             children: [
               SizedBox(height: 50,),
+              ListTile(
+                title: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_month_rounded,
+                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      size: 20,
+                    ),
+                    SizedBox(width: 10,),
+                    Text('Attendance',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Attendance()),
+                  );
+                },
+              ),
               ListTile(
                 title: Row(
                   children: [
