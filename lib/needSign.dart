@@ -44,7 +44,7 @@ class _NeedSignState extends State<NeedSign> {
                   margin: const EdgeInsets.only(top: 15.0),
                   width: MediaQuery.of(context).size.width,
                   child :Text(
-                    'No inbox yet.',
+                    'No need sign yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                   )
@@ -188,7 +188,7 @@ class _NeedSignState extends State<NeedSign> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
+      // print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
@@ -197,51 +197,55 @@ class _NeedSignState extends State<NeedSign> {
         mains.objectbox.boxSurat.remove(surat.id);
       }
 
-      for(int i = 0; i < suratMap['data'].length; i++) {
-        var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-        var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['surat_id'].toString()) & SuratModel_.kategori.equals('needSign')).build();
-        if(query.find().isNotEmpty) {
-          final surat = SuratModel(
-            id: query.find().first.id,
-            idSurat: dataSurat['surat_id'],
-            namaSurat: dataSurat['perihal'],
-            nomorSurat: dataSurat['nomor'],
-            editor: dataSurat['editor'],
-            perihal: dataSurat['perihal'],
-            status: query.find().first.status,
-            tglSelesai: dataSurat['tgl_selesai'],
-            kategori: 'needSign',
-            url: dataSurat['isi_surat'],
-            tipeSurat: dataSurat['tipe_surat'],
-            tglBuat: query.find().first.tglBuat,
-            approver: jsonEncode(dataSurat['approv']),
-            penerima: jsonEncode(dataSurat['penerima']),
-          );
+      if(suratMap['data'] != null){
+        for(int i = 0; i < suratMap['data'].length; i++) {
+          var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['surat_id'].toString()) & SuratModel_.kategori.equals('needSign')).build();
+          if(query.find().isNotEmpty) {
+            final surat = SuratModel(
+              id: query.find().first.id,
+              idSurat: dataSurat['surat_id'],
+              namaSurat: dataSurat['perihal'],
+              nomorSurat: dataSurat['nomor'],
+              editor: dataSurat['editor'],
+              perihal: dataSurat['perihal'],
+              status: query.find().first.status,
+              tglSelesai: dataSurat['tgl_selesai'],
+              kategori: 'needSign',
+              url: dataSurat['isi_surat'],
+              tipeSurat: dataSurat['tipe_surat'],
+              tglBuat: query.find().first.tglBuat,
+              approver: jsonEncode(dataSurat['approv']),
+              penerima: jsonEncode(dataSurat['penerima']),
+            );
 
-          mains.objectbox.boxSurat.put(surat);
-          setState(() {});
-        }
-        else{
-          final surat = SuratModel(
-            idSurat: dataSurat['surat_id'],
-            namaSurat: dataSurat['perihal'],
-            nomorSurat: dataSurat['nomor'],
-            editor: dataSurat['editor'],
-            perihal: dataSurat['perihal'],
-            status: dataSurat['status'],
-            tglSelesai: dataSurat['tgl_selesai'],
-            kategori: 'needSign',
-            url: dataSurat['isi_surat'],
-            tipeSurat: dataSurat['tipe_surat'],
-            tglBuat: dataSurat['tgl_buat'],
-            approver: jsonEncode(dataSurat['approv']),
-            penerima: jsonEncode(dataSurat['penerima']),
-          );
+            mains.objectbox.boxSurat.put(surat);
+            setState(() {});
+          }
+          else{
+            final surat = SuratModel(
+              idSurat: dataSurat['surat_id'],
+              namaSurat: dataSurat['perihal'],
+              nomorSurat: dataSurat['nomor'],
+              editor: dataSurat['editor'],
+              perihal: dataSurat['perihal'],
+              status: dataSurat['status'],
+              tglSelesai: dataSurat['tgl_selesai'],
+              kategori: 'needSign',
+              url: dataSurat['isi_surat'],
+              tipeSurat: dataSurat['tipe_surat'],
+              tglBuat: dataSurat['tgl_buat'],
+              approver: jsonEncode(dataSurat['approv']),
+              penerima: jsonEncode(dataSurat['penerima']),
+            );
 
-          mains.objectbox.boxSurat.put(surat);
-          setState(() {});
+            mains.objectbox.boxSurat.put(surat);
+            setState(() {});
+          }
         }
       }
+
+
     }
     else{
       print(response.statusCode);
