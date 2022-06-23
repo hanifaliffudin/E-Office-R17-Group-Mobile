@@ -255,7 +255,7 @@ class _NewGroupPageState extends State<NewGroupPage> {
                                                 radius: 20,
                                                 backgroundColor: Color(0xffF2F1F6),
                                                 // backgroundImage: _getPhoto(_foundContact[index]),
-                                                backgroundImage: CacheImageProvider(_foundContact[index].id.toString(), base64.decode(_foundContact[index].photo!)),
+                                                backgroundImage: CacheImageProvider(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
                                               )
                                           ),
                                           Column(
