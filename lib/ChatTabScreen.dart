@@ -15,6 +15,19 @@ import 'Home.dart' as homes;
 import 'main.dart' as mains;
 import 'package:http/http.dart' as http;
 
+import 'widgets/CacheImageProvider.dart';
+
+class TempConversation {
+  int? idReceiver;
+  String? idReceiversGroup;
+  ImageProvider<Object>? photoProfile;
+
+  TempConversation({
+    this.idReceiver,
+    this.idReceiversGroup,
+    this.photoProfile,
+  });
+}
 
 int? idUser;
 
@@ -40,7 +53,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   String apiKey = homes.apiKeyCore;
 
   List<String?> pp = [];
-  List<ImageProvider<Object>?> _tempPP = [];
+  List<TempConversation> _tempConv = [];
 
   @override
   void initState() {
@@ -64,6 +77,24 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     homes.channel.sink.add(msgString);
 
     super.initState();
+  }
+
+  ImageProvider<Object> _getPhoto(ConversationModel conversation) {
+    int indexFound = -1;
+
+    for (var i = 0; i < _tempConv.length; i++) {
+      if (
+        _tempConv[i].idReceiver == conversation.idReceiver 
+        && _tempConv[i].idReceiversGroup == conversation.idReceiversGroup
+      ) {
+        indexFound = i;
+        break;
+      }
+    }
+
+    print('${_tempConv[indexFound].photoProfile} $indexFound');
+
+    return _tempConv[indexFound].photoProfile!;
   }
 
   @override
@@ -97,13 +128,16 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                 ..order(ConversationModel_.date, flags: Order.descending);
               List<ConversationModel> conversationList = builder.build().find().toList();
 
-              for (var i = 0; i < conversationList.length; i++) {
-                if (conversationList[i].photoProfile!='') {
-                  _tempPP.add(Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image);
-                } else {
-                  _tempPP.add(null);
-                }
-              }
+              // for (var i = 0; i < conversationList.length; i++) {
+              //   if (conversationList[i].photoProfile!='') {
+              //     _tempConv.add(TempConversation(
+              //       idReceiver: conversationList[i].id,
+              //       photoProfile: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image,
+              //     ));
+              //   } else {
+              //     _tempConv.add(TempConversation());
+              //   }
+              // }
 
               return Column(
                 children: [
@@ -313,7 +347,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                       )
                                                           :
                                                       CircleAvatar(
-                                                        backgroundImage: _tempPP[index],
+                                                        // backgroundImage: _tempConv[index].photoProfile,
+                                                        backgroundImage: CacheImageProvider(conversationList[index].id.toString(), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -435,14 +470,39 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""))
               ..order(ConversationModel_.date, flags: Order.descending);
             List<ConversationModel> conversationList = builder.build().find().toList();
-            
-            for (var i = 0; i < conversationList.length; i++) {
-              if (conversationList[i].photoProfile!='') {
-                _tempPP.add(Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image);
-              } else {
-                _tempPP.add(null);
-              }
-            }
+            // bool isNotSame = false;
+
+            // if (_tempConv.isNotEmpty) {
+            //   for (var i = 0; i < conversationList.length; i++) {
+            //     if (
+            //       conversationList[i].idReceiver != _tempConv[i].idReceiver
+            //       || conversationList[i].idReceiversGroup != _tempConv[i].idReceiversGroup
+            //     ) {
+            //       isNotSame = true;
+            //     }
+            //   }
+            // }
+
+            // if (isNotSame) {
+            //   _tempConv = [];
+            // }
+
+            // if (_tempConv.isEmpty) {
+            //   for (var i = 0; i < conversationList.length; i++) {
+            //     if (conversationList[i].photoProfile!='') {
+            //       _tempConv.add(TempConversation(
+            //         idReceiver: conversationList[i].idReceiver,
+            //         idReceiversGroup: conversationList[i].idReceiversGroup,
+            //         photoProfile: Image.memory(base64.decode(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile!), gaplessPlayback: true,).image,
+            //       ));
+            //     } else {
+            //       _tempConv.add(TempConversation(
+            //         idReceiver: conversationList[i].idReceiver,
+            //         idReceiversGroup: conversationList[i].idReceiversGroup,
+            //       ));
+            //     }
+            //   }
+            // }
 
             return Column(
               children: [
@@ -520,7 +580,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                 onTap: (){
                                   print(conversationList.length);
                                   print(pp.length);
-                                  print(_tempPP.length);
+                                  print(_tempConv.length);
 
                                   if (isVisible == true) {
                                     setState(() {
@@ -605,11 +665,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                     )
                                                         :
                                                     CircleAvatar(
-                                                      backgroundImage: _tempPP[index],
+                                                      // backgroundImage: _getPhoto(conversationList[index]),
+                                                      backgroundImage: CacheImageProvider(conversationList[index].id.toString(), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                       backgroundColor: Colors.transparent,
                                                       radius: 25,
                                                       // child: Image(
-                                                      //   image: _tempPP[index]!,
+                                                      //   image: _tempConv[index]!,
                                                       // ),
                                                     )
                                                 ),
