@@ -5,6 +5,7 @@ import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:militarymessenger/widgets/CacheImageProvider.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -36,7 +37,7 @@ class _ContactPageState extends State<ContactPage> {
   List<ContactModel> contactList = mains.objectbox.boxContact.getAll().toList();
 
   List<ContactModel> _foundContact = [];
-  List<ImageProvider<Object>?> _tempPP = [];
+  List<ImageProvider<Object>?> _tempPhoto = [];
 
   get chat => null;
 
@@ -52,14 +53,15 @@ class _ContactPageState extends State<ContactPage> {
       }
     }
 
+    _tempPhoto = temp;
     _foundContact = contactList;
-    _tempPP = temp;
 
     super.initState();
   }
 
   void _runFilter(String enteredKeyword){
     List<ContactModel> results = [];
+
     if(enteredKeyword.isEmpty){
       results = contactList;
     }else{
@@ -69,6 +71,18 @@ class _ContactPageState extends State<ContactPage> {
     setState(() {
       _foundContact = results;
     });
+  }
+
+  ImageProvider<Object> _getPhoto(ContactModel foundContact) {
+    int indexFound = -1;
+
+    for (var i = 0; i < contactList.length; i++) {
+      if (contactList[i].photo == foundContact.photo) {
+        indexFound = i;
+      }
+    }
+
+    return _tempPhoto[indexFound]!;
   }
 
   @override
@@ -252,7 +266,8 @@ class _ContactPageState extends State<ContactPage> {
                                                     ) :CircleAvatar(
                                                       radius: 20,
                                                       backgroundColor: Color(0xffF2F1F6),
-                                                      backgroundImage: _tempPP[index],
+                                                      // backgroundImage: _getPhoto(_foundContact[index]),
+                                                      backgroundImage: CacheImageProvider(_foundContact[index].id.toString(), base64.decode(_foundContact[index].photo!)),
                                                     )
                                                 ),
                                                 Column(

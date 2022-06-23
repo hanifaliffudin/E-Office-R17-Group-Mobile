@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:militarymessenger/NewGroupDetail.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/widgets/CacheImageProvider.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -61,9 +62,21 @@ class _NewGroupPageState extends State<NewGroupPage> {
   List<ContactModel> contactList = mains.objectbox.boxContact.getAll().toList();
 
   List<ContactModel> _foundContact = [];
+  List<ImageProvider<Object>?> _tempPhoto = [];
 
   @override
   void initState() {
+    List<ImageProvider<Object>?> temp = [];
+
+    for (var i = 0; i < contactList.length; i++) {
+      if (contactList[i].photo != '') {
+        temp.add(Image.memory(base64.decode(contactList[i].photo!)).image);
+      } else {
+        temp.add(null);
+      }
+    }
+
+    _tempPhoto = temp;
     _foundContact = contactList;
     clearSelect();
     fToast = FToast();
@@ -82,6 +95,18 @@ class _NewGroupPageState extends State<NewGroupPage> {
     setState(() {
       _foundContact = results;
     });
+  }
+
+  ImageProvider<Object> _getPhoto(ContactModel foundContact) {
+    int indexFound = -1;
+
+    for (var i = 0; i < contactList.length; i++) {
+      if (contactList[i].photo == foundContact.photo) {
+        indexFound = i;
+      }
+    }
+
+    return _tempPhoto[indexFound]!;
   }
 
   late FToast fToast;
@@ -229,7 +254,8 @@ class _NewGroupPageState extends State<NewGroupPage> {
                                               ) :CircleAvatar(
                                                 radius: 20,
                                                 backgroundColor: Color(0xffF2F1F6),
-                                                backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!)).image,
+                                                // backgroundImage: _getPhoto(_foundContact[index]),
+                                                backgroundImage: CacheImageProvider(_foundContact[index].id.toString(), base64.decode(_foundContact[index].photo!)),
                                               )
                                           ),
                                           Column(
