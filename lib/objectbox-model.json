@@ -508,9 +508,53 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "10:1015253999311660028",
+      "lastPropertyId": "7:5583434377546864813",
+      "name": "AttendanceModel",
+      "properties": [
+        {
+          "id": "1:4937292750584387396",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7288777902354394320",
+          "name": "checkInAt",
+          "type": 9
+        },
+        {
+          "id": "3:5627880267035995044",
+          "name": "checkOutAt",
+          "type": 9
+        },
+        {
+          "id": "4:5668265249503729473",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "5:1961457885308934021",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "6:2491658051498388752",
+          "name": "date",
+          "type": 9
+        },
+        {
+          "id": "7:5583434377546864813",
+          "name": "category",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "9:3436676157863920729",
+  "lastEntityId": "10:1015253999311660028",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
