@@ -13,6 +13,7 @@ import 'package:objectbox/internal.dart'; // generated code can access "internal
 import 'package:objectbox/objectbox.dart';
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'models/AttendanceModel.dart';
 import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
@@ -531,6 +532,50 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(10, 1015253999311660028),
+      name: 'AttendanceModel',
+      lastPropertyId: const IdUid(7, 5583434377546864813),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 4937292750584387396),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 7288777902354394320),
+            name: 'checkInAt',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 5627880267035995044),
+            name: 'checkOutAt',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(4, 5668265249503729473),
+            name: 'latitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(5, 1961457885308934021),
+            name: 'longitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(6, 2491658051498388752),
+            name: 'date',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(7, 5583434377546864813),
+            name: 'category',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -554,7 +599,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(9, 3436676157863920729),
+      lastEntityId: const IdUid(10, 1015253999311660028),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -1097,6 +1142,58 @@ ModelDefinition getObjectBoxModel() {
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0));
 
           return object;
+        }),
+    AttendanceModel: EntityDefinition<AttendanceModel>(
+        model: _entities[9],
+        toOneRelations: (AttendanceModel object) => [],
+        toManyRelations: (AttendanceModel object) => {},
+        getId: (AttendanceModel object) => object.id,
+        setId: (AttendanceModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (AttendanceModel object, fb.Builder fbb) {
+          final checkInAtOffset = object.checkInAt == null
+              ? null
+              : fbb.writeString(object.checkInAt!);
+          final checkOutAtOffset = object.checkOutAt == null
+              ? null
+              : fbb.writeString(object.checkOutAt!);
+          final dateOffset =
+              object.date == null ? null : fbb.writeString(object.date!);
+          final categoryOffset = object.category == null
+              ? null
+              : fbb.writeString(object.category!);
+          fbb.startTable(8);
+          fbb.addInt64(0, object.id);
+          fbb.addOffset(1, checkInAtOffset);
+          fbb.addOffset(2, checkOutAtOffset);
+          fbb.addFloat64(3, object.latitude);
+          fbb.addFloat64(4, object.longitude);
+          fbb.addOffset(5, dateOffset);
+          fbb.addOffset(6, categoryOffset);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = AttendanceModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              date: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 14),
+              checkInAt: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 6),
+              checkOutAt: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 8),
+              latitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 10),
+              longitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 12),
+              category: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 16));
+
+          return object;
         })
   };
 
@@ -1462,4 +1559,35 @@ class BadgeModel_ {
   /// see [BadgeModel.badgeNeedSign]
   static final badgeNeedSign =
       QueryIntegerProperty<BadgeModel>(_entities[8].properties[2]);
+}
+
+/// [AttendanceModel] entity fields to define ObjectBox queries.
+class AttendanceModel_ {
+  /// see [AttendanceModel.id]
+  static final id =
+      QueryIntegerProperty<AttendanceModel>(_entities[9].properties[0]);
+
+  /// see [AttendanceModel.checkInAt]
+  static final checkInAt =
+      QueryStringProperty<AttendanceModel>(_entities[9].properties[1]);
+
+  /// see [AttendanceModel.checkOutAt]
+  static final checkOutAt =
+      QueryStringProperty<AttendanceModel>(_entities[9].properties[2]);
+
+  /// see [AttendanceModel.latitude]
+  static final latitude =
+      QueryDoubleProperty<AttendanceModel>(_entities[9].properties[3]);
+
+  /// see [AttendanceModel.longitude]
+  static final longitude =
+      QueryDoubleProperty<AttendanceModel>(_entities[9].properties[4]);
+
+  /// see [AttendanceModel.date]
+  static final date =
+      QueryStringProperty<AttendanceModel>(_entities[9].properties[5]);
+
+  /// see [AttendanceModel.category]
+  static final category =
+      QueryStringProperty<AttendanceModel>(_entities[9].properties[6]);
 }

@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:militarymessenger/Attendance.dart';
 import 'package:militarymessenger/ChatGroup.dart';
@@ -22,6 +23,7 @@ import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/main.dart';
+import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
@@ -429,43 +431,59 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     return file.path;
   }
 
+  Location location = new Location();
+
+  double calculateDistance(lat1, lon1, lat2, lon2){
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p)/2 +
+        c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a));
+  }
+
+  void locationAttendance(LocationData locationData){
+
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
+
+    if(locationData != null){
+
+      double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
+
+      if(distanceOnMeter > 50 ){
+        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+        if(query.find().isNotEmpty) {
+          if(query.find().first.checkOutAt == null){
+            // call check out
+            saveAttendance(locationData.latitude!, locationData.longitude!);
+          }
+        }
+      }else if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
+        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+        if(query.find().isNotEmpty) {
+
+        }else{
+          // call check in
+          saveAttendance(locationData.latitude!, locationData.longitude!);
+        }
+      }
+    }
+  }
+
   String? version;
   String? buildNumber;
 
   @override
   void initState()  {
-    double calculateDistance(lat1, lon1, lat2, lon2){
-      var p = 0.017453292519943295;
-      var c = cos;
-      var a = 0.5 - c((lat2 - lat1) * p)/2 +
-          c(lat1 * p) * c(lat2 * p) *
-              (1 - c((lon2 - lon1) * p))/2;
-      return 12742 * asin(sqrt(a));
-    }
 
-    Location location = new Location();
-    // location.requestPermission().then((permissionStatus) {
-    //   if(permissionStatus == PermissionStatus.granted){
-    location.enableBackgroundMode(enable: true);
 
-        location.onLocationChanged.listen((locationData) {
-          if(locationData != null){
-            print('ini longitude: ${locationData.longitude}');
-            print('ini latitude: ${locationData.latitude}');
+     location.enableBackgroundMode(enable: true);
 
-            double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
+     location.onLocationChanged.listen((locationData) {
+       locationAttendance(locationData);
+     });
 
-            if(distanceOnMeter > 100 ){
-              // call check out
-              print('lebih dari 100 meter');
-            }else if(distanceOnMeter < 100 && DateTime.now().hour >= 7){
-              // call check in
-              print('masih area 100 meter di sekitar R17 group dan lebih dari jam 7');
-            }
-          }
-        });
-    //   }
-    // });
 
     _tabController =  new TabController(initialIndex: 1,length: 4,vsync: this);
 
@@ -1187,6 +1205,75 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     }
   }
 
+  Future<http.Response> saveAttendance(double lat, double long) async {
+
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
+
+    String url ='https://chat.dev.r17.co.id/save_attendance.php';
+
+    Map<String, dynamic> data = {
+      'api_key': this.apiKey,
+      'id_user': mains.objectbox.boxUser.get(1)?.userId,
+      'latitude': lat.toString(),
+      'longitude': long.toString(),
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+
+    if(response.statusCode == 200){
+      //print("${response.body}");
+      Map<String, dynamic> attendanceMap = jsonDecode(response.body);
+
+      if(attendanceMap['code_status'] == 0){
+        // print(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])));
+        if(attendanceMap['data']['check_in'] != null){
+          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(attendanceMap['data']['check_in'].toString())).build();
+          if(query.find().isNotEmpty) {
+          }else{
+            var attendance = AttendanceModel(
+              date: DateFormat('dd MM yyyy').format(date).toString(),
+              checkInAt: attendanceMap['data']['check_in'],
+              latitude: lat,
+              longitude: long,
+            );
+
+            mains.objectbox.boxAttendance.put(attendance);
+          }
+        }else if(attendanceMap['data']['check_out'] != null){
+          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString())).build();
+          if(query.find().isNotEmpty) {
+            var attendance = AttendanceModel(
+              id: query.find().first.id,
+              date: query.find().first.date,
+              checkInAt: query.find().first.checkInAt,
+              checkOutAt: attendanceMap['data']['check_out'],
+              latitude: query.find().first.latitude,
+              longitude: query.find().first.longitude,
+            );
+
+            mains.objectbox.boxAttendance.put(attendance);
+          }else{
+          }
+        }
+      }else{
+        print("ada yang salah!");
+        print(attendanceMap['code_status']);
+        print(attendanceMap['error']);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+    }
+    return response;
+  }
+
   Future<http.Response> getDataUser() async {
 
     String url ='https://chat.dev.r17.co.id/get_user.php';
@@ -1226,7 +1313,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         print("ada yang salah!");
         print(userMap['code_status']);
         print(userMap['error']);
-        print(response.statusCode);
       }
     }
     else{
