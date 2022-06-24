@@ -449,26 +449,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
     if(locationData != null){
 
+      int statusLocation = 0;
+
       double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
 
-      if(distanceOnMeter > 50 ){
+      if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
+        // if statusloc == 0
+            // status = 1, call check in
+
+        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+        if(query.find().isNotEmpty) {
+          if(query.find().first.status == 0){
+
+          }
+        }else{
+          // call check in
+          print('first time call check in');
+          saveAttendance(locationData.latitude!, locationData.longitude!);
+        }
+      }else if(distanceOnMeter > 50){
+        // if statusloc == 1
+            // statusloc = 0, call check out
         var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
         if(query.find().isNotEmpty) {
           if(query.find().first.checkOutAt == null){
             // call check out
+            print('call check out');
             saveAttendance(locationData.latitude!, locationData.longitude!);
           }
         }
-      }else if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
-        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-        if(query.find().isNotEmpty) {
-
-        }else{
-          // call check in
-          saveAttendance(locationData.latitude!, locationData.longitude!);
-        }
       }
-    }
+  }
   }
 
   String? version;
@@ -476,12 +487,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   @override
   void initState()  {
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
 
+    var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+    List<AttendanceModel> suratList = query.find().toList();
+    for(var surat in suratList){
+      print('object');
+      print(surat.date);
+      // mains.objectbox.boxAttendance.remove(surat.id);
+    }
 
      location.enableBackgroundMode(enable: true);
 
      location.onLocationChanged.listen((locationData) {
-       locationAttendance(locationData);
+          locationAttendance(locationData);
      });
 
 
@@ -1234,21 +1254,29 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       if(attendanceMap['code_status'] == 0){
         // print(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])));
         if(attendanceMap['data']['check_in'] != null){
+          print('dapet cekin');
           var query = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(attendanceMap['data']['check_in'].toString())).build();
           if(query.find().isNotEmpty) {
+            print('dah ada di objectbox yang cekin');
           }else{
+            print('belom ada di objectbox yang cekin');
             var attendance = AttendanceModel(
               date: DateFormat('dd MM yyyy').format(date).toString(),
               checkInAt: attendanceMap['data']['check_in'],
               latitude: lat,
               longitude: long,
+              status: 1,
+
             );
 
             mains.objectbox.boxAttendance.put(attendance);
           }
         }else if(attendanceMap['data']['check_out'] != null){
+          print('dapet cekout');
           var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString())).build();
           if(query.find().isNotEmpty) {
+            print('dah ada di objectbox yang cekout');
+
             var attendance = AttendanceModel(
               id: query.find().first.id,
               date: query.find().first.date,
@@ -1260,6 +1288,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
             mains.objectbox.boxAttendance.put(attendance);
           }else{
+            print('belom ada di objectbox yang cekout');
           }
         }
       }else{
