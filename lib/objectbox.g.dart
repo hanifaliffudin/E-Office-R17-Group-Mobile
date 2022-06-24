@@ -536,7 +536,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(10, 1015253999311660028),
       name: 'AttendanceModel',
-      lastPropertyId: const IdUid(7, 5583434377546864813),
+      lastPropertyId: const IdUid(8, 2464333630834388323),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -573,6 +573,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(7, 5583434377546864813),
             name: 'category',
             type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(8, 2464333630834388323),
+            name: 'status',
+            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -1163,7 +1168,7 @@ ModelDefinition getObjectBoxModel() {
           final categoryOffset = object.category == null
               ? null
               : fbb.writeString(object.category!);
-          fbb.startTable(8);
+          fbb.startTable(9);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, checkInAtOffset);
           fbb.addOffset(2, checkOutAtOffset);
@@ -1171,6 +1176,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addFloat64(4, object.longitude);
           fbb.addOffset(5, dateOffset);
           fbb.addOffset(6, categoryOffset);
+          fbb.addInt64(7, object.status);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1191,7 +1197,9 @@ ModelDefinition getObjectBoxModel() {
               longitude: const fb.Float64Reader()
                   .vTableGetNullable(buffer, rootOffset, 12),
               category: const fb.StringReader(asciiOptimization: true)
-                  .vTableGetNullable(buffer, rootOffset, 16));
+                  .vTableGetNullable(buffer, rootOffset, 16),
+              status:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0));
 
           return object;
         })
@@ -1590,4 +1598,8 @@ class AttendanceModel_ {
   /// see [AttendanceModel.category]
   static final category =
       QueryStringProperty<AttendanceModel>(_entities[9].properties[6]);
+
+  /// see [AttendanceModel.status]
+  static final status =
+      QueryIntegerProperty<AttendanceModel>(_entities[9].properties[7]);
 }

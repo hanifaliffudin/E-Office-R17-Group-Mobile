@@ -511,7 +511,7 @@
     },
     {
       "id": "10:1015253999311660028",
-      "lastPropertyId": "7:5583434377546864813",
+      "lastPropertyId": "8:2464333630834388323",
       "name": "AttendanceModel",
       "properties": [
         {
@@ -549,6 +549,11 @@
           "id": "7:5583434377546864813",
           "name": "category",
           "type": 9
+        },
+        {
+          "id": "8:2464333630834388323",
+          "name": "status",
+          "type": 6
         }
       ],
       "relations": []
