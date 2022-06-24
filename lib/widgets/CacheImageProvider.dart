@@ -29,7 +29,7 @@ class CacheImageProvider extends ImageProvider<CacheImageProvider> {
 
     if (bytes.lengthInBytes == 0) {
       // The file may become available later.
-      PaintingBinding.instance?.imageCache?.evict(this);
+      PaintingBinding.instance.imageCache.evict(this);
       throw StateError('$tag is empty and cannot be loaded as an image.');
     }
 
