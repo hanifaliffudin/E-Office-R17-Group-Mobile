@@ -9,6 +9,7 @@ class AttendanceModel {
   double? latitude;
   double? longitude;
   String? category;
+  int status = 0;
 
   AttendanceModel(
       {
@@ -19,5 +20,6 @@ class AttendanceModel {
         this.latitude,
         this.longitude,
         this.category,
+        this.status = 0,
       });
 }
