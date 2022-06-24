@@ -446,6 +446,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     Location location = new Location();
     // location.requestPermission().then((permissionStatus) {
     //   if(permissionStatus == PermissionStatus.granted){
+    location.enableBackgroundMode(enable: true);
+
         location.onLocationChanged.listen((locationData) {
           if(locationData != null){
             print('ini longitude: ${locationData.longitude}');
@@ -453,10 +455,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
             double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
 
-            if(distanceOnMeter > 100){
+            if(distanceOnMeter > 100 ){
+              // call check out
               print('lebih dari 100 meter');
-            }else{
-              print('masih area 100 meter di sekitar R17 group');
+            }else if(distanceOnMeter < 100 && DateTime.now().hour >= 7){
+              // call check in
+              print('masih area 100 meter di sekitar R17 group dan lebih dari jam 7');
             }
           }
         });

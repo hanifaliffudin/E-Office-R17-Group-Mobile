@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:militarymessenger/NeedApprove.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'objectbox.g.dart';
@@ -27,8 +28,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    // getBadgeInbox();
-    getDataSuratNeedApprove();
     getBadgeInbox();
     getBadgeSign();
     super.initState();
@@ -45,6 +44,79 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => NeedApprove()),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Color(0xFF3B8880),
+                          child: CircleAvatar(
+                            backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
+                            backgroundColor: Color(0xFF3B8880),
+                            radius: 20,
+                          ),
+                        ),
+                        Text(
+                          'Need Approve',
+                          style: TextStyle(
+                            height: 2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => NeedSign()),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Badge(
+                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
+                          mains.objectbox.boxBadge.get(1)!.badgeNeedSign == 0 ? false : true
+                              :
+                          false,
+                          badgeContent: Text(
+                            mains.objectbox.boxBadge.get(1) != null ?
+                            mains.objectbox.boxBadge.get(1)!.badgeNeedSign.toString()
+                                :
+                            '',
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                          badgeColor: Color(0xFFE2574C),
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Color(0xFF9EADBD),
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage('assets/icons/draft_icon2.png'),
+                              backgroundColor: Color(0xFF9EADBD),
+                              radius: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Need Sign',
+                          style: TextStyle(
+                            height: 2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
@@ -118,79 +190,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       ],
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => TrackingPage()),
-                      );
-                    },
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Color(0xFF3B8880),
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
-                            backgroundColor: Color(0xFF3B8880),
-                            radius: 20,
-                          ),
-                        ),
-                        Text(
-                          'Tracking',
-                          style: TextStyle(
-                            height: 2,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => NeedSign()),
-                      );
-                    },
-                    child: Column(
-                      children: [
-                        Badge(
-                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
-                          mains.objectbox.boxBadge.get(1)!.badgeNeedSign == 0 ? false : true
-                              :
-                          false,
-                          badgeContent: Text(
-                            mains.objectbox.boxBadge.get(1) != null ?
-                            mains.objectbox.boxBadge.get(1)!.badgeNeedSign.toString()
-                                :
-                            '',
-                            style: TextStyle(
-                                color: Colors.white
-                            ),
-                          ),
-                          badgeColor: Color(0xFFE2574C),
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Color(0xFF9EADBD),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/draft_icon2.png'),
-                              backgroundColor: Color(0xFF9EADBD),
-                              radius: 20,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'Need Sign',
-                          style: TextStyle(
-                            height: 2,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -204,7 +203,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Need Approve",
+                          "Recents",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -230,14 +229,14 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             margin: const EdgeInsets.only(top: 15.0),
                             width: MediaQuery.of(context).size.width,
                             child :Text(
-                              'No need approve yet.',
+                              'No recents yet.',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                             )
                         );
                       }
                       else{
-                        var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove'))..order(SuratModel_.tglBuat);
+                        var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history'))..order(SuratModel_.tglBuat);
                         var query = queryNeedApprove.build();
                         List<SuratModel> listSurat = query.find().reversed.toList();
                         if(listSurat.length==0)
@@ -245,7 +244,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                               margin: const EdgeInsets.only(top: 15.0),
                               width: MediaQuery.of(context).size.width,
                               child :Text(
-                                'No need approve yet.',
+                                'No recents yet.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                               )
@@ -321,97 +320,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
         ),
       ),
     );
-  }
-
-  Future<http.Response> getDataSuratNeedApprove() async {
-
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/needApprover';
-
-    Map<String, dynamic> data = {
-      'payload': {
-        'id_user': mains.objectbox.boxUser.get(1)!.userId,
-      }
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
-    if(response.statusCode == 200){
-      //print("${response.body}");
-      Map<String, dynamic> suratMap = jsonDecode(response.body);
-
-      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove')).build();
-      List<SuratModel> suratList = query.find().toList();
-      for(var surat in suratList){
-        mains.objectbox.boxSurat.remove(surat.id);
-      }
-
-      if(suratMap['message'] == 'success'){
-        if(suratMap['count']>0){
-          for(int i = 0; i < suratMap['data'].length; i++) {
-            var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-
-            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('needApprove')).build();
-            if(query.find().isNotEmpty) {
-              final surat = SuratModel(
-                id: query.find().first.id,
-                idSurat: dataSurat['id'],
-                namaSurat: query.find().first.namaSurat,
-                nomorSurat: dataSurat['nomor'],
-                editor: dataSurat['editor'],
-                perihal: dataSurat['perihal'],
-                status: query.find().first.status,
-                tglSelesai: query.find().first.tglSelesai,
-                url: dataSurat['isi_surat'],
-                kategori: 'needApprove',
-                tglBuat: dataSurat['tgl_buat'],
-                tipeSurat: dataSurat['tipe_surat'],
-                approver: jsonEncode(dataSurat['approv']),
-                penerima: jsonEncode(dataSurat['penerima']),
-              );
-
-
-              mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
-              // mains.objectbox.boxSurat.remove(query.find().first.id);
-
-            }
-            else{
-              final surat = SuratModel(
-                idSurat: dataSurat['id'],
-                nomorSurat: dataSurat['nomor'],
-                perihal: dataSurat['perihal'],
-                tglBuat: dataSurat['tgl_buat'],
-                kategori: 'needApprove',
-                url: dataSurat['isi_surat'],
-                tipeSurat: dataSurat['tipe_surat'],
-                editor: dataSurat['editor'],
-                approver: jsonEncode(dataSurat['approv']),
-                penerima: jsonEncode(dataSurat['penerima']),
-              );
-
-              mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
-            }
-          }
-        }
-      }
-      else{
-        print(suratMap['message']);
-      }
-    }
-    else{
-      print("Gagal terhubung ke server!");
-    }
-    return response;
   }
 
   Future<http.Response> getBadgeInbox() async {
