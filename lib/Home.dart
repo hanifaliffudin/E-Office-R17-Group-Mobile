@@ -98,25 +98,25 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       AndroidNotification android = message.notification!.android!;
       if (notification != null && android != null) {
         flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
               android: AndroidNotificationDetails(
-              message.data['id'],
+                message.data['id'],
                 message.notification!.title!,
-            // style: AndroidNotificationStyle.BigText,
-            icon: "@mipmap/ic_launcher",
-            styleInformation: BigTextStyleInformation(
-                message.data['msg_data'],//  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
-            htmlFormatBigText: true,
-            contentTitle: message.notification!.title!,
-            htmlFormatContentTitle: true,
-            summaryText: 'Messenger',
-            htmlFormatSummaryText: true
-              ),
+                // style: AndroidNotificationStyle.BigText,
+                icon: "@mipmap/ic_launcher",
+                styleInformation: BigTextStyleInformation(
+                    message.data['msg_data'],//  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
+                    htmlFormatBigText: true,
+                    contentTitle: message.notification!.title!,
+                    htmlFormatContentTitle: true,
+                    summaryText: 'Messenger',
+                    htmlFormatSummaryText: true
+                ),
               )
-            ),
+          ),
           payload: jsonEncode(message.data),
         );
       }
@@ -307,111 +307,111 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     }
 
     if (message.data['type'] == 'pm') {
-        //  get id conversation from message data and then query find to object box conversation,
-        var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(message.data['id_sender']))).build();
-        if(query.find().isNotEmpty) {
-          int? count = query
-              .find()
-              .first
-              .messageCout;
-          if (count == null)
-            count = 1;
-          else
-            count = count + 1;
+      //  get id conversation from message data and then query find to object box conversation,
+      var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(message.data['id_sender']))).build();
+      if(query.find().isNotEmpty) {
+        int? count = query
+            .find()
+            .first
+            .messageCout;
+        if (count == null)
+          count = 1;
+        else
+          count = count + 1;
 
-          ConversationModel objConversation2 = ConversationModel(
-              id: query.find().first.id,
-              idReceiver: int.parse(message.data['id_sender']),
-              fullName: query.find().first.fullName,
-              image: query.find().first.image,
-              photoProfile: query.find().first.photoProfile,
-              message: message.data['msg_data'],
-              date: message.data['msg_date'],
-              messageCout: count,
-              statusReceiver: query.find().first.statusReceiver,
-              roomId: int.parse(message.data['room_id'])
-          );
-          mains.objectbox.boxConversation.put(objConversation2);
+        ConversationModel objConversation2 = ConversationModel(
+            id: query.find().first.id,
+            idReceiver: int.parse(message.data['id_sender']),
+            fullName: query.find().first.fullName,
+            image: query.find().first.image,
+            photoProfile: query.find().first.photoProfile,
+            message: message.data['msg_data'],
+            date: message.data['msg_date'],
+            messageCout: count,
+            statusReceiver: query.find().first.statusReceiver,
+            roomId: int.parse(message.data['room_id'])
+        );
+        mains.objectbox.boxConversation.put(objConversation2);
 
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
-              ));
-
-        }
-        else{
-          ConversationModel objConversation2 = ConversationModel(
-              id: 0,
-              idReceiver: int.parse(message.data['id_sender']),
-              fullName: message.data['name_sender'],
-              image: '',
-              photoProfile: message.data['photo'],
-              message: message.data['msg_data'],
-              date: message.data['msg_date'],
-              messageCout: 1,
-              statusReceiver: '',
-              roomId: int.parse(message.data['room_id']));
-          mains.objectbox.boxConversation.put(objConversation2);
-
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
-              ));
-        }
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
+            ));
 
       }
+      else{
+        ConversationModel objConversation2 = ConversationModel(
+            id: 0,
+            idReceiver: int.parse(message.data['id_sender']),
+            fullName: message.data['name_sender'],
+            image: '',
+            photoProfile: message.data['photo'],
+            message: message.data['msg_data'],
+            date: message.data['msg_date'],
+            messageCout: 1,
+            statusReceiver: '',
+            roomId: int.parse(message.data['room_id']));
+        mains.objectbox.boxConversation.put(objConversation2);
+
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
+            ));
+      }
+
+    }
     else if(message.data['type'] == 'group'){
-        List<int> id_receivers = json.decode(message.data['id_receivers']).cast<int>();
-        id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
-        id_receivers.add(int.parse(message.data['id_sender']));
-        //  get id conversation from message data and then query find to object box conversation,
-        var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(int.parse(message.data['room_id']))).build();
-        if(query.find().isNotEmpty) {
-          int? count = query
-              .find()
-              .first
-              .messageCout;
-          if (count == null)
-            count = 1;
-          else
-            count = count + 1;
+      List<int> id_receivers = json.decode(message.data['id_receivers']).cast<int>();
+      id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
+      id_receivers.add(int.parse(message.data['id_sender']));
+      //  get id conversation from message data and then query find to object box conversation,
+      var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(int.parse(message.data['room_id']))).build();
+      if(query.find().isNotEmpty) {
+        int? count = query
+            .find()
+            .first
+            .messageCout;
+        if (count == null)
+          count = 1;
+        else
+          count = count + 1;
 
-          ConversationModel objConversation3 = ConversationModel(
-              id: query.find().first.id,
-              idReceiversGroup: json.encode(id_receivers),
-              fullName: query.find().first.fullName,
-              image: query.find().first.image,
-              photoProfile: query.find().first.photoProfile,
-              message: message.data['msg_data'],
-              date: message.data['msg_date'],
-              messageCout: count,
-              statusReceiver: query.find().first.statusReceiver,
-              roomId: query.find().first.roomId
-          );
-          mains.objectbox.boxConversation.put(objConversation3);
+        ConversationModel objConversation3 = ConversationModel(
+            id: query.find().first.id,
+            idReceiversGroup: json.encode(id_receivers),
+            fullName: query.find().first.fullName,
+            image: query.find().first.image,
+            photoProfile: query.find().first.photoProfile,
+            message: message.data['msg_data'],
+            date: message.data['msg_date'],
+            messageCout: count,
+            statusReceiver: query.find().first.statusReceiver,
+            roomId: query.find().first.roomId
+        );
+        mains.objectbox.boxConversation.put(objConversation3);
 
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "handle_notif")
-              ));
-        }
-        else{
-          ConversationModel objConversation3 = ConversationModel(
-              id: 0,
-              idReceiversGroup: json.encode(id_receivers),
-              fullName: message.data['group_name'],
-              image: '',
-              // photoProfile: message.data['photo'],
-              message: message.data['msg_data'],
-              date: message.data['msg_date'],
-              roomId: int.parse(message.data['room_id']),
-              messageCout: 1,
-              statusReceiver: '',
-          );
-          mains.objectbox.boxConversation.put(objConversation3);
-
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "false")
-              ));
-        }
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "handle_notif")
+            ));
       }
+      else{
+        ConversationModel objConversation3 = ConversationModel(
+          id: 0,
+          idReceiversGroup: json.encode(id_receivers),
+          fullName: message.data['group_name'],
+          image: '',
+          // photoProfile: message.data['photo'],
+          message: message.data['msg_data'],
+          date: message.data['msg_date'],
+          roomId: int.parse(message.data['room_id']),
+          messageCout: 1,
+          statusReceiver: '',
+        );
+        mains.objectbox.boxConversation.put(objConversation3);
+
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "false")
+            ));
+      }
+    }
   }
 
   Future<String> _createImageFromUint(Uint8List bytes) async {
@@ -475,7 +475,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           }
         }
       }
-  }
+    }
   }
 
   String? version;
@@ -494,11 +494,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       // mains.objectbox.boxAttendance.remove(surat.id);
     }
 
-     location.enableBackgroundMode(enable: true);
+    location.enableBackgroundMode(enable: true);
 
-     location.onLocationChanged.listen((locationData) {
-          locationAttendance(locationData);
-     });
+    location.onLocationChanged.listen((locationData) {
+      locationAttendance(locationData);
+    });
 
 
     _tabController =  new TabController(initialIndex: 1,length: 4,vsync: this);
@@ -791,16 +791,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           count = count + 1;
 
         ConversationModel objConversation = ConversationModel(
-            id: query.find().first.id,
-            idReceiversGroup: json.encode(id_receivers),
-            fullName: objMessage['group_name'],
-            image: query.find().first.image,
-            photoProfile: objMessage['image'],
-            message: "${objMessage['name_sender']}: ${objMessage['msg_data']}",
-            date: objMessage['msg_date'],
-            messageCout: objMessage['msg_tipe'] == 'system' ? 0 : count,
-            statusReceiver: query.find().first.statusReceiver,
-            roomId: objMessage['room_id'],
+          id: query.find().first.id,
+          idReceiversGroup: json.encode(id_receivers),
+          fullName: objMessage['group_name'],
+          image: query.find().first.image,
+          photoProfile: objMessage['image'],
+          message: "${objMessage['name_sender']}: ${objMessage['msg_data']}",
+          date: objMessage['msg_date'],
+          messageCout: objMessage['msg_tipe'] == 'system' ? 0 : count,
+          statusReceiver: query.find().first.statusReceiver,
+          roomId: objMessage['room_id'],
         );
         mains.objectbox.boxConversation.put(objConversation);
       }
@@ -1274,13 +1274,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             print('dah ada di objectbox yang cekout');
 
             var attendance = AttendanceModel(
-              id: query.find().first.id,
-              date: query.find().first.date,
-              checkInAt: query.find().first.checkInAt,
-              checkOutAt: attendanceMap['data']['check_out'],
-              latitude: query.find().first.latitude,
-              longitude: query.find().first.longitude,
-              status: 0
+                id: query.find().first.id,
+                date: query.find().first.date,
+                checkInAt: query.find().first.checkInAt,
+                checkOutAt: attendanceMap['data']['check_out'],
+                latitude: query.find().first.latitude,
+                longitude: query.find().first.longitude,
+                status: 0
             );
 
             mains.objectbox.boxAttendance.put(attendance);
