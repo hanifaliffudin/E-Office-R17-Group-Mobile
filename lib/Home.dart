@@ -449,18 +449,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
     if(locationData != null){
 
-      int statusLocation = 0;
-
       double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
 
       if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
-        // if statusloc == 0
-            // status = 1, call check in
-
         var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
         if(query.find().isNotEmpty) {
+          print('status attendance: ${query.find().first.status}');
           if(query.find().first.status == 0){
-
+            // call check in if after check out on the same day
+            print('call check in');
+            saveAttendance(locationData.latitude!, locationData.longitude!);
           }
         }else{
           // call check in
@@ -468,11 +466,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           saveAttendance(locationData.latitude!, locationData.longitude!);
         }
       }else if(distanceOnMeter > 50){
-        // if statusloc == 1
-            // statusloc = 0, call check out
         var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
         if(query.find().isNotEmpty) {
-          if(query.find().first.checkOutAt == null){
+          if(query.find().first.status == 1){
             // call check out
             print('call check out');
             saveAttendance(locationData.latitude!, locationData.longitude!);
@@ -1009,7 +1005,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                 text: 'Chat',
               ),
               Tab(
-                text: 'Home',
+                text: 'E-Office',
               ),
               Tab(
                 text: 'History',
@@ -1248,7 +1244,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     );
 
     if(response.statusCode == 200){
-      //print("${response.body}");
+      print("${response.body}");
       Map<String, dynamic> attendanceMap = jsonDecode(response.body);
 
       if(attendanceMap['code_status'] == 0){
@@ -1266,12 +1262,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               latitude: lat,
               longitude: long,
               status: 1,
-
             );
 
             mains.objectbox.boxAttendance.put(attendance);
           }
-        }else if(attendanceMap['data']['check_out'] != null){
+        }
+        else if(attendanceMap['data']['check_out'] != null){
           print('dapet cekout');
           var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString())).build();
           if(query.find().isNotEmpty) {
@@ -1284,11 +1280,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               checkOutAt: attendanceMap['data']['check_out'],
               latitude: query.find().first.latitude,
               longitude: query.find().first.longitude,
+              status: 0
             );
 
             mains.objectbox.boxAttendance.put(attendance);
           }else{
             print('belom ada di objectbox yang cekout');
+          }
+        }
+        else if(attendanceMap['data']['type'] == 'inButNotFirst'){
+          print('dapet cekin not first');
+          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(attendanceMap['data']['first_check_in'].toString())).build();
+          if(query.find().isNotEmpty) {
+            print('dah ada di objectbox yang cekin not first');
+            var attendance = AttendanceModel(
+              id: query.find().first.id,
+              date: query.find().first.date,
+              checkInAt: query.find().first.checkInAt,
+              checkOutAt: query.find().first.checkOutAt,
+              latitude: lat,
+              longitude: long,
+              status: 1,
+              category: query.find().first.category,
+            );
+
+            mains.objectbox.boxAttendance.put(attendance);
+          }else{
+            print('belom ada di objectbox yang cekin not first');
           }
         }
       }else{
