@@ -152,7 +152,7 @@ class LoginPageState extends State<Login>  {
                 sendEmail(_controller.text.trim());
 
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim())),
+                  MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim(), fcmToken)),
                 );
               },
             )

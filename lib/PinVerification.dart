@@ -14,18 +14,19 @@ String globalEmail = '';
 
 class PinVerification extends StatefulWidget {
   String email = '';
+  String? fcmToken;
 
-  PinVerification(String email){
+  PinVerification(String email, this.fcmToken){
     this.email = email;
     globalEmail = email;
   }
 
   @override
-  PinVerificationState createState() => PinVerificationState(email);
+  PinVerificationState createState() => PinVerificationState(email, fcmToken);
 }
 
 class PinVerificationState extends State<PinVerification> {
-  var fcmToken;
+  String? fcmToken;
   final _formKey = GlobalKey<FormState>();
   final _pinPutController = TextEditingController();
   final _pinPutFocusNode = FocusNode();
@@ -33,7 +34,7 @@ class PinVerificationState extends State<PinVerification> {
 
   String email = '';
 
-  PinVerificationState(String email){
+  PinVerificationState(String email, this.fcmToken){
     this.email = email;
     globalEmail = email;
   }
@@ -135,10 +136,6 @@ class PinVerificationState extends State<PinVerification> {
               print(_formKey.currentState?.validate());
             },
             child: Pinput(
-              // validator: (s) {
-              //   if (s != null && s.contains('1')) return null;
-              //   return 'NOT VALID';
-              // },
               onCompleted: (String pin) => postRequest(pin),
               useNativeKeyboard: true,
               pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
@@ -168,14 +165,6 @@ class PinVerificationState extends State<PinVerification> {
                     ),
                   ),
               ),
-              // selectedFieldDecoration: pinPutDecoration.copyWith(
-              //   color: Colors.white,
-              //   border: Border.all(
-              //     width: 2,
-              //     color: const Color.fromRGBO(160, 215, 220, 1),
-              //   ),
-              // ),
-              // followingFieldDecoration: pinPutDecoration,
               pinAnimationType: PinAnimationType.scale,
             ),
           ),
@@ -235,7 +224,6 @@ class PinVerificationState extends State<PinVerification> {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    print(fcmToken);
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
       'api_key': this.apiKey,
@@ -251,11 +239,7 @@ class PinVerificationState extends State<PinVerification> {
     );
 
     if(response.statusCode == 200){
-      print("${response.body}");
-      // Map<String, dynamic> userMap = json.decode(response.body);
-
-      //print (userMap.error);
-      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
+      // print("${response.body}");
     }
     else{
       pinFailedSnackBar(context,"Email gagal dikirim!");
@@ -326,7 +310,6 @@ class PinVerificationState extends State<PinVerification> {
 
   void _submit() {
     //kirim email
-
     sendEmail(email);
   }
 

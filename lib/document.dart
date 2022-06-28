@@ -3,9 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:militarymessenger/PinVerification.dart';
-import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:open_file/open_file.dart';
@@ -16,13 +15,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
-import 'Home.dart' as homes;
 
 
 class DocumentPage extends StatefulWidget {
   SuratModel? surat;
 
-  DocumentPage(this.surat);
+  DocumentPage(this.surat, {Key? key}) : super(key: key);
 
   @override
   State<DocumentPage> createState() => _DocumentPageState(surat);
@@ -41,10 +39,11 @@ class _DocumentPageState extends State<DocumentPage> {
   bool editorVisible = false;
   bool approverVisible = false;
 
-  TextEditingController inputTextControllerApprove = new TextEditingController();
-  TextEditingController inputTextControllerReturn = new TextEditingController();
-  TextEditingController inputTextControllerReject = new TextEditingController();
+  TextEditingController inputTextControllerApprove = TextEditingController();
+  TextEditingController inputTextControllerReturn = TextEditingController();
+  TextEditingController inputTextControllerReject = TextEditingController();
 
+  @override
   void initState() {
     if(surat!.approver != null){
       listApprover = jsonDecode(surat!.approver!);
@@ -79,13 +78,13 @@ class _DocumentPageState extends State<DocumentPage> {
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         elevation: 0,
         title: Text(surat!.perihal!,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 16
           ),),
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.only(top: 10, bottom: 15, right: 15, left: 15),
+        padding: const EdgeInsets.only(top: 10, bottom: 15, right: 15, left: 15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,38 +95,41 @@ class _DocumentPageState extends State<DocumentPage> {
                   children: [
                     Container(
                       height: 470,
-                      color: Color(0xFFD1D1D6),
+                      color: const Color(0xFFD1D1D6),
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: surat!.kategori == 'inbox' ?
+                          child: surat!.kategori == 'inbox' ?
                         SfPdfViewer.network('http://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
                           pageLayoutMode: PdfPageLayoutMode.single,
                           scrollDirection: PdfScrollDirection.horizontal,
                           interactionMode: PdfInteractionMode.selection,
                           onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                          if(surat!.kategori=='inbox')
-                            readSurat(surat!.idSurat!);
+                            if(surat!.kategori=='inbox'){
+                              readSurat(surat!.idSurat!);
+                            }
                           },
                         )
                         :
-                        SfPdfViewer.network('${surat!.url!}',
-                          pageLayoutMode: PdfPageLayoutMode.single,
-                          scrollDirection: PdfScrollDirection.horizontal,
-                          onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                            if(surat!.kategori=='inbox')
-                              readSurat(surat!.idSurat!);
-                          },
-                        ),
+                          const PDF(
+                            enableSwipe: true,
+                            swipeHorizontal: true,
+                            autoSpacing: false,
+                            pageFling: false,
+                          ).cachedFromUrl(
+                            surat!.url!,
+                            placeholder: (progress) => Center(child: Text('$progress %')),
+                            errorWidget: (error) => Center(child: Text(error.toString())),
+                          ),
                       ),
                     ),
-                    SizedBox(height: 10,),
+                    const SizedBox(height: 10,),
                     CupertinoSegmentedControl<int>(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       groupValue: groupValue,
                       selectedColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
                       unselectedColor: Theme.of(context).cardTheme.color,
                       borderColor: Theme.of(context).scaffoldBackgroundColor,
-                      pressedColor: Color(0xFFF8FAFC),
+                      pressedColor: const Color(0xFFF8FAFC),
                       children: {
                         0: buildSegment(
                           'Detail'.toUpperCase(),
@@ -150,16 +152,16 @@ class _DocumentPageState extends State<DocumentPage> {
                     Visibility(
                         visible: detailVisible,
                         child: Container(
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Column(
                             children: [
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: 100,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
+                                      children: const [
                                         Text('Nomor Surat',
                                           style: TextStyle(
                                               color: Color(0xFF94A3B8),
@@ -175,22 +177,22 @@ class _DocumentPageState extends State<DocumentPage> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: 10,),
+                                  const SizedBox(width: 10,),
                                   Text(surat!.nomorSurat == null ? '-' : surat!.nomorSurat!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 12
                                     ),
                                   )
                                 ],
                               ),
-                              SizedBox(height:20),
+                              const SizedBox(height:20),
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: 100,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
+                                      children: const [
                                         Text('Perihal',
                                           style: TextStyle(
                                             color: Color(0xFF94A3B8),
@@ -206,11 +208,11 @@ class _DocumentPageState extends State<DocumentPage> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: 10,),
+                                  const SizedBox(width: 10,),
                                   SizedBox(
                                     width: 200,
                                     child: Text(surat!.perihal == null ? '-' : surat!.perihal!,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -219,14 +221,14 @@ class _DocumentPageState extends State<DocumentPage> {
                                   )
                                 ],
                               ),
-                              SizedBox(height: 20,),
+                              const SizedBox(height: 20,),
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: 100,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
+                                      children: const [
                                         Text('Lampiran',
                                           style: TextStyle(
                                             color: Color(0xFF94A3B8),
@@ -242,8 +244,8 @@ class _DocumentPageState extends State<DocumentPage> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: 10,),
-                                  Text('-',
+                                  const SizedBox(width: 10,),
+                                  const Text('-',
                                     style: TextStyle(
                                         fontSize: 12
                                     ),
@@ -257,16 +259,16 @@ class _DocumentPageState extends State<DocumentPage> {
                     Visibility(
                         visible: editorVisible,
                         child: Container(
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Row(
                             children: [
-                              CircleAvatar(
+                              const CircleAvatar(
                                 child: Icon(Icons.person),
                                 radius: 18,
                               ),
-                              SizedBox(width: 10,),
-                              Text(surat!.editor! == null ? '': surat!.editor!,
-                                style: TextStyle(
+                              const SizedBox(width: 10,),
+                              Text(surat!.editor! == null ? '' : surat!.editor! ,
+                                style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold
                                 ),
@@ -278,7 +280,7 @@ class _DocumentPageState extends State<DocumentPage> {
                     Visibility(
                         visible: approverVisible,
                         child: Container(
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Column(
                             children: [
                               ListView.builder(
@@ -290,16 +292,16 @@ class _DocumentPageState extends State<DocumentPage> {
                                   children: [
                                     Row(
                                       children: [
-                                        CircleAvatar(
+                                        const CircleAvatar(
                                           child: Icon(Icons.person),
                                           radius: 18,
                                         ),
-                                        SizedBox(width: 10,),
+                                        const SizedBox(width: 10,),
                                         SizedBox(
                                             width: 170,
                                             child: Text(
                                               cardApprover[index].name!,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold,
                                                   overflow: TextOverflow.ellipsis
@@ -314,15 +316,15 @@ class _DocumentPageState extends State<DocumentPage> {
                                         style: ElevatedButton.styleFrom(
                                           primary:
                                           cardApprover[index].status! == 'Approved' ?
-                                          Color(0xFFECFDF5)
+                                          const Color(0xFFECFDF5)
                                           :
                                           cardApprover[index].status! == 'Rejected' ?
-                                          Color(0xFFFFEBEA)
+                                          const Color(0xFFFFEBEA)
                                           :
                                           cardApprover[index].status! == 'Returned' ?
-                                          Color(0xFFEAF6FF)
+                                          const Color(0xFFEAF6FF)
                                           :
-                                          Color(0xFFECEFF1),
+                                          const Color(0xFFECEFF1),
                                         ),
                                         child: Text(
                                           cardApprover[index].status!,
@@ -330,15 +332,15 @@ class _DocumentPageState extends State<DocumentPage> {
                                               fontSize: 12,
                                               color:
                                               cardApprover[index].status! == 'Approved' ?
-                                              Color(0xFF1FA463)
+                                              const Color(0xFF1FA463)
                                                   :
                                               cardApprover[index].status! == 'Rejected' ?
-                                              Color(0xFFDC2626)
+                                              const Color(0xFFDC2626)
                                                   :
                                               cardApprover[index].status! == 'Returned' ?
-                                              Color(0xFF2481CF)
+                                              const Color(0xFF2481CF)
                                                   :
-                                              Color(0xFF94A3B8)
+                                              const Color(0xFF94A3B8)
                                           ),
                                         )
                                     )
@@ -375,30 +377,30 @@ class _DocumentPageState extends State<DocumentPage> {
                             Container(
                               width: 90,
                               height: 90,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   image: DecorationImage(
                                       image: AssetImage('assets/icons/reject.png')
                                   )
                               ),
                             ),
-                            SizedBox(height: 10,),
-                            Text('Are you sure?',
+                            const SizedBox(height: 10,),
+                            const Text('Are you sure?',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
-                            Text('Do you really want to reject this document?',
+                            const Text('Do you really want to reject this document?',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12
                               ),
                             ),
-                            SizedBox(height: 10,),
-                            Text('Please explain your reason for rejecting this document or add some corrective notes :',
+                            const SizedBox(height: 10,),
+                            const Text('Please explain your reason for rejecting this document or add some corrective notes :',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12,
@@ -406,13 +408,13 @@ class _DocumentPageState extends State<DocumentPage> {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                             Scrollbar(
                               child: TextField(
                                 controller: inputTextControllerReject,
                                 maxLines: 4,
                                 cursorColor: Colors.grey,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -422,7 +424,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20,),
+                            const SizedBox(height: 20,),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -431,7 +433,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                          color: Color(0xFF029FE6)
+                                          color: const Color(0xFF029FE6)
                                       )
                                   ),
                                   child: TextButton(
@@ -445,7 +447,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 ),
                                 Container(
                                   decoration: BoxDecoration(
-                                      color: Color(0xFF029FE6),
+                                      color: const Color(0xFF029FE6),
                                       borderRadius: BorderRadius.circular(6)
                                   ),
                                   width: 100,
@@ -455,7 +457,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                         Flushbar(
                                           backgroundColor: Colors.red,
                                           message: 'Silahkan isi catatan terlebih dahulu',
-                                          duration: Duration(seconds: 2),
+                                          duration: const Duration(seconds: 2),
                                         ).show(context);
                                       }else{
                                         EasyLoading.show(status: 'rejecting...');
@@ -476,14 +478,14 @@ class _DocumentPageState extends State<DocumentPage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      primary: Color(0xFFDC2626),
+                      primary: const Color(0xFFDC2626),
                       elevation: 0,
                     ),
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.close,
                       size: 13,
                       color: Colors.white,),
-                    label: Text("Reject",
+                    label: const Text("Reject",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16
@@ -502,7 +504,7 @@ class _DocumentPageState extends State<DocumentPage> {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Color(0xFF029FE6),
+                      color: const Color(0xFF029FE6),
                     ),
                     borderRadius: BorderRadius.circular(4
                     ),),
@@ -517,30 +519,30 @@ class _DocumentPageState extends State<DocumentPage> {
                             Container(
                               width: 90,
                               height: 90,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   image: DecorationImage(
                                       image: AssetImage('assets/icons/return.png')
                                   )
                               ),
                             ),
-                            SizedBox(height: 10,),
-                            Text('Are you sure?',
+                            const SizedBox(height: 10,),
+                            const Text('Are you sure?',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
-                            Text('Do you really want to return this document?',
+                            const Text('Do you really want to return this document?',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12
                               ),
                             ),
-                            SizedBox(height: 10,),
-                            Text('Please explain your reason for returning this document or add some corrective notes :',
+                            const SizedBox(height: 10,),
+                            const Text('Please explain your reason for returning this document or add some corrective notes :',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12,
@@ -548,13 +550,13 @@ class _DocumentPageState extends State<DocumentPage> {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                             Scrollbar(
                               child: TextField(
                                 controller: inputTextControllerReturn,
                                 maxLines: 4,
                                 cursorColor: Colors.grey,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -564,7 +566,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20,),
+                            const SizedBox(height: 20,),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -573,7 +575,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                          color: Color(0xFF029FE6)
+                                          color: const Color(0xFF029FE6)
                                       )
                                   ),
                                   child: TextButton(
@@ -658,7 +660,7 @@ class _DocumentPageState extends State<DocumentPage> {
                               ),
                             ),
                             SizedBox(height: 10,),
-                            Text('Are you sure?',
+                            const Text('Are you sure?',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24
@@ -667,14 +669,14 @@ class _DocumentPageState extends State<DocumentPage> {
                             SizedBox(
                               height: 10,
                             ),
-                            Text('Do you really want to approve this document?',
+                            const Text('Do you really want to approve this document?',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12
                               ),
                             ),
                             SizedBox(height: 10,),
-                            Text('Please explain your reason for approving this document or add some corrective notes :',
+                            const Text('Please explain your reason for approving this document or add some corrective notes :',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12,
@@ -688,7 +690,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 maxLines: 4,
                                 controller: inputTextControllerApprove,
                                 cursorColor: Colors.grey,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -755,12 +757,12 @@ class _DocumentPageState extends State<DocumentPage> {
                         primary: Color(0xFF1FA463),
                         elevation: 0
                     ),
-                    icon: Icon(
+                    icon: const Icon(
                         Icons.check,
                         size: 13,
                         color: Colors.white
                     ),
-                    label: Text("Approve",
+                    label: const Text("Approve",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16
@@ -787,7 +789,7 @@ class _DocumentPageState extends State<DocumentPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(height: 10,),
-                        Text('Are you sure?',
+                        const Text('Are you sure?',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 24
@@ -1428,7 +1430,6 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> signingMap = jsonDecode(response.body);
 
       if(signingMap['code'] == 0){
-        print(signingMap['data']);
           var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
           if(query.find().isNotEmpty) {
             final surat = SuratModel(
@@ -1449,10 +1450,13 @@ class _DocumentPageState extends State<DocumentPage> {
             );
 
             mains.objectbox.boxSurat.put(surat);
-            setState(() {});
-            setState(() {});
             EasyLoading.showSuccess('Berhasil Signing!');
+            setState(() {});
             Navigator.pop(context);
+            Navigator.pop(context);
+            Navigator.push(
+              context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
+            );
           }
         }
       else{
