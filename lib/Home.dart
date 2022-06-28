@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:militarymessenger/Attendance.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
@@ -431,7 +431,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     return file.path;
   }
 
-  Location location = new Location();
+  // Location location = new Location();
 
   double calculateDistance(lat1, lon1, lat2, lon2){
     var p = 0.017453292519943295;
@@ -442,41 +442,89 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     return 12742 * asin(sqrt(a));
   }
 
-  void locationAttendance(LocationData locationData){
-
-    DateTime now = new DateTime.now();
-    DateTime date = new DateTime(now.year, now.month, now.day);
-
-    if(locationData != null){
-
-      double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
-
-      if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
-        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-        if(query.find().isNotEmpty) {
-          print('status attendance: ${query.find().first.status}');
-          if(query.find().first.status == 0){
-            // call check in if after check out on the same day
-            print('call check in');
-            saveAttendance(locationData.latitude!, locationData.longitude!);
-          }
-        }else{
-          // call check in
-          print('first time call check in');
-          saveAttendance(locationData.latitude!, locationData.longitude!);
-        }
-      }else if(distanceOnMeter > 50){
-        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-        if(query.find().isNotEmpty) {
-          if(query.find().first.status == 1){
-            // call check out
-            print('call check out');
-            saveAttendance(locationData.latitude!, locationData.longitude!);
-          }
-        }
-      }
-    }
-  }
+  // void locationAttendance(LocationData locationData){
+  //
+  //   DateTime now = new DateTime.now();
+  //   DateTime date = new DateTime(now.year, now.month, now.day);
+  //
+  //   if(locationData != null){
+  //
+  //     double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
+  //
+  //     if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
+  //       var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+  //       if(query.find().isNotEmpty) {
+  //         if(query.find().first.status == 0){
+  //           // call check in if after check out on the same day
+  //           print('dapet cekin not first');
+  //           var query2 = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(query.find().first.checkInAt!)).build();
+  //           if(query2.find().isNotEmpty) {
+  //             var attendance = AttendanceModel(
+  //               id: query.find().first.id,
+  //               date: query.find().first.date,
+  //               checkInAt: query.find().first.checkInAt,
+  //               checkOutAt: query.find().first.checkOutAt,
+  //               latitude: locationData.latitude,
+  //               longitude: locationData.longitude,
+  //               status: 1,
+  //               category: query.find().first.category,
+  //             );
+  //
+  //             mains.objectbox.boxAttendance.put(attendance);
+  //           }
+  //           else{
+  //             print('belom ada di objectbox yang cekin not first');
+  //           }
+  //
+  //           saveAttendance(locationData.latitude!, locationData.longitude!);
+  //         }
+  //       }else{
+  //         // call first check in
+  //         var query2 = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(query.find().first.checkInAt!)).build();
+  //         if(query2.find().isNotEmpty) {
+  //         }
+  //         else{
+  //           var attendance = AttendanceModel(
+  //             date: DateFormat('dd MM yyyy').format(date).toString(),
+  //             checkInAt: now.toString(),
+  //             latitude: locationData.latitude,
+  //             longitude: locationData.longitude,
+  //             status: 1,
+  //           );
+  //
+  //           mains.objectbox.boxAttendance.put(attendance);
+  //         }
+  //
+  //         saveAttendance(locationData.latitude!, locationData.longitude!);
+  //       }
+  //     }else if(distanceOnMeter > 50){
+  //       var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+  //       if(query.find().isNotEmpty) {
+  //         if(query.find().first.status == 1){
+  //           // call check out
+  //           var query2 = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+  //           if(query2.find().isNotEmpty) {
+  //             var attendance = AttendanceModel(
+  //                 id: query.find().first.id,
+  //                 date: query.find().first.date,
+  //                 checkInAt: query.find().first.checkInAt,
+  //                 checkOutAt: now.toString(),
+  //                 latitude: query.find().first.latitude,
+  //                 longitude: query.find().first.longitude,
+  //                 status: 0
+  //             );
+  //
+  //             mains.objectbox.boxAttendance.put(attendance);
+  //           }
+  //           else{
+  //             print('belom ada di objectbox yang cekout');
+  //           }
+  //           saveAttendance(locationData.latitude!, locationData.longitude!);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   String? version;
   String? buildNumber;
@@ -486,19 +534,19 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     DateTime now = new DateTime.now();
     DateTime date = new DateTime(now.year, now.month, now.day);
 
-    var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-    List<AttendanceModel> suratList = query.find().toList();
-    for(var surat in suratList){
-      print('object');
-      print(surat.date);
+    // var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
+    // List<AttendanceModel> suratList = query.find().toList();
+    // for(var surat in suratList){
+    //   print('object');
+    //   print(surat.date);
       // mains.objectbox.boxAttendance.remove(surat.id);
-    }
+    // }
 
-    location.enableBackgroundMode(enable: true);
+    // location.enableBackgroundMode(enable: true);
 
-    location.onLocationChanged.listen((locationData) {
-      locationAttendance(locationData);
-    });
+    // location.onLocationChanged.listen((locationData) {
+    //   locationAttendance(locationData);
+    // });
 
 
     _tabController =  new TabController(initialIndex: 1,length: 4,vsync: this);
@@ -1223,9 +1271,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   Future<http.Response> saveAttendance(double lat, double long) async {
 
-    DateTime now = new DateTime.now();
-    DateTime date = new DateTime(now.year, now.month, now.day);
-
     String url ='https://chat.dev.r17.co.id/save_attendance.php';
 
     Map<String, dynamic> data = {
@@ -1244,72 +1289,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     );
 
     if(response.statusCode == 200){
-      print("${response.body}");
+      // print("${response.body}");
       Map<String, dynamic> attendanceMap = jsonDecode(response.body);
 
       if(attendanceMap['code_status'] == 0){
-        // print(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])));
         if(attendanceMap['data']['check_in'] != null){
-          print('dapet cekin');
-          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(attendanceMap['data']['check_in'].toString())).build();
-          if(query.find().isNotEmpty) {
-            print('dah ada di objectbox yang cekin');
-          }else{
-            print('belom ada di objectbox yang cekin');
-            var attendance = AttendanceModel(
-              date: DateFormat('dd MM yyyy').format(date).toString(),
-              checkInAt: attendanceMap['data']['check_in'],
-              latitude: lat,
-              longitude: long,
-              status: 1,
-            );
 
-            mains.objectbox.boxAttendance.put(attendance);
-          }
         }
         else if(attendanceMap['data']['check_out'] != null){
-          print('dapet cekout');
-          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString())).build();
-          if(query.find().isNotEmpty) {
-            print('dah ada di objectbox yang cekout');
 
-            var attendance = AttendanceModel(
-                id: query.find().first.id,
-                date: query.find().first.date,
-                checkInAt: query.find().first.checkInAt,
-                checkOutAt: attendanceMap['data']['check_out'],
-                latitude: query.find().first.latitude,
-                longitude: query.find().first.longitude,
-                status: 0
-            );
-
-            mains.objectbox.boxAttendance.put(attendance);
-          }else{
-            print('belom ada di objectbox yang cekout');
-          }
         }
         else if(attendanceMap['data']['type'] == 'inButNotFirst'){
-          print('dapet cekin not first');
-          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.checkInAt.equals(attendanceMap['data']['first_check_in'].toString())).build();
-          if(query.find().isNotEmpty) {
-            print('dah ada di objectbox yang cekin not first');
-            var attendance = AttendanceModel(
-              id: query.find().first.id,
-              date: query.find().first.date,
-              checkInAt: query.find().first.checkInAt,
-              checkOutAt: query.find().first.checkOutAt,
-              latitude: lat,
-              longitude: long,
-              status: 1,
-              category: query.find().first.category,
-            );
 
-            mains.objectbox.boxAttendance.put(attendance);
-          }else{
-            print('belom ada di objectbox yang cekin not first');
-          }
         }
-      }else{
+      }
+      else{
         print("ada yang salah!");
         print(attendanceMap['code_status']);
         print(attendanceMap['error']);
@@ -1478,7 +1472,6 @@ void _openDialog(ctx) {
             ),
             onPressed: () {
 
-
               _deleteAppDir();
               _deleteCacheDir();
 
@@ -1486,6 +1479,11 @@ void _openDialog(ctx) {
               mains.objectbox.boxChat.removeAll();
               mains.objectbox.boxContact.removeAll();
               mains.objectbox.boxUser.removeAll();
+              mains.objectbox.boxAttendance.removeAll();
+              mains.objectbox.boxSurat.removeAll();
+              mains.objectbox.boxBadge.removeAll();
+              mains.objectbox.boxNews.removeAll();
+              mains.objectbox.boxUserPreference.removeAll();
 
 
               Navigator.pushAndRemoveUntil(

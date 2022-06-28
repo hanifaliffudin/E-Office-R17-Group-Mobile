@@ -55,7 +55,7 @@ class _SentPageState extends State<SentPage> {
               else{
                 var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
                 List<SuratModel> listSurat = queryInbox.find().toList();
-                if(listSurat.length==0)
+                if(listSurat.isEmpty){
                   return Container(
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
@@ -65,7 +65,8 @@ class _SentPageState extends State<SentPage> {
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                       )
                   );
-                else
+                }
+                else{
                   return Container(
                     padding: EdgeInsets.all(20),
                     child: ListView.builder(
@@ -90,7 +91,7 @@ class _SentPageState extends State<SentPage> {
                                   padding: const EdgeInsets.all(10),
                                   child: Stack(
                                     children: [
-                                      Positioned(
+                                      const Positioned(
                                         left: 0,
                                         top: 5,
                                         child: CircleAvatar(
@@ -169,6 +170,7 @@ class _SentPageState extends State<SentPage> {
                           ),
                     ),
                   );
+                }
               }
             }
         ),
