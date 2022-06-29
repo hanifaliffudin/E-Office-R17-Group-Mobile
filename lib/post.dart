@@ -383,6 +383,7 @@ class _PostPageState extends State<PostPage> {
                                                                     :
                                                                   bubbleComments[index].name!,
                                                                     style: TextStyle(
+                                                                      color: Colors.black,
                                                                       fontWeight: FontWeight.bold,
                                                                       fontSize: 15
                                                                     ),
@@ -513,7 +514,7 @@ class _PostPageState extends State<PostPage> {
                             inputTextController.clear();
                           }
                         },
-                        child: Text('Post'),
+                        child: Text('Post', style: TextStyle(color: Theme.of(context).inputDecorationTheme.labelStyle?.color),),
                       )
                   )
                 ],

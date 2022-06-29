@@ -112,6 +112,12 @@ class _ProfilePageState extends State<ProfilePage> {
             userName: query.find().first.userName,
             phone: query.find().first.phone,
             photo: img64,
+            fcmToken: query.find().first.fcmToken,
+            status: query.find().first.status,
+            enable: query.find().first.enable,
+            idInstall: query.find().first.idInstall,
+            token: query.find().first.idInstall,
+            verification_code: query.find().first.verification_code,
           );
 
           mains.objectbox.boxUser.put(user);
@@ -464,6 +470,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       userName: query.find().first.userName,
                       phone: query.find().first.phone,
                       photo: '',
+                      fcmToken: query.find().first.fcmToken,
+                      status: query.find().first.status,
+                      enable: query.find().first.enable,
+                      idInstall: query.find().first.idInstall,
+                      token: query.find().first.idInstall,
+                      verification_code: query.find().first.verification_code,
                     );
 
                     mains.objectbox.boxUser.put(user);
@@ -548,6 +560,12 @@ class _ProfilePageState extends State<ProfilePage> {
             userName: name,
             phone: query.find().first.phone,
             photo: query.find().first.photo,
+            fcmToken: query.find().first.fcmToken,
+            status: query.find().first.status,
+            enable: query.find().first.enable,
+            idInstall: query.find().first.idInstall,
+            token: query.find().first.idInstall,
+            verification_code: query.find().first.verification_code,
           );
 
           mains.objectbox.boxUser.put(user);
@@ -600,6 +618,12 @@ class _ProfilePageState extends State<ProfilePage> {
             userName: query.find().first.userName,
             phone: phone,
             photo: query.find().first.photo,
+            fcmToken: query.find().first.fcmToken,
+            status: query.find().first.status,
+            enable: query.find().first.enable,
+            idInstall: query.find().first.idInstall,
+            token: query.find().first.idInstall,
+            verification_code: query.find().first.verification_code,
           );
 
           mains.objectbox.boxUser.put(user);

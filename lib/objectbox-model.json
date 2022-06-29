@@ -487,7 +487,7 @@
     },
     {
       "id": "9:3436676157863920729",
-      "lastPropertyId": "3:3326000160112909143",
+      "lastPropertyId": "4:3380206623835819827",
       "name": "BadgeModel",
       "properties": [
         {
@@ -504,6 +504,11 @@
         {
           "id": "3:3326000160112909143",
           "name": "badgeNeedSign",
+          "type": 6
+        },
+        {
+          "id": "4:3380206623835819827",
+          "name": "badgeNeedApprove",
           "type": 6
         }
       ],
@@ -557,9 +562,28 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "11:1435125642557611699",
+      "lastPropertyId": "2:4949612167761542987",
+      "name": "LoadChatModel",
+      "properties": [
+        {
+          "id": "1:8107107720145537335",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4949612167761542987",
+          "name": "loaded",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "10:1015253999311660028",
+  "lastEntityId": "11:1435125642557611699",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

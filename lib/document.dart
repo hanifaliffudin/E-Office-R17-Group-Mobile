@@ -41,7 +41,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   TextEditingController inputTextControllerApprove = TextEditingController();
   TextEditingController inputTextControllerReturn = TextEditingController();
-  TextEditingController inputTextControllerReject = TextEditingController();
+  TextEditingController inputTextControllerCancel = TextEditingController();
 
   @override
   void initState() {
@@ -99,16 +99,16 @@ class _DocumentPageState extends State<DocumentPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                           child: surat!.kategori == 'inbox' ?
-                        SfPdfViewer.network('http://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
-                          pageLayoutMode: PdfPageLayoutMode.single,
-                          scrollDirection: PdfScrollDirection.horizontal,
-                          interactionMode: PdfInteractionMode.selection,
-                          onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                            if(surat!.kategori=='inbox'){
-                              readSurat(surat!.idSurat!);
-                            }
-                          },
-                        )
+                          const PDF(
+                            enableSwipe: true,
+                            swipeHorizontal: true,
+                            autoSpacing: false,
+                            pageFling: false,
+                          ).cachedFromUrl(
+                            'http://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
+                            placeholder: (progress) => Center(child: Text('$progress %')),
+                            errorWidget: (error) => Center(child: Text(error.toString())),
+                          )
                         :
                           const PDF(
                             enableSwipe: true,
@@ -393,14 +393,14 @@ class _DocumentPageState extends State<DocumentPage> {
                             const SizedBox(
                               height: 10,
                             ),
-                            const Text('Do you really want to reject this document?',
+                            const Text('Do you really want to cancel this document?',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12
                               ),
                             ),
                             const SizedBox(height: 10,),
-                            const Text('Please explain your reason for rejecting this document or add some corrective notes :',
+                            const Text('Please explain your reason for canceling this document or add some corrective notes :',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 12,
@@ -411,7 +411,7 @@ class _DocumentPageState extends State<DocumentPage> {
                             const SizedBox(height: 10,),
                             Scrollbar(
                               child: TextField(
-                                controller: inputTextControllerReject,
+                                controller: inputTextControllerCancel,
                                 maxLines: 4,
                                 cursorColor: Colors.grey,
                                 decoration: const InputDecoration(
@@ -453,16 +453,16 @@ class _DocumentPageState extends State<DocumentPage> {
                                   width: 100,
                                   child: TextButton(
                                     onPressed: () {
-                                      if(inputTextControllerReject.text == ""){
+                                      if(inputTextControllerCancel.text == ""){
                                         Flushbar(
                                           backgroundColor: Colors.red,
                                           message: 'Silahkan isi catatan terlebih dahulu',
                                           duration: const Duration(seconds: 2),
                                         ).show(context);
                                       }else{
-                                        EasyLoading.show(status: 'rejecting...');
-                                        reject(surat!.idSurat!, inputTextControllerReject.text);
-                                        inputTextControllerReject.clear();
+                                        EasyLoading.show(status: 'canceling...');
+                                        cancel(surat!.idSurat!, inputTextControllerCancel.text);
+                                        inputTextControllerCancel.clear();
                                       }
                                     },
                                     child: const Text('Confirm',
@@ -485,7 +485,7 @@ class _DocumentPageState extends State<DocumentPage> {
                       Icons.close,
                       size: 13,
                       color: Colors.white,),
-                    label: const Text("Reject",
+                    label: const Text("Cancel",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16
@@ -729,17 +729,9 @@ class _DocumentPageState extends State<DocumentPage> {
                                   ),
                                   child: TextButton(
                                     onPressed: () {
-                                      if(inputTextControllerApprove.text == ""){
-                                        Flushbar(
-                                          backgroundColor: Colors.red,
-                                          message: 'Silahkan isi catatan terlebih dahulu',
-                                          duration: Duration(seconds: 2),
-                                        ).show(context);
-                                      }else{
                                         EasyLoading.show(status: 'approving...');
                                         approve(surat!.idSurat!, inputTextControllerApprove.text);
                                         inputTextControllerApprove.clear();
-                                      }
                                     },
                                     child: const Text('Confirm',
                                       style: TextStyle(
@@ -950,7 +942,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "rejected"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
             Container(
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 1,
@@ -973,7 +965,7 @@ class _DocumentPageState extends State<DocumentPage> {
                       width: 5,
                     ),
                     Text(
-                      'Rejected',
+                      'Canceled',
                       style: TextStyle(
                           color: Color(0xFFdc2626),
                           fontWeight: FontWeight.w600,
@@ -1032,7 +1024,7 @@ class _DocumentPageState extends State<DocumentPage> {
             mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned"?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "rejected"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
             Container()
                 :
             ElevatedButton.icon(
@@ -1161,7 +1153,7 @@ class _DocumentPageState extends State<DocumentPage> {
           }
         }
       else{
-        EasyLoading.showError(approveMap['message']);
+        EasyLoading.showError(approveMap['message'].toString());
         print(approveMap['code']);
       }
     }
@@ -1234,7 +1226,7 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> reject(String id_surat, String catatan) async {
+  Future<http.Response> cancel(String id_surat, String catatan) async {
 
     String url ='http://eoffice.dev.digiprimatera.co.id/api/reject';
 

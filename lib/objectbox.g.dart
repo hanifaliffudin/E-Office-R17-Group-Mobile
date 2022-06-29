@@ -18,6 +18,7 @@ import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
 import 'models/ConversationModel.dart';
+import 'models/LoadChatModel.dart';
 import 'models/NewsModel.dart';
 import 'models/NoteModel.dart';
 import 'models/SuratModel.dart';
@@ -512,7 +513,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(9, 3436676157863920729),
       name: 'BadgeModel',
-      lastPropertyId: const IdUid(3, 3326000160112909143),
+      lastPropertyId: const IdUid(4, 3380206623835819827),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -528,6 +529,11 @@ final _entities = <ModelEntity>[
         ModelProperty(
             id: const IdUid(3, 3326000160112909143),
             name: 'badgeNeedSign',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(4, 3380206623835819827),
+            name: 'badgeNeedApprove',
             type: 6,
             flags: 0)
       ],
@@ -581,6 +587,25 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(11, 1435125642557611699),
+      name: 'LoadChatModel',
+      lastPropertyId: const IdUid(2, 4949612167761542987),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 8107107720145537335),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 4949612167761542987),
+            name: 'loaded',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -604,7 +629,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(10, 1015253999311660028),
+      lastEntityId: const IdUid(11, 1435125642557611699),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -1128,10 +1153,11 @@ ModelDefinition getObjectBoxModel() {
           object.id = id;
         },
         objectToFB: (BadgeModel object, fb.Builder fbb) {
-          fbb.startTable(4);
+          fbb.startTable(5);
           fbb.addInt64(0, object.id);
           fbb.addInt64(1, object.badgeInbox);
           fbb.addInt64(2, object.badgeNeedSign);
+          fbb.addInt64(3, object.badgeNeedApprove);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1144,7 +1170,9 @@ ModelDefinition getObjectBoxModel() {
               badgeInbox:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
               badgeNeedSign:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0));
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
+              badgeNeedApprove:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0));
 
           return object;
         }),
@@ -1200,6 +1228,32 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 16),
               status:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0));
+
+          return object;
+        }),
+    LoadChatModel: EntityDefinition<LoadChatModel>(
+        model: _entities[10],
+        toOneRelations: (LoadChatModel object) => [],
+        toManyRelations: (LoadChatModel object) => {},
+        getId: (LoadChatModel object) => object.id,
+        setId: (LoadChatModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (LoadChatModel object, fb.Builder fbb) {
+          fbb.startTable(3);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.loaded);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = LoadChatModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              loaded:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
 
           return object;
         })
@@ -1567,6 +1621,10 @@ class BadgeModel_ {
   /// see [BadgeModel.badgeNeedSign]
   static final badgeNeedSign =
       QueryIntegerProperty<BadgeModel>(_entities[8].properties[2]);
+
+  /// see [BadgeModel.badgeNeedApprove]
+  static final badgeNeedApprove =
+      QueryIntegerProperty<BadgeModel>(_entities[8].properties[3]);
 }
 
 /// [AttendanceModel] entity fields to define ObjectBox queries.
@@ -1602,4 +1660,15 @@ class AttendanceModel_ {
   /// see [AttendanceModel.status]
   static final status =
       QueryIntegerProperty<AttendanceModel>(_entities[9].properties[7]);
+}
+
+/// [LoadChatModel] entity fields to define ObjectBox queries.
+class LoadChatModel_ {
+  /// see [LoadChatModel.id]
+  static final id =
+      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[0]);
+
+  /// see [LoadChatModel.loaded]
+  static final loaded =
+      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[1]);
 }

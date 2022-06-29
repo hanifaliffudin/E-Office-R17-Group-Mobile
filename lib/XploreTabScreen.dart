@@ -9,7 +9,7 @@ import 'package:badges/badges.dart';
 import 'document.dart';
 import 'package:militarymessenger/needSign.dart';
 import 'package:militarymessenger/inbox.dart';
-import 'package:militarymessenger/sent.dart';
+import 'package:militarymessenger/Signed.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
@@ -31,6 +31,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     // TODO: implement initState
     getBadgeInbox();
     getBadgeSign();
+    getBadgeNeedApprove();
     getRecent();
     super.initState();
   }
@@ -53,14 +54,31 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       );
                     },
                     child: Column(
-                      children: const [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Color(0xFF3B8880),
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
+                      children: [
+                        Badge(
+                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
+                          mains.objectbox.boxBadge.get(1)!.badgeNeedApprove == 0 ? false : true
+                              :
+                          false,
+                          badgeContent: Text(
+                            mains.objectbox.boxBadge.get(1) != null ?
+                            mains.objectbox.boxBadge.get(1)!.badgeNeedApprove.toString()
+                                :
+                            '',
+                            style: const TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                          badgeColor: const Color(0xFFE2574C),
+                          child: const CircleAvatar(
+                            radius: 30,
                             backgroundColor: Color(0xFF3B8880),
-                            radius: 20,
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
+                              backgroundColor: Color(0xFF3B8880),
+                              radius: 20,
+                            ),
                           ),
                         ),
                         Text(
@@ -167,7 +185,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const SentPage()),
+                        MaterialPageRoute(builder: (context) => const SignedPage()),
                       );
                     },
                     child: Column(
@@ -182,7 +200,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                         ),
                         Text(
-                          'Sent',
+                          'Signed',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -385,6 +403,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
               id: 1,
               badgeInbox: suratMap['count unread'],
               badgeNeedSign: query.find().first.badgeNeedSign,
+              badgeNeedApprove: query.find().first.badgeNeedApprove,
             );
 
             mains.objectbox.boxBadge.put(badge);
@@ -440,6 +459,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
             var badge = BadgeModel(
               id: 1,
               badgeInbox: query.find().first.badgeInbox,
+              badgeNeedApprove: query.find().first.badgeNeedApprove,
               badgeNeedSign: suratMap['data'],
             );
 
@@ -451,6 +471,59 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
             );
 
             mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }
+      }
+      else{
+        print(suratMap['message']);
+        print(response.statusCode);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+    }
+    return response;
+  }
+
+  Future<http.Response> getBadgeNeedApprove() async {
+    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
+
+    Map<String, dynamic> data = {
+
+      'payload': {
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
+      }
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      // print("${response.body}");
+      Map<String, dynamic> suratMap = jsonDecode(response.body);
+
+      if(suratMap['message'] == 'sukses' ){
+          var query = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
+          if(query.find().isNotEmpty) {
+            var badge = BadgeModel(
+              id: 1,
+              badgeInbox: query.find().first.badgeInbox,
+              badgeNeedSign: query.find().first.badgeNeedSign,
+              badgeNeedApprove: suratMap['total'],
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }else{
+            var badge = BadgeModel(
+              badgeNeedApprove: suratMap['total'],
+            );
+
+            // mains.objectbox.boxBadge.put(badge);
             setState(() {});
           }
       }
