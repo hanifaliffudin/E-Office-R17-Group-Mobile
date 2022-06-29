@@ -10,6 +10,7 @@ class AttendanceModel {
   double? longitude;
   String? category;
   int status = 0;
+  bool server = false;
 
   AttendanceModel(
       {
@@ -21,5 +22,6 @@ class AttendanceModel {
         this.longitude,
         this.category,
         this.status = 0,
+        this.server = false,
       });
 }

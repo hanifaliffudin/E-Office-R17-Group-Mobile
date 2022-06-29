@@ -64,9 +64,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
     List<int?> idRoom = conversationList.map((e) => e.roomId).toList();
 
-    for(int i=0;i<conversationList.length;i++){
-      pp.add(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile);
-    }
+    // for(int i=0;i<conversationList.length;i++){
+    //   pp.add(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile);
+    // }
 
     var msg = {};
     msg["api_key"] = apiKey;
@@ -77,6 +77,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     homes.channel.sink.add(msgString);
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   ImageProvider<Object> _getPhoto(ConversationModel conversation) {
@@ -217,7 +222,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                   ),
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.all(10),
+                      // padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.only(
+                        top: 10.0,
+                        right: 10.0,
+                        left: 10.0,
+                      ),
                       child: ListView.builder(
                           itemCount: conversationList.length,
                           itemBuilder:(BuildContext context,index)=>
@@ -576,9 +586,14 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(10),
+                    // padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.only(
+                      top: 10.0,
+                      right: 10.0,
+                      left: 10.0,
+                    ),
                     child: ListView.builder(
-                        itemCount: pp.length,
+                        itemCount: conversationList.length,
                         itemBuilder:(BuildContext context,index)=>
                             InkWell(
                                 onTap: (){

@@ -536,7 +536,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(10, 1015253999311660028),
       name: 'AttendanceModel',
-      lastPropertyId: const IdUid(8, 2464333630834388323),
+      lastPropertyId: const IdUid(9, 2477052192921268610),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -578,6 +578,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(8, 2464333630834388323),
             name: 'status',
             type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(9, 2477052192921268610),
+            name: 'server',
+            type: 1,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -1168,7 +1173,7 @@ ModelDefinition getObjectBoxModel() {
           final categoryOffset = object.category == null
               ? null
               : fbb.writeString(object.category!);
-          fbb.startTable(9);
+          fbb.startTable(10);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, checkInAtOffset);
           fbb.addOffset(2, checkOutAtOffset);
@@ -1177,6 +1182,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(5, dateOffset);
           fbb.addOffset(6, categoryOffset);
           fbb.addInt64(7, object.status);
+          fbb.addBool(8, object.server);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1199,7 +1205,9 @@ ModelDefinition getObjectBoxModel() {
               category: const fb.StringReader(asciiOptimization: true)
                   .vTableGetNullable(buffer, rootOffset, 16),
               status:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0));
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
+              server: const fb.BoolReader()
+                  .vTableGet(buffer, rootOffset, 20, false));
 
           return object;
         })
@@ -1602,4 +1610,8 @@ class AttendanceModel_ {
   /// see [AttendanceModel.status]
   static final status =
       QueryIntegerProperty<AttendanceModel>(_entities[9].properties[7]);
+
+  /// see [AttendanceModel.server]
+  static final server =
+      QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
 }
