@@ -319,6 +319,7 @@ class PinVerificationState extends State<PinVerification> {
       'api_key': this.apiKey,
       'email': globalEmail,
       'pin': pin,
+      'fcm_token': fcmToken,
     };
     //encode Map to JSON
     var body = json.encode(data);
@@ -333,21 +334,34 @@ class PinVerificationState extends State<PinVerification> {
 
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
-      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
-      //response.user_id;
-      //if(pin.toString() == userMap['verification_code'].toString()) {
-      //print(userMap['code_status']);
       if(userMap['code_status']==0) {
-
-        //Send data to server
 
         final user = UserModel(
           userId: userMap['user_id'],
           userName: globalEmail,
           email: globalEmail,
+          fcmToken: fcmToken,
         );
-        int id = mains.objectbox.boxUser.put(user);
-        print(user.id);
+
+        mains.objectbox.boxUser.put(user);
+        print('ini fcm di pinverif.dart: ${user.fcmToken}');
+        print('ini fcm old: ${userMap['fcm_old']}');
+        print('ini last_connection: ${userMap['last_connection']}');
+
+        if(userMap['last_connection'] != 0){
+          // sink last conn
+          var msg = {};
+          msg["api_key"] = apiKey;
+          msg["decrypt_key"] = "";
+          msg["type"] = "logout";
+          msg["msg_tipe"] = 'text';
+          msg["room_id"] = 12;
+
+          String msgString = json.encode(msg);
+          // print(msgString);
+
+          homes.channel.sink.add(msgString);
+        }
 
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home()), (Route<dynamic> route) => false);
 
@@ -357,6 +371,8 @@ class PinVerificationState extends State<PinVerification> {
       }
     }
     else{
+      print(response);
+      print('status code: ${response.statusCode}');
       pinFailedSnackBar(context,"Verifikasi gagal!");
     }
     return response;
