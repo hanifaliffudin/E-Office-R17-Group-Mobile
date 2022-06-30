@@ -162,7 +162,7 @@ class _ChatScreenState extends State<ChatScreen> {
         msg["date"] = chatsUndelivNUnread[i].date;
         msg["room_id"] = conversation!.roomId;
         String msgString = json.encode(msg);
-        // print(msgString);
+        
         homes.channel.sink.add(msgString);
       }
     }
@@ -369,7 +369,12 @@ class _ChatScreenState extends State<ChatScreen> {
             elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                Navigator.pop(context);
+                // Navigator.pushReplacement(context, 
+                //   MaterialPageRoute(builder: (context) => Home()),
+                // );
+              },
             ),
             titleSpacing: 0,
             title: InkWell(
@@ -555,8 +560,46 @@ class _ChatScreenState extends State<ChatScreen> {
                             reverse: true,
                             shrinkWrap: false,
                             padding: const EdgeInsets.all(2),
-                            itemCount: chats.length!=0 ? chats.length : 0,
+                            itemCount: chats.isNotEmpty ? chats.length : 0,
                             itemBuilder: (context, index) {
+                              DateTime date2 = DateTime.parse(chats[index].date);
+                              bool isLessThan7 = daysBetween(date2, now) <= 7;
+                              bool isSame = false;
+                              String desc = "";
+                              bool showTriangleRight = false;
+                              bool showTriangleLeft = false;
+
+                              if (index != chats.length-1) {
+                                isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
+                              }
+
+                              if (!isSame) {
+                                if (isLessThan7) {
+                                  bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+
+                                  if (isToday) {
+                                    desc = "Today";
+                                  } else if (daysBetween(date2, now) == 1) {
+                                    desc = "Yesterday";
+                                  } else {
+                                    desc = DateFormat('EEEE').format(DateTime.parse(chats[index].date));
+                                  }
+                                } else {
+                                  desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                }
+
+                                showTriangleLeft = true;
+                                showTriangleRight = true;
+                              } else {
+                                if (chats[index].idSender != chats[index+1].idSender) {
+                                  showTriangleLeft = true;
+                                }
+                                
+                                if (chats[index].idSender != chats[index+1].idSender) {
+                                  showTriangleRight = true;
+                                }
+                              }
+
                               var content = chats[index].idSender == idUser ?
                                   SwipeTo(
                                       onLeftSwipe: () {
@@ -572,7 +615,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                           chats[index].sendStatus,
                                           chats[index].tipe!,
                                           '',
-                                          index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                          // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                          showTriangleRight,
                                           false
                                       )
                                           : chats[index].tipe == 'image' ?
@@ -612,7 +656,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
                                       chats[index].tipe!,
                                       '',
-                                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      showTriangleLeft,
                                       false
                                   ) : chats[index].tipe == 'image' ?
                                   FriendMessageCardPersonal(
@@ -633,31 +678,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       true
                                   )
                                       : Container();
-                              DateTime date2 = DateTime.parse(chats[index].date);
-                              bool isLessThan7 = daysBetween(date2, now) <= 7;
-                              bool isSame = false;
-                              String desc = "";
 
-                              if (index != chats.length-1) {
-                                isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
-                              }
-
-                              if (!isSame) {
-                                if (isLessThan7) {
-                                  bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
-                                  bool isYesterday = daysBetween(date2, now) == 1;
-
-                                  if (isToday) {
-                                    desc = "Today";
-                                  } else if (isYesterday) {
-                                    desc = "Yesterday";
-                                  } else {
-                                    desc = DateFormat('E').format(DateTime.parse(chats[index].date));
-                                  }
-                                } else {
-                                  desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
-                                }
-                              }
 // DateTime lastDayOfMonth = new DateTime(now.year, now.month, (now.day+4)-6);
                               return Column(
                                 children: [
@@ -720,161 +741,159 @@ class _ChatScreenState extends State<ChatScreen> {
                               minWidth: MediaQuery.of(context).size.width,
                               maxWidth: MediaQuery.of(context).size.width,
                             ),
-                            child: Scrollbar(
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        emojiShowing = !emojiShowing;
-                                        if (emojiShowing) {
-                                          _focusNode.unfocus();
-                                        }
-                                        else {
-                                          FocusScope.of(context).requestFocus(_focusNode);
-                                        }
-                                      });
-                                    },
-                                    icon: Icon(
-                                      Icons.tag_faces,
-                                      color: Colors.grey,
-                                    ),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      emojiShowing = !emojiShowing;
+                                      if (emojiShowing) {
+                                        _focusNode.unfocus();
+                                      }
+                                      else {
+                                        FocusScope.of(context).requestFocus(_focusNode);
+                                      }
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.tag_faces,
+                                    color: Colors.grey,
                                   ),
-                                  Expanded(
-                                    child: FocusScope(
-                                      child: Focus(
-                                        onFocusChange: (focus) {
-                                          if(focus){
-                                            emojiShowing = false;
+                                ),
+                                Expanded(
+                                  child: FocusScope(
+                                    child: Focus(
+                                      onFocusChange: (focus) {
+                                        if(focus){
+                                          emojiShowing = false;
+                                        }
+                                      },
+                                      child: TextField(
+                                        cursorColor: Colors.grey,
+                                        keyboardType: TextInputType.multiline,
+                                        controller: inputTextController,
+                                        focusNode: _focusNode,
+                                        onChanged: (text) {
+                                          if (!_isWriting){
+                                            _isWriting = true;
+
+                                            //update typing status when type messages
+                                            var msg = {};
+                                            msg["api_key"] = apiKey;
+                                            msg["type"] = "status_typing";
+                                            msg["id_sender"] = idUser;
+                                            msg["id_receiver"] = idReceiver;
+                                            msg["room_id"] = conversation!.roomId;
+                                            String msgString = json.encode(msg);
+                                            homes.channel.sink.add(msgString);
+
+                                            // setState((){});
+                                            Future.delayed(Duration(milliseconds: 900)).whenComplete((){
+                                              _isWriting = false;
+                                              // setState((){});
+                                            });
                                           }
                                         },
-                                        child: TextField(
-                                          cursorColor: Colors.grey,
-                                          keyboardType: TextInputType.multiline,
-                                          controller: inputTextController,
-                                          focusNode: _focusNode,
-                                          onChanged: (text) {
-                                            if (!_isWriting){
-                                              _isWriting = true;
-
-                                              //update typing status when type messages
-                                              var msg = {};
-                                              msg["api_key"] = apiKey;
-                                              msg["type"] = "status_typing";
-                                              msg["id_sender"] = idUser;
-                                              msg["id_receiver"] = idReceiver;
-                                              msg["room_id"] = conversation!.roomId;
-                                              String msgString = json.encode(msg);
-                                              homes.channel.sink.add(msgString);
-
-                                              // setState((){});
-                                              Future.delayed(Duration(milliseconds: 900)).whenComplete((){
-                                                _isWriting = false;
-                                                // setState((){});
-                                              });
-                                            }
-                                          },
-                                          maxLines: null,
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 16
-                                          ),
-                                          decoration: InputDecoration(
-                                              contentPadding: EdgeInsets.only(top: 13, bottom: 13),
-                                              border: InputBorder.none,
-                                              hintText: 'Type a message',
-                                              hintStyle: TextStyle(
-                                                  color: Color(0xff99999B),
-                                                  fontSize: 16
-                                              )
-                                          ),
+                                        maxLines: null,
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16
+                                        ),
+                                        decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.only(top: 13, bottom: 13),
+                                            border: InputBorder.none,
+                                            hintText: 'Type a message',
+                                            hintStyle: TextStyle(
+                                                color: Color(0xff99999B),
+                                                fontSize: 16
+                                            )
                                         ),
                                       ),
                                     ),
                                   ),
-                                  Transform.rotate(
-                                    angle: 70,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        showCupertinoModalPopup(
-                                            context: context,
-                                            builder: (context) => CupertinoActionSheet(
-                                              actions: <Widget>[
-                                                Container(
-                                                  color: Colors.white,
-                                                  child: CupertinoActionSheetAction(
-                                                    onPressed: () async {
-                                                      await getCamera();
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const Text(
-                                                      'Camera',
-                                                      style: TextStyle(
-                                                          color: Color(0xFF2481CF)
-                                                      ),
+                                ),
+                                Transform.rotate(
+                                  angle: 70,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      showCupertinoModalPopup(
+                                          context: context,
+                                          builder: (context) => CupertinoActionSheet(
+                                            actions: <Widget>[
+                                              Container(
+                                                color: Colors.white,
+                                                child: CupertinoActionSheetAction(
+                                                  onPressed: () async {
+                                                    await getCamera();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text(
+                                                    'Camera',
+                                                    style: TextStyle(
+                                                        color: Color(0xFF2481CF)
                                                     ),
                                                   ),
                                                 ),
-                                                Container(
-                                                  color: Colors.white,
-                                                  child: CupertinoActionSheetAction(
-                                                    onPressed: () {
-                                                      getImage();
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const Text(
-                                                      'Photo & Video Library',
-                                                      style: TextStyle(
-                                                          color: Color(0xFF2481CF)
-                                                      ),
+                                              ),
+                                              Container(
+                                                color: Colors.white,
+                                                child: CupertinoActionSheetAction(
+                                                  onPressed: () {
+                                                    getImage();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text(
+                                                    'Photo & Video Library',
+                                                    style: TextStyle(
+                                                        color: Color(0xFF2481CF)
                                                     ),
                                                   ),
                                                 ),
-                                                Container(
-                                                  color: Colors.white,
-                                                  child: CupertinoActionSheetAction(
-                                                    child: const Text(
-                                                      'Documents',
-                                                      style: TextStyle(
-                                                          color: Color(0xFF2481CF)
-                                                      ),
-                                                    ),
-                                                    onPressed: () {
-                                                      pickFile();
-                                                      Navigator.pop(context);
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                              cancelButton: Container(
-                                                decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius: BorderRadius.circular(10)
-                                                ),
+                                              ),
+                                              Container(
+                                                color: Colors.white,
                                                 child: CupertinoActionSheetAction(
                                                   child: const Text(
-                                                    'Cancel',
+                                                    'Documents',
                                                     style: TextStyle(
                                                         color: Color(0xFF2481CF)
                                                     ),
                                                   ),
                                                   onPressed: () {
+                                                    pickFile();
                                                     Navigator.pop(context);
                                                   },
                                                 ),
                                               ),
-                                            )
-                                        );
-                                      },
-                                      icon: Icon(
-                                        Icons.attach_file_rounded,
-                                        size: 25,
-                                        color: Colors.grey,
-                                      ),
+                                            ],
+                                            cancelButton: Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(10)
+                                              ),
+                                              child: CupertinoActionSheetAction(
+                                                child: const Text(
+                                                  'Cancel',
+                                                  style: TextStyle(
+                                                      color: Color(0xFF2481CF)
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ),
+                                          )
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.attach_file_rounded,
+                                      size: 25,
+                                      color: Colors.grey,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
