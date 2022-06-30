@@ -23,7 +23,6 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
-import 'Home.dart';
 
 int lastConnection = 0;
 
@@ -59,6 +58,14 @@ class _ChatScreenState extends State<ChatScreen> {
     // TODO: implement initState
     idUser = mains.objectbox.boxUser.get(1)?.userId;
     idReceiver = conversation?.idReceiver;
+
+    // var semua = mains.objectbox.boxChat.query( (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
+    // List<ChatModel> listSemua = semua.find().toList();
+    // for(int i=0;i<listSemua.length;i++){
+    //   print('id: ${listSemua[i].id}');
+    //   print('text: ${listSemua[i].text}');
+    // }
+
 
     //update others chat read when open chat
     int checkChatsRead(){
@@ -141,8 +148,8 @@ class _ChatScreenState extends State<ChatScreen> {
     void getUndelUnreadChat(){
       var queryDelivNRead = mains.objectbox.boxChat.query(ChatModel_.read.equals(0) & (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
       List<ChatModel> chatsUndelivNUnread = queryDelivNRead.find().toList();
-      print("chatsUndelivNUnread: ${chatsUndelivNUnread.map((e) => e.text)}");
-      
+      // print("chatsUndelivNUnread: ${chatsUndelivNUnread.map((e) => e.text)}");
+
       for(int i=0;i<chatsUndelivNUnread.length;i++){
         var msg = {};
         msg["api_key"] = apiKey;
@@ -927,7 +934,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               msg["room_id"] = roomId;
 
                               String msgString = json.encode(msg);
-                              print(msgString);
+                              // print(msgString);
 
                               homes.channel.sink.add(msgString);
 

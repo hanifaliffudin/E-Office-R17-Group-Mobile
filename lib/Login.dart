@@ -152,7 +152,7 @@ class LoginPageState extends State<Login>  {
                 sendEmail(_controller.text.trim());
 
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim())),
+                  MaterialPageRoute(builder: (context) =>  PinVerification(_controller.text.trim(), fcmToken)),
                 );
               },
             )
@@ -161,7 +161,7 @@ class LoginPageState extends State<Login>  {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    print(fcmToken);
+    print('ini fcm di login.dart: ${fcmToken}');
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
       'api_key': apiKey,
@@ -177,10 +177,9 @@ class LoginPageState extends State<Login>  {
     );
 
     if(response.statusCode == 200){
-      print(response.body);
+      // print(response.body);
       // Map<String, dynamic> userMap = json.decode(response.body);
 
-      //print (userMap.error);
       //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
     }
     else{

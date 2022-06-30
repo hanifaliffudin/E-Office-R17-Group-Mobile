@@ -14,18 +14,19 @@ String globalEmail = '';
 
 class PinVerification extends StatefulWidget {
   String email = '';
+  String? fcmToken;
 
-  PinVerification(String email){
+  PinVerification(String email, this.fcmToken){
     this.email = email;
     globalEmail = email;
   }
 
   @override
-  PinVerificationState createState() => PinVerificationState(email);
+  PinVerificationState createState() => PinVerificationState(email, fcmToken);
 }
 
 class PinVerificationState extends State<PinVerification> {
-  var fcmToken;
+  String? fcmToken;
   final _formKey = GlobalKey<FormState>();
   final _pinPutController = TextEditingController();
   final _pinPutFocusNode = FocusNode();
@@ -33,7 +34,7 @@ class PinVerificationState extends State<PinVerification> {
 
   String email = '';
 
-  PinVerificationState(String email){
+  PinVerificationState(String email, this.fcmToken){
     this.email = email;
     globalEmail = email;
   }
@@ -135,10 +136,6 @@ class PinVerificationState extends State<PinVerification> {
               print(_formKey.currentState?.validate());
             },
             child: Pinput(
-              // validator: (s) {
-              //   if (s != null && s.contains('1')) return null;
-              //   return 'NOT VALID';
-              // },
               onCompleted: (String pin) => postRequest(pin),
               useNativeKeyboard: true,
               pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
@@ -168,14 +165,6 @@ class PinVerificationState extends State<PinVerification> {
                     ),
                   ),
               ),
-              // selectedFieldDecoration: pinPutDecoration.copyWith(
-              //   color: Colors.white,
-              //   border: Border.all(
-              //     width: 2,
-              //     color: const Color.fromRGBO(160, 215, 220, 1),
-              //   ),
-              // ),
-              // followingFieldDecoration: pinPutDecoration,
               pinAnimationType: PinAnimationType.scale,
             ),
           ),
@@ -235,7 +224,6 @@ class PinVerificationState extends State<PinVerification> {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    print(fcmToken);
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
       'api_key': this.apiKey,
@@ -251,11 +239,7 @@ class PinVerificationState extends State<PinVerification> {
     );
 
     if(response.statusCode == 200){
-      print("${response.body}");
-      // Map<String, dynamic> userMap = json.decode(response.body);
-
-      //print (userMap.error);
-      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
+      // print("${response.body}");
     }
     else{
       pinFailedSnackBar(context,"Email gagal dikirim!");
@@ -326,7 +310,6 @@ class PinVerificationState extends State<PinVerification> {
 
   void _submit() {
     //kirim email
-
     sendEmail(email);
   }
 
@@ -336,6 +319,7 @@ class PinVerificationState extends State<PinVerification> {
       'api_key': this.apiKey,
       'email': globalEmail,
       'pin': pin,
+      'fcm_token': fcmToken,
     };
     //encode Map to JSON
     var body = json.encode(data);
@@ -350,21 +334,34 @@ class PinVerificationState extends State<PinVerification> {
 
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
-      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
-      //response.user_id;
-      //if(pin.toString() == userMap['verification_code'].toString()) {
-      //print(userMap['code_status']);
       if(userMap['code_status']==0) {
-
-        //Send data to server
 
         final user = UserModel(
           userId: userMap['user_id'],
           userName: globalEmail,
           email: globalEmail,
+          fcmToken: fcmToken,
         );
-        int id = mains.objectbox.boxUser.put(user);
-        print(user.id);
+
+        mains.objectbox.boxUser.put(user);
+        print('ini fcm di pinverif.dart: ${user.fcmToken}');
+        print('ini fcm old: ${userMap['fcm_old']}');
+        print('ini last_connection: ${userMap['last_connection']}');
+
+        if(userMap['last_connection'] != 0){
+          // sink last conn
+          var msg = {};
+          msg["api_key"] = apiKey;
+          msg["decrypt_key"] = "";
+          msg["type"] = "logout";
+          msg["msg_tipe"] = 'text';
+          msg["room_id"] = 12;
+
+          String msgString = json.encode(msg);
+          // print(msgString);
+
+          homes.channel.sink.add(msgString);
+        }
 
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home()), (Route<dynamic> route) => false);
 
@@ -374,6 +371,8 @@ class PinVerificationState extends State<PinVerification> {
       }
     }
     else{
+      print(response);
+      print('status code: ${response.statusCode}');
       pinFailedSnackBar(context,"Verifikasi gagal!");
     }
     return response;

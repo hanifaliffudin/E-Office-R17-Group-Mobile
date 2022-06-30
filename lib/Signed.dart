@@ -9,14 +9,14 @@ import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
-class SentPage extends StatefulWidget {
-  const SentPage({Key? key}) : super(key: key);
+class SignedPage extends StatefulWidget {
+  const SignedPage({Key? key}) : super(key: key);
 
   @override
-  _SentPageState createState() => _SentPageState();
+  _SignedPageState createState() => _SignedPageState();
 }
 
-class _SentPageState extends State<SentPage> {
+class _SignedPageState extends State<SignedPage> {
 
   @override
   void initState() {
@@ -29,8 +29,8 @@ class _SentPageState extends State<SentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sent'.toUpperCase(),
-          style: TextStyle(
+        title: Text('Signed'.toUpperCase(),
+          style: const TextStyle(
               fontSize: 17
           ),
         ),
@@ -45,8 +45,8 @@ class _SentPageState extends State<SentPage> {
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
-                    child :Text(
-                      'No sent yet.',
+                    child : const Text(
+                      'No signed yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                     )
@@ -55,19 +55,20 @@ class _SentPageState extends State<SentPage> {
               else{
                 var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
                 List<SuratModel> listSurat = queryInbox.find().toList();
-                if(listSurat.length==0)
+                if(listSurat.isEmpty){
                   return Container(
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
-                      child :Text(
-                        'No sent yet.',
+                      child :const Text(
+                        'No signed yet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                       )
                   );
-                else
+                }
+                else{
                   return Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
@@ -81,16 +82,16 @@ class _SentPageState extends State<SentPage> {
                               );
                             },
                             child: Container(
-                              margin: EdgeInsets.only(bottom: 5),
+                              margin: const EdgeInsets.only(bottom: 5),
                               height: 95,
                               width: 500,
                               child: Card(
-                                margin: EdgeInsets.symmetric(vertical: 3),
+                                margin: const EdgeInsets.symmetric(vertical: 3),
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Stack(
                                     children: [
-                                      Positioned(
+                                      const Positioned(
                                         left: 0,
                                         top: 5,
                                         child: CircleAvatar(
@@ -107,14 +108,14 @@ class _SentPageState extends State<SentPage> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             ConstrainedBox(
-                                              constraints: BoxConstraints(
+                                              constraints: const BoxConstraints(
                                                   maxWidth: 250
                                               ),
                                               child: Text(
                                                 listSurat[index].perihal!,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -124,11 +125,10 @@ class _SentPageState extends State<SentPage> {
                                               mains.objectbox.boxUser.get(1)!.userName!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.bold,
                                                 height: 1.5,
-                                                // color: Color(0xFF171717),
                                               ),
                                             ),
                                             Text(
@@ -138,11 +138,10 @@ class _SentPageState extends State<SentPage> {
                                               listSurat[index].nomorSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
                                                 height: 1.5,
-                                                // color: Color(0xFF171717),
                                               ),
                                             )
                                           ],
@@ -155,7 +154,7 @@ class _SentPageState extends State<SentPage> {
                                             padding: const EdgeInsets.only(left: 20),
                                             child: Text(
                                               DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontSize: 11
                                               ),
                                             )
@@ -169,6 +168,7 @@ class _SentPageState extends State<SentPage> {
                           ),
                     ),
                   );
+                }
               }
             }
         ),
@@ -181,8 +181,6 @@ class _SentPageState extends State<SentPage> {
     String url ='http://eoffice.dev.digiprimatera.co.id/api/getSuratKirim';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }

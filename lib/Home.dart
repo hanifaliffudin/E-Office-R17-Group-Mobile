@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:militarymessenger/Attendance.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
@@ -26,6 +27,7 @@ import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/main.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
+import 'package:militarymessenger/models/LoadChatModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
@@ -275,7 +277,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
 
   }
-
 
   void _handleMessage(RemoteMessage message) {
     if (message.data['type'] == 'dokumen') {
@@ -611,7 +612,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     super.initState();
 
     getListContact();
-    getDataUser();
+    checkFcmToken();
+    // getDataUser();
 
     listController.addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
     listControllerConversation.addStream(mains.objectbox.queryStreamConversation.map((q) => q.find()));
@@ -620,6 +622,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     if(mains.objectbox.boxUser.isEmpty()){}
     else{
       _doConnect();
+
+      // get all messages
+      var query = mains.objectbox.boxLoadChat.query(LoadChatModel_.id.equals(1)).build();
+      if(query.find().isNotEmpty) {
+      }
+      else{
+        // panggil get all messages
+        // getAllMessages();
+
+        var loaded = LoadChatModel(
+          loaded: 1,
+        );
+
+        // mains.objectbox.boxLoadChat.put(loaded);
+        setState(() {});
+      }
     }
 
     setupInteractedMessage();
@@ -1284,7 +1302,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   ],
                 ),
                 onTap: () {
-                  _openDialog(context);
+                  _openDialogLogout(context);
                 },
               ),
             ],
@@ -1427,12 +1445,56 @@ print(response.body);
           userName: userMap['name'],
           phone: userMap['phone'],
           photo: userMap['photo'],
+          fcmToken: userMap['fcm_token']
         );
 
-        print(user.userId);
+        print('ini id user: ${user.userId}');
 
         mains.objectbox.boxUser.put(user);
 
+      }else{
+        print("ada yang salah!");
+        print(userMap['code_status']);
+        print(userMap['error']);
+      }
+    }
+    else{
+      print("Gagal terhubung ke server!");
+    }
+    return response;
+  }
+
+  Future<http.Response> checkFcmToken() async {
+
+    String url ='https://chat.dev.r17.co.id/check_fcm.php';
+
+    Map<String, dynamic> data = {
+      'api_key': this.apiKey,
+      'email': mains.objectbox.boxUser.get(1)!.email,
+      'fcm_token': mains.objectbox.boxUser.get(1)!.fcmToken,
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      //print("${response.body}");
+      Map<String, dynamic> userMap = jsonDecode(response.body);
+
+      if(userMap['code_status'] == 0){
+        // print('ini fcm hasil check fcm api: ${userMap['fcm_token']}');
+        // print('ini fcm di objectbox manggil di home: ${mains.objectbox.boxUser.get(1)!.fcmToken}');
+        print('fcm same: ${userMap['same']}');
+        if(userMap['same'] == 1){
+          getDataUser();
+        }else{
+        //  logout
+          _openDialogAutoLogout(context);
+        }
       }else{
         print("ada yang salah!");
         print(userMap['code_status']);
@@ -1513,7 +1575,7 @@ print(response.body);
 
 }
 
-void _openDialog(ctx) {
+void _openDialogLogout(ctx) {
   Future<void> _deleteCacheDir() async {
     final cacheDir = await getTemporaryDirectory();
 
@@ -1555,6 +1617,66 @@ void _openDialog(ctx) {
             ),
             onPressed: () {
 
+              _deleteAppDir();
+              _deleteCacheDir();
+
+              mains.objectbox.boxConversation.removeAll();
+              mains.objectbox.boxChat.removeAll();
+              mains.objectbox.boxContact.removeAll();
+              mains.objectbox.boxUser.removeAll();
+              mains.objectbox.boxAttendance.removeAll();
+              mains.objectbox.boxSurat.removeAll();
+              mains.objectbox.boxBadge.removeAll();
+              mains.objectbox.boxNews.removeAll();
+              mains.objectbox.boxUserPreference.removeAll();
+
+
+              Navigator.pushAndRemoveUntil(
+                ctx,
+                MaterialPageRoute(builder: (context) => Login()),
+                    (Route<dynamic> route) => false,
+              );
+
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+              exit(0);
+            },
+          )
+        ],
+      ));
+}
+
+void _openDialogAutoLogout(ctx) {
+  Future<void> _deleteCacheDir() async {
+    final cacheDir = await getTemporaryDirectory();
+
+    if (cacheDir.existsSync()) {
+      cacheDir.deleteSync(recursive: true);
+    }
+  }
+
+  Future<void> _deleteAppDir() async {
+    final appDir = await getApplicationSupportDirectory();
+
+    if(appDir.existsSync()){
+      appDir.deleteSync(recursive: true);
+    }
+  }
+
+  showCupertinoDialog(
+      context: ctx,
+      builder: (_) => CupertinoAlertDialog(
+        title: Text("Info"),
+        content: Text("Logged out because you logged in from another device. You can only be logged in on one device at a time"),
+        actions: [
+          // Close the dialog
+          // You can use the CupertinoDialogAction widget instead
+          CupertinoButton(
+            child: Text('Ok',
+              style: TextStyle(
+                  color: Color(0xFF2481CF)
+              ),
+            ),
+            onPressed: () {
 
               _deleteAppDir();
               _deleteCacheDir();
@@ -1563,6 +1685,11 @@ void _openDialog(ctx) {
               mains.objectbox.boxChat.removeAll();
               mains.objectbox.boxContact.removeAll();
               mains.objectbox.boxUser.removeAll();
+              mains.objectbox.boxAttendance.removeAll();
+              mains.objectbox.boxSurat.removeAll();
+              mains.objectbox.boxBadge.removeAll();
+              mains.objectbox.boxNews.removeAll();
+              mains.objectbox.boxUserPreference.removeAll();
 
 
               Navigator.pushAndRemoveUntil(

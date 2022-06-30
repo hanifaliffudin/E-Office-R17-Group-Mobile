@@ -129,7 +129,7 @@ class _NeedApproveState extends State<NeedApprove> {
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].nomorSurat!,
+                                              listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: TextStyle(
