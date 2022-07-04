@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
@@ -28,7 +30,7 @@ class _TrackingPageState extends State<TrackingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Tracking'.toUpperCase(),
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 17
           ),
         ),
@@ -43,8 +45,8 @@ class _TrackingPageState extends State<TrackingPage> {
               return Container(
                   margin: const EdgeInsets.only(top: 15.0),
                   width: MediaQuery.of(context).size.width,
-                  child :Text(
-                    'No tracking yet.',
+                  child :const Text(
+                    'No traced documents yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                   )
@@ -54,19 +56,22 @@ class _TrackingPageState extends State<TrackingPage> {
               var queryInbox = mains.objectbox.boxSurat.query(
                   SuratModel_.kategori.equals('tracking')).build();
               List<SuratModel> listSurat = queryInbox.find().toList();
-              if (listSurat.length == 0)
+              if (listSurat.isEmpty) {
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
-                    child :Text(
-                      'No sent yet.',
+                    child :const Text(
+                      'No traced documents yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                     )
                 );
-              else
+              } else {
+                DateTime now = new DateTime.now();
+                DateTime date = new DateTime(now.year, now.month, now.day);
+
                 return Container(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: ListView.builder(
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
@@ -74,72 +79,74 @@ class _TrackingPageState extends State<TrackingPage> {
                       itemBuilder:(BuildContext context,index)=>
                       Column(
                       children: [
-                        Container(
-                          margin: EdgeInsets.only(bottom: 5),
-                          height: 80,
-                          width: 500,
-                          child: Card(
-                            margin: EdgeInsets.only(top: 3, bottom: 3),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Stack(
-                                children: [
-                                  Positioned(
-                                    left: 0,
-                                    child: Container(
-                                      height: 50,
-                                      width: 50,
-                                      margin: EdgeInsets.only(right: 5),
-                                      decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                              image: AssetImage("assets/images/pdf.png")
-                                          )
+                        Card(
+                          margin: EdgeInsets.symmetric(vertical: 5),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(right: 10.0),
+                                        child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
                                       ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: 55,
-                                    top: 5,
-                                    bottom: 5,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                              maxWidth: 250
-                                          ),
-                                          child: Text(
-                                            listSurat[index].perihal!,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                                maxWidth: 200
                                             ),
+                                            child: Text(listSurat[index].namaSurat!,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(fontWeight: FontWeight.bold),),
                                           ),
-                                        ),
-                                        Text(
-                                          listSurat[index].tglBuat.toString(),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            height: 2,
-                                            // color: Color(0xFF171717),
-                                          ),
-                                        )
-                                      ],
-                                    ),
+                                          SizedBox(height: 5,),
+                                          date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                          Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                              :
+                                          Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                          SizedBox(height: 5,),
+                                          Text(listSurat[index].status!),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  Positioned(
-                                    right: 5,
-                                    top: 10,
-                                    child: Padding(
-                                        padding: const EdgeInsets.only(left: 20),
-                                        child: Text(listSurat[index].namaSurat!)
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                Container(
+                                  height: 50,
+                                  width: 30,
+
+                                  child:
+                                  listSurat[index].status == "APPROVE" ?
+                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                      :
+                                  listSurat[index].status == "RETURN" ?
+                                  Image(image: AssetImage("assets/icons/return.png"))
+                                      :
+                                  listSurat[index].status == "REJECT" ?
+                                  Image(image: AssetImage("assets/icons/reject.png"))
+                                      :
+                                  listSurat[index].status == "READ" ?
+                                  Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                      :
+                                  listSurat[index].status == "SUBMIT" ?
+                                  Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                      :
+                                  listSurat[index].status == "APPROVED" ?
+                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                      :
+                                  listSurat[index].status == "SIGNED" ?
+                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                      :
+                                  Container()
+                                  ,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -147,6 +154,7 @@ class _TrackingPageState extends State<TrackingPage> {
                     ),
                   ),
                 );
+              }
             }
 
           }
@@ -157,11 +165,9 @@ class _TrackingPageState extends State<TrackingPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/getTrack';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getTrack';
 
     Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
       'payload': {
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
@@ -175,7 +181,6 @@ class _TrackingPageState extends State<TrackingPage> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('tracking')).build();
@@ -191,47 +196,35 @@ class _TrackingPageState extends State<TrackingPage> {
             if(query.find().isNotEmpty) {
               final surat = SuratModel(
                 id: query.find().first.id,
-                idSurat: dataSurat['surat_id'],
+                idSurat: dataSurat['id'],
                 perihal: dataSurat['perihal'],
-                namaSurat: dataSurat['name'],
-                nomorSurat: dataSurat['nomor'],
-                tglSelesai: dataSurat['tgl_selesai'],
-                tipeSurat: dataSurat['tipe_surat'],
-                url: dataSurat['isi_surat'],
-                kategori: 'tracking',
+                namaSurat: dataSurat['perihal'],
                 tglBuat: dataSurat['tgl_buat'],
+                kategori: 'tracking',
+                status: dataSurat['stat'],
+
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
-              // mains.objectbox.boxSurat.remove(query.find().first.id);
+              setState(() {});
             }
             else{
               final surat = SuratModel(
-                idSurat: dataSurat['surat_id'],
+                idSurat: dataSurat['id'],
                 perihal: dataSurat['perihal'],
-                namaSurat: dataSurat['name'],
-                nomorSurat: dataSurat['nomor'],
-                tglSelesai: dataSurat['tgl_selesai'],
-                tipeSurat: dataSurat['tipe_surat'],
-                url: dataSurat['isi_surat'],
-                kategori: 'tracking',
+                namaSurat: dataSurat['perihal'],
                 tglBuat: dataSurat['tgl_buat'],
+                kategori: 'tracking',
+                status: dataSurat['stat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
+              setState(() {});
             }
           }
       }
       else{
-        print(suratMap['code']);
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{

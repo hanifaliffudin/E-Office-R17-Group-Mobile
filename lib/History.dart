@@ -180,7 +180,7 @@ class _HistoryState extends State<History> {
 
   Future<http.Response> getRecent() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/recent';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/recent';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -196,7 +196,6 @@ class _HistoryState extends State<History> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history')).build();

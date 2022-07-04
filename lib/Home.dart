@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
@@ -28,7 +29,6 @@ import 'package:militarymessenger/main.dart';
 import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
-import 'package:militarymessenger/models/LoadChatModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
@@ -48,26 +48,29 @@ import 'package:web_socket_channel/io.dart';
 import 'main.dart' as mains;
 import 'package:http/http.dart' as http;
 
+StreamController<List<ChatModel>> listController = BehaviorSubject();
+StreamController<List<ConversationModel>> listControllerConversation =
+    BehaviorSubject();
+StreamController<List<ContactModel>> listControllerContact = BehaviorSubject();
+StreamController<List<UserModel>> listControllerUser = BehaviorSubject();
+StreamController<List<SuratModel>> listControllerSurat = BehaviorSubject();
+StreamController<List<NewsModel>> listControllerNews = BehaviorSubject();
+StreamController<List<BadgeModel>> listControllerBadge = BehaviorSubject();
 
-StreamController<List<ChatModel>> listController = new BehaviorSubject();
-StreamController<List<ConversationModel>> listControllerConversation = new BehaviorSubject();
-StreamController<List<ContactModel>> listControllerContact = new BehaviorSubject();
-StreamController<List<UserModel>> listControllerUser = new BehaviorSubject();
-StreamController<List<SuratModel>> listControllerSurat = new BehaviorSubject();
-StreamController<List<NewsModel>> listControllerNews = new BehaviorSubject();
-StreamController<List<BadgeModel>> listControllerBadge = new BehaviorSubject();
-
-String apiKeyCore = '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
+String apiKeyCore =
+    '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
 
 var channel;
 int? idSender;
 
 class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
+
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with TickerProviderStateMixin{
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   TabController? _tabController;
   int _selectedTab = 1;
   String apiKey = apiKeyCore;
@@ -76,14 +79,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   String? phone;
   String? photo;
   Uint8List? bytes;
-  var contactList,contactData,contactName;
-  Location location = new Location();
+  var contactList, contactData, contactName;
+  Location location = Location();
 
   Future<void> setupInteractedMessage() async {
     // Get any messages which caused the application to open from
     // a terminated state.
     RemoteMessage? initialMessage =
-    await FirebaseMessaging.instance.getInitialMessage();
+        await FirebaseMessaging.instance.getInitialMessage();
 
     // If the message also contains a data property with a "type" of "chat",
     // navigate to a chat screen
@@ -100,48 +103,55 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.data['type'] == 'logout') {
+        _openDialogAutoLogout(context);
+      }
       RemoteNotification notification = message.notification!;
       AndroidNotification android = message.notification!.android!;
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-              android: AndroidNotificationDetails(
-                message.data['id'],
-                message.notification!.title!,
-                // style: AndroidNotificationStyle.BigText,
-                icon: "@mipmap/ic_launcher",
-                styleInformation: BigTextStyleInformation(
-                    message.data['msg_data'],//  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
-                    htmlFormatBigText: true,
-                    contentTitle: message.notification!.title!,
-                    htmlFormatContentTitle: true,
-                    summaryText: 'Messenger',
-                    htmlFormatSummaryText: true
-                ),
-              )
-          ),
-          payload: jsonEncode(message.data),
-        );
-      }
+      flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+            android: AndroidNotificationDetails(
+          message.data['id'],
+          message.notification!.title!,
+          // style: AndroidNotificationStyle.BigText,
+          icon: "@mipmap/ic_launcher",
+          styleInformation: BigTextStyleInformation(
+              message.data[
+                  'msg_data'], //  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
+              htmlFormatBigText: true,
+              contentTitle: message.notification!.title!,
+              htmlFormatContentTitle: true,
+              summaryText: 'Messenger',
+              htmlFormatSummaryText: true),
+        )),
+        payload: jsonEncode(message.data),
+      );
     });
 
-    var android = AndroidInitializationSettings('mipmap/ic_launcher');
-    var ios =  IOSInitializationSettings();
+    var android = const AndroidInitializationSettings('mipmap/ic_launcher');
+    var ios = const IOSInitializationSettings();
     var platform = InitializationSettings(android: android, iOS: ios);
-    flutterLocalNotificationsPlugin.initialize(platform,
+    flutterLocalNotificationsPlugin.initialize(
+      platform,
       onSelectNotification: (payload) {
-
         var dataPayload = jsonDecode(payload!);
 
         if (dataPayload['type'] == 'dokumen') {
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataPayload['id']) & SuratModel_.kategori.equals(dataPayload['kategori'])).build();
-          if(query.find().isNotEmpty) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
-          }
-          else{
+          var query = mains.objectbox.boxSurat
+              .query(SuratModel_.idSurat.equals(dataPayload['id']) &
+                  SuratModel_.kategori.equals(dataPayload['kategori']))
+              .build();
+          if (query.find().isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => DocumentPage(
+                      mains.objectbox.boxSurat.get(query.find().first.id))),
+            );
+          } else {
             final surat = SuratModel(
               idSurat: dataPayload['id'],
               namaSurat: dataPayload['perihal'],
@@ -153,7 +163,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               url: dataPayload['isi_surat'],
               kategori: dataPayload['kategori'],
               tglBuat: dataPayload['tgl_buat'],
-              tipeSurat: dataPayload['tipe_surat'].runtimeType == int ? dataPayload['tipe_surat'] : int.parse(dataPayload['tipe_surat']) ,
+              tipeSurat: dataPayload['tipe_surat'].runtimeType == int
+                  ? dataPayload['tipe_surat']
+                  : int.parse(dataPayload['tipe_surat']),
               approver: dataPayload['approv'],
               penerima: dataPayload['penerima'],
             );
@@ -162,22 +174,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
             setState(() {});
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DocumentPage(surat)),
+            );
           }
-        }
-
-        if (dataPayload['type'] == 'pm') {
+        } else if (dataPayload['type'] == 'pm') {
           //  get id conversation from message data and then query find to object box conversation,
-          var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(dataPayload['id_sender']))).build();
-          if(query.find().isNotEmpty) {
-            int? count = query
-                .find()
-                .first
-                .messageCout;
-            if (count == null)
+          var query = mains.objectbox.boxConversation
+              .query(ConversationModel_.idReceiver
+                  .equals(int.parse(dataPayload['id_sender'])))
+              .build();
+          if (query.find().isNotEmpty) {
+            int? count = query.find().first.messageCout;
+            if (count == null) {
               count = 1;
-            else
+            } else {
               count = count + 1;
+            }
 
             ConversationModel objConversation2 = ConversationModel(
                 id: query.find().first.id,
@@ -189,8 +203,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                 date: dataPayload['msg_date'],
                 messageCout: count,
                 statusReceiver: query.find().first.statusReceiver,
-                roomId: int.parse(dataPayload['room_id'])
-            );
+                roomId: int.parse(dataPayload['room_id']));
             mains.objectbox.boxConversation.put(objConversation2);
 
             Navigator.of(context).push(
@@ -216,27 +229,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                 MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']), null)
                 ));
           }
-
-        }
-        else if(dataPayload['type'] == 'group'){
-          List<int> id_receivers = json.decode(dataPayload['id_receivers']).cast<int>();
-          id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
-          id_receivers.add(int.parse(dataPayload['id_sender']));
+        } else if (dataPayload['type'] == 'group') {
+          List<int> idReceivers =
+              json.decode(dataPayload['id_receivers']).cast<int>();
+          idReceivers.removeWhere(
+              (element) => element == mains.objectbox.boxUser.get(1)!.userId);
+          idReceivers.add(int.parse(dataPayload['id_sender']));
           //  get id conversation from message data and then query find to object box conversation,
-          var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(int.parse(dataPayload['room_id']))).build();
-          if(query.find().isNotEmpty) {
-            int? count = query
-                .find()
-                .first
-                .messageCout;
-            if (count == null)
+          var query = mains.objectbox.boxConversation
+              .query(ConversationModel_.roomId
+                  .equals(int.parse(dataPayload['room_id'])))
+              .build();
+          if (query.find().isNotEmpty) {
+            int? count = query.find().first.messageCout;
+            if (count == null) {
               count = 1;
-            else
+            } else {
               count = count + 1;
+            }
 
             ConversationModel objConversation3 = ConversationModel(
                 id: query.find().first.id,
-                idReceiversGroup: json.encode(id_receivers),
+                idReceiversGroup: json.encode(idReceivers),
                 fullName: query.find().first.fullName,
                 image: query.find().first.image,
                 photoProfile: query.find().first.photoProfile,
@@ -244,18 +258,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                 date: dataPayload['msg_date'],
                 messageCout: count,
                 statusReceiver: query.find().first.statusReceiver,
-                roomId: query.find().first.roomId
-            );
+                roomId: query.find().first.roomId);
             mains.objectbox.boxConversation.put(objConversation3);
 
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(dataPayload['room_id']), "handle_notif")
-                ));
-          }
-          else{
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ChatGroup(objConversation3,
+                    int.parse(dataPayload['room_id']), "handle_notif")));
+          } else {
             ConversationModel objConversation3 = ConversationModel(
               id: 0,
-              idReceiversGroup: json.encode(id_receivers),
+              idReceiversGroup: json.encode(idReceivers),
               fullName: dataPayload['group_name'],
               image: '',
               // photoProfile: message.data['photo'],
@@ -267,26 +279,31 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             );
             mains.objectbox.boxConversation.put(objConversation3);
 
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(dataPayload['room_id']), "false")
-                ));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ChatGroup(objConversation3,
+                    int.parse(dataPayload['room_id']), "false")));
           }
+        } else if (dataPayload['type'] == 'logout') {
+          _openDialogAutoLogout(context);
         }
-
       },
     );
-
-
   }
 
   void _handleMessage(RemoteMessage message) {
     if (message.data['type'] == 'dokumen') {
-      print(message.data);
-      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(message.data['id']) & SuratModel_.kategori.equals(message.data['kategori'])).build();
-      if(query.find().isNotEmpty) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
-      }
-      else{
+      var query = mains.objectbox.boxSurat
+          .query(SuratModel_.idSurat.equals(message.data['id']) &
+              SuratModel_.kategori.equals(message.data['kategori']))
+          .build();
+      if (query.find().isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => DocumentPage(
+                  mains.objectbox.boxSurat.get(query.find().first.id))),
+        );
+      } else {
         final surat = SuratModel(
           idSurat: message.data['id'],
           namaSurat: message.data['perihal'],
@@ -298,7 +315,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           url: message.data['isi_surat'],
           kategori: message.data['kategori'],
           tglBuat: message.data['tgl_buat'],
-          tipeSurat: message.data['tipe_surat'].runtimeType == int ? message.data['tipe_surat'] : int.parse(message.data['tipe_surat']) ,
+          tipeSurat: message.data['tipe_surat'].runtimeType == int
+              ? message.data['tipe_surat']
+              : int.parse(message.data['tipe_surat']),
           approver: message.data['approv'],
           penerima: message.data['penerima'],
         );
@@ -307,22 +326,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
         setState(() {});
 
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DocumentPage(surat)),
+        );
       }
-    }
-
-    if (message.data['type'] == 'pm') {
+    } else if (message.data['type'] == 'pm') {
       //  get id conversation from message data and then query find to object box conversation,
-      var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(int.parse(message.data['id_sender']))).build();
-      if(query.find().isNotEmpty) {
-        int? count = query
-            .find()
-            .first
-            .messageCout;
-        if (count == null)
+      var query = mains.objectbox.boxConversation
+          .query(ConversationModel_.idReceiver
+              .equals(int.parse(message.data['id_sender'])))
+          .build();
+      if (query.find().isNotEmpty) {
+        int? count = query.find().first.messageCout;
+        if (count == null) {
           count = 1;
-        else
+        } else {
           count = count + 1;
+        }
 
         ConversationModel objConversation2 = ConversationModel(
             id: query.find().first.id,
@@ -334,8 +355,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             date: message.data['msg_date'],
             messageCout: count,
             statusReceiver: query.find().first.statusReceiver,
-            roomId: int.parse(message.data['room_id'])
-        );
+            roomId: int.parse(message.data['room_id']));
         mains.objectbox.boxConversation.put(objConversation2);
 
         Navigator.of(context).push(
@@ -361,27 +381,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']), null)
             ));
       }
-
-    }
-    else if(message.data['type'] == 'group'){
-      List<int> id_receivers = json.decode(message.data['id_receivers']).cast<int>();
-      id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
-      id_receivers.add(int.parse(message.data['id_sender']));
+    } else if (message.data['type'] == 'group') {
+      List<int> idReceivers =
+          json.decode(message.data['id_receivers']).cast<int>();
+      idReceivers.removeWhere(
+          (element) => element == mains.objectbox.boxUser.get(1)!.userId);
+      idReceivers.add(int.parse(message.data['id_sender']));
       //  get id conversation from message data and then query find to object box conversation,
-      var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(int.parse(message.data['room_id']))).build();
-      if(query.find().isNotEmpty) {
-        int? count = query
-            .find()
-            .first
-            .messageCout;
-        if (count == null)
+      var query = mains.objectbox.boxConversation
+          .query(ConversationModel_.roomId
+              .equals(int.parse(message.data['room_id'])))
+          .build();
+      if (query.find().isNotEmpty) {
+        int? count = query.find().first.messageCout;
+        if (count == null) {
           count = 1;
-        else
+        } else {
           count = count + 1;
+        }
 
         ConversationModel objConversation3 = ConversationModel(
             id: query.find().first.id,
-            idReceiversGroup: json.encode(id_receivers),
+            idReceiversGroup: json.encode(idReceivers),
             fullName: query.find().first.fullName,
             image: query.find().first.image,
             photoProfile: query.find().first.photoProfile,
@@ -389,18 +410,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             date: message.data['msg_date'],
             messageCout: count,
             statusReceiver: query.find().first.statusReceiver,
-            roomId: query.find().first.roomId
-        );
+            roomId: query.find().first.roomId);
         mains.objectbox.boxConversation.put(objConversation3);
 
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "handle_notif")
-            ));
-      }
-      else{
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => ChatGroup(objConversation3,
+                int.parse(message.data['room_id']), "handle_notif")));
+      } else {
         ConversationModel objConversation3 = ConversationModel(
           id: 0,
-          idReceiversGroup: json.encode(id_receivers),
+          idReceiversGroup: json.encode(idReceivers),
           fullName: message.data['group_name'],
           image: '',
           // photoProfile: message.data['photo'],
@@ -412,10 +431,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         );
         mains.objectbox.boxConversation.put(objConversation3);
 
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (BuildContext context)=>ChatGroup(objConversation3, int.parse(message.data['room_id']), "false")
-            ));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => ChatGroup(objConversation3,
+                int.parse(message.data['room_id']), "false")));
       }
+    } else if (message.data['type'] == 'logout') {
+      _openDialogAutoLogout(context);
     }
   }
 
@@ -436,12 +457,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     return file.path;
   }
 
-  double calculateDistance(lat1, lon1, lat2, lon2){
+  double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
-    var a = 0.5 - c((lat2 - lat1) * p)/2 +
-        c(lat1 * p) * c(lat2 * p) *
-            (1 - c((lon2 - lon1) * p))/2;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
 
@@ -452,15 +473,19 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
       // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
       if (distanceOnMeter <= 50 && now.hour >= 7) {
-        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(now).toString())).build();
+        var query = mains.objectbox.boxAttendance
+            .query(AttendanceModel_.date
+                .equals(DateFormat('dd MM yyyy').format(now).toString()))
+            .build();
 
         if (query.find().isNotEmpty) {
           var attendance = query.find().first;
 
-          if(attendance.status == 0) {
+          if (attendance.status == 0) {
             print('time call check in');
             attendance.date = DateFormat('dd MM yyyy').format(now).toString();
-            attendance.checkInAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+            attendance.checkInAt =
+                DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
             attendance.checkOutAt = attendance.checkOutAt;
             attendance.latitude = locationData.latitude;
             attendance.longitude = locationData.longitude;
@@ -482,15 +507,20 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         }
       } else if (distanceOnMeter > 50) {
         if (now.hour >= 7) {
-          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(now).toString()) & AttendanceModel_.status.equals(1)).build();
+          var query = mains.objectbox.boxAttendance
+              .query(AttendanceModel_.date
+                      .equals(DateFormat('dd MM yyyy').format(now).toString()) &
+                  AttendanceModel_.status.equals(1))
+              .build();
 
-          if(query.find().isNotEmpty) {
+          if (query.find().isNotEmpty) {
             var attendance = query.find().first;
 
             attendance.id = attendance.id;
             attendance.date = attendance.date;
             attendance.checkInAt = attendance.checkInAt;
-            attendance.checkOutAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+            attendance.checkOutAt =
+                DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
             attendance.latitude = attendance.latitude;
             attendance.longitude = attendance.longitude;
             attendance.status = 0;
@@ -498,8 +528,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             saveAttendance(attendance);
           }
         } else {
-          DateTime dateYesterday = DateTime(now.year, now.month, now.day-1);
-          var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(dateYesterday).toString()) & AttendanceModel_.status.equals(1)).build();
+          DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
+          var query = mains.objectbox.boxAttendance
+              .query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy')
+                      .format(dateYesterday)
+                      .toString()) &
+                  AttendanceModel_.status.equals(1))
+              .build();
 
           if (query.find().isNotEmpty) {
             var attendance = query.find().first;
@@ -509,7 +544,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               attendance.id = attendance.id;
               attendance.date = attendance.date;
               attendance.checkInAt = attendance.checkInAt;
-              attendance.checkOutAt = DateTime.parse('${dateYesterday.toString()} 23:59:59').toString();
+              attendance.checkOutAt =
+                  DateTime.parse('${dateYesterday.toString()} 23:59:59')
+                      .toString();
               attendance.latitude = attendance.latitude;
               attendance.longitude = attendance.longitude;
               attendance.status = 0;
@@ -526,7 +563,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
     _serviceEnabled = await location.serviceEnabled();
-    
+
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
@@ -539,7 +576,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
       if (_permissionGranted == PermissionStatus.denied) {
         _permissionGranted = await location.requestPermission();
-        
+
         if (_permissionGranted != PermissionStatus.granted) {
           return;
         }
@@ -563,26 +600,25 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     }
   }
 
-  void getAllMessages(){
-    var msg = {};
-    msg["api_key"] = apiKey;
-    msg["type"] = "get_all_message";
-    msg["id_receiver"] = mains.objectbox.boxUser.get(1)!.userId;
-    String msgString = json.encode(msg);
-    channel.sink.add(msgString);
-  }
 
   String? version;
   String? buildNumber;
 
   @override
-  void initState()  {
-    DateTime now = new DateTime.now();
+  void initState() {
+    // get all messages
+    List<ChatModel> listChat = mains.objectbox.boxChat.getAll();
+    if (listChat.isEmpty) {
+      EasyLoading.show(status: 'Downloading all messages...');
+      getAllMessages();
+    }
+
+    DateTime now = DateTime.now();
 // mains.objectbox.boxAttendance.removeAll();
 // mains.objectbox.boxAttendanceHistory.removeAll();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _locationService();
+      // _locationService();
     });
 
     _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
@@ -599,45 +635,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     checkFcmToken();
     // getDataUser();
 
-    listController.addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
-    listControllerConversation.addStream(mains.objectbox.queryStreamConversation.map((q) => q.find()));
-    listControllerContact.addStream(mains.objectbox.queryStreamContact.map((q) => q.find()));
+    listController
+        .addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
+    listControllerConversation.addStream(
+        mains.objectbox.queryStreamConversation.map((q) => q.find()));
+    listControllerContact
+        .addStream(mains.objectbox.queryStreamContact.map((q) => q.find()));
 
-    if(mains.objectbox.boxUser.isEmpty()){}
-    else{
+    if (mains.objectbox.boxUser.isEmpty()) {
+    } else {
       _doConnect();
-
-      // get all messages
-      var query = mains.objectbox.boxLoadChat.query(LoadChatModel_.id.equals(1)).build();
-      if(query.find().isNotEmpty) {
-      }
-      else{
-        // panggil get all messages
-        getAllMessages();
-
-        var loaded = LoadChatModel(
-          loaded: 1,
-        );
-
-        // mains.objectbox.boxLoadChat.put(loaded);
-        setState(() {});
-      }
     }
 
     setupInteractedMessage();
-
   }
 
   void connect() {
     _doConnect();
   }
+
   void _doConnect() {
     if (channel != null) {
       close();
     }
     channel = IOWebSocketChannel.connect(
-      Uri.parse('wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
-      pingInterval: Duration(
+      Uri.parse(
+          'wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
+      pingInterval: const Duration(
         seconds: 1,
       ),
     );
@@ -646,60 +670,59 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   }
 
   Future<void> onReceiveData(message) async {
-
     var objMessage = json.decode(message);
     // print(objMessage);
 
-
-    if(objMessage['type']=="pm"){
+    if (objMessage['type'] == "pm") {
       //Update Conversation Model
-      var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(objMessage['id_sender'])).build();
-      if(query.find().isNotEmpty) {
-        int? count = query
-            .find()
-            .first
-            .messageCout;
-        if (count == null)
+      var query = mains.objectbox.boxConversation
+          .query(ConversationModel_.idReceiver.equals(objMessage['id_sender']))
+          .build();
+      if (query.find().isNotEmpty) {
+        int? count = query.find().first.messageCout;
+        if (count == null) {
           count = 1;
-        else
+        } else {
           count = count + 1;
-
+        }
 
         ConversationModel objConversation = ConversationModel(
             id: query.find().first.id,
             idReceiver: objMessage['id_sender'],
-            fullName: objMessage['name_sender'] == '' ? query.find().first.fullName : objMessage['name_sender'],
+            fullName: objMessage['name_sender'] == ''
+                ? query.find().first.fullName
+                : objMessage['name_sender'],
             image: query.find().first.image,
-            photoProfile: objMessage['photo'] == '' ? query.find().first.photoProfile : objMessage['photo'],
+            photoProfile: objMessage['photo'] == ''
+                ? query.find().first.photoProfile
+                : objMessage['photo'],
             message: objMessage['msg_data'],
             date: objMessage['msg_date'],
             messageCout: count,
             statusReceiver: query.find().first.statusReceiver,
-            roomId: objMessage['room_id']
-        );
+            roomId: objMessage['room_id']);
         mains.objectbox.boxConversation.put(objConversation);
-      }
-      else{
+      } else {
         ConversationModel objConversation = ConversationModel(
             id: 0,
             idReceiver: objMessage['id_sender'],
             fullName: objMessage['name_sender'],
             image: '',
-            photoProfile: objMessage['photo'],
+            photoProfile: objMessage['photo'] == null ? '' : objMessage['photo'],
             message: objMessage['msg_data'],
             date: objMessage['msg_date'],
             messageCout: 1,
             statusReceiver: '',
-            roomId: objMessage['room_id']
-        );
+            roomId: objMessage['room_id']);
         mains.objectbox.boxConversation.put(objConversation);
       }
 
       // if message is image
-      if(objMessage['msg_tipe']=="image"){
-        var contentImage = _createImageFromUint(base64.decode(objMessage['img_data']));
+      if (objMessage['msg_tipe'] == "image") {
+        var contentImage =
+            _createImageFromUint(base64.decode(objMessage['img_data']));
 
-        final chat = ChatModel (
+        final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
           idReceiver: objMessage['id_receiver'],
@@ -715,12 +738,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxChat.put(chat);
       }
       // if message is file
-      else if(objMessage['msg_tipe']=="file"){
-        var contentFile = _createFileFromUint(base64.decode(objMessage['file_data']));
+      else if (objMessage['msg_tipe'] == "file") {
+        var contentFile =
+            _createFileFromUint(base64.decode(objMessage['file_data']));
 
         print(objMessage['file_data']);
 
-        final chat = ChatModel (
+        final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
           idReceiver: objMessage['id_receiver'],
@@ -736,7 +760,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxChat.put(chat);
       }
       // if message is text
-      else{
+      else {
         //update Chat Model
         final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
@@ -769,8 +793,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       //   print(objMessage['otp']);
       // }
 
-    }
-    else if(objMessage['type']=="insert_success"){
+    } else if (objMessage['type'] == "insert_success") {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
       print(objMessage['id_chat_model']);
       final chat = ChatModel(
@@ -787,8 +810,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         read: 0,
       );
       mains.objectbox.boxChat.put(chat);
-    }
-    else if(objMessage['type']=="status_deliver"){
+    } else if (objMessage['type'] == "status_deliver") {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
       final chat = ChatModel(
         id: cm.id,
@@ -803,8 +825,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         read: 0,
       );
       mains.objectbox.boxChat.put(chat);
-    }
-    else if(objMessage['type']=="status_read"){
+    } else if (objMessage['type'] == "status_read") {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
       final chat = ChatModel(
         id: cm.id,
@@ -819,8 +840,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         read: 1,
       );
       mains.objectbox.boxChat.put(chat);
-    }
-    else if(objMessage['type']=="status_read_arrive"){
+    } else if (objMessage['type'] == "status_read_arrive") {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
       final chat = ChatModel(
         id: cm.id,
@@ -836,12 +856,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         readDB: 1,
       );
       mains.objectbox.boxChat.put(chat);
-    }
-    else if(objMessage['type']=="status_typing"){
+    } else if (objMessage['type'] == "status_typing") {
       //Update Typing Status
       //print(" \n\n" + json.encode(objMessage)   + "\n\n");
-      var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(objMessage['id_sender'])).build();
-      if(query.find().isNotEmpty) {
+      var query = mains.objectbox.boxConversation
+          .query(ConversationModel_.idReceiver.equals(objMessage['id_sender']))
+          .build();
+      if (query.find().isNotEmpty) {
         ConversationModel objConversation = ConversationModel(
             id: query.find().first.id,
             idReceiver: query.find().first.idReceiver,
@@ -857,7 +878,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
         // Delete typing status after 2 seconds
         // setState((){});
-        Future.delayed(Duration(milliseconds: 2000)).whenComplete((){
+        Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
           ConversationModel objConversation = ConversationModel(
               id: query.find().first.id,
               idReceiver: query.find().first.idReceiver,
@@ -872,32 +893,31 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           mains.objectbox.boxConversation.put(objConversation);
           // setState((){});
         });
-
       }
-    }
-    else if(objMessage['type']=="group"){
+    } else if (objMessage['type'] == "group") {
+      List<int> idReceivers =
+          json.decode(objMessage['id_receivers']).cast<int>();
+      idReceivers.removeWhere(
+          (element) => element == mains.objectbox.boxUser.get(1)!.userId);
+      idReceivers.add(objMessage['id_sender']);
 
-      List<int> id_receivers = json.decode(objMessage['id_receivers']).cast<int>();
-      id_receivers.removeWhere((element) => element == mains.objectbox.boxUser.get(1)!.userId);
-      id_receivers.add(objMessage['id_sender']);
-
-      var query = mains.objectbox.boxConversation.query(ConversationModel_.roomId.equals(objMessage['room_id'])).build();
-      if(query.find().isNotEmpty) {
-        int? count = query
-            .find()
-            .first
-            .messageCout;
-        if (count == null)
+      var query = mains.objectbox.boxConversation
+          .query(ConversationModel_.roomId.equals(objMessage['room_id']))
+          .build();
+      if (query.find().isNotEmpty) {
+        int? count = query.find().first.messageCout;
+        if (count == null) {
           count = 1;
-        else
+        } else {
           count = count + 1;
+        }
 
         ConversationModel objConversation = ConversationModel(
           id: query.find().first.id,
-          idReceiversGroup: json.encode(id_receivers),
+          idReceiversGroup: json.encode(idReceivers),
           fullName: objMessage['group_name'],
           image: query.find().first.image,
-          photoProfile: objMessage['image'],
+          photoProfile: objMessage['image'] == null ? '' : objMessage['image'],
           message: "${objMessage['name_sender']}: ${objMessage['msg_data']}",
           date: objMessage['msg_date'],
           messageCout: objMessage['msg_tipe'] == 'system' ? 0 : count,
@@ -905,14 +925,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           roomId: objMessage['room_id'],
         );
         mains.objectbox.boxConversation.put(objConversation);
-      }
-      else{
+      } else {
         ConversationModel objConversation = ConversationModel(
           id: 0,
-          idReceiversGroup: json.encode(id_receivers),
+          idReceiversGroup: json.encode(idReceivers),
           fullName: objMessage['group_name'],
           image: '',
-          photoProfile: objMessage['image'],
+          photoProfile: objMessage['image'] == null ? '' : objMessage['image'],
           message: "${objMessage['name_sender']}: ${objMessage['msg_data']}",
           date: objMessage['msg_date'],
           messageCout: objMessage['msg_tipe'] == 'system' ? 0 : 1,
@@ -923,10 +942,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       }
 
       // if message is image
-      if(objMessage['msg_tipe']=="image"){
-        var contentImage = _createFileFromUint(base64.decode(objMessage['img_data']));
+      if (objMessage['msg_tipe'] == "image") {
+        var contentImage =
+            _createFileFromUint(base64.decode(objMessage['img_data']));
 
-        final chat = ChatModel (
+        final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
           nameSender: objMessage['name_sender'],
@@ -944,10 +964,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxChat.put(chat);
       }
       // if message is file
-      else if(objMessage['msg_tipe']=="file"){
-        var contentFile = _createFileFromUint(base64.decode(objMessage['file_data']));
+      else if (objMessage['msg_tipe'] == "file") {
+        var contentFile =
+            _createFileFromUint(base64.decode(objMessage['file_data']));
 
-        final chat = ChatModel (
+        final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
           nameSender: objMessage['name_sender'],
@@ -965,7 +986,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxChat.put(chat);
       }
       // if message is text
-      else if(objMessage['msg_tipe']=="text"){
+      else if (objMessage['msg_tipe'] == "text") {
         //update Chat Model
         final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
@@ -985,7 +1006,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxChat.put(chat);
       }
       // if message is system
-      else{
+      else {
         final chat = ChatModel(
           idChatFriends: objMessage['id_chat_model'],
           idSender: objMessage['id_sender'],
@@ -1017,8 +1038,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       msg["date"] = objMessage['msg_date'];
       String msgString = json.encode(msg);
       channel.sink.add(msgString);
-    }
-    else if(objMessage['type']=="group_read" && objMessage['id_chat_model']!=null){
+    } else if (objMessage['type'] == "group_read" &&
+        objMessage['id_chat_model'] != null) {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
 
       final chat = ChatModel(
@@ -1034,11 +1055,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         date: cm.date,
         sendStatus: objMessage['send_status'],
         delivered: 1,
-        read: cm.read!+1,
+        read: cm.read! + 1,
       );
       mains.objectbox.boxChat.put(chat);
-    }
-    else if(objMessage['type']=="group_insert_success"){
+    } else if (objMessage['type'] == "group_insert_success") {
       ChatModel cm = mains.objectbox.boxChat.get(objMessage['id_chat_model'])!;
       final chat = ChatModel(
         id: cm.id,
@@ -1055,21 +1075,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       );
 
       mains.objectbox.boxChat.put(chat);
+    } else if (objMessage['type'] == "auto_logout") {
+      // call auto logout
+      print('call auto logout');
+      _openDialogAutoLogout(context);
     }
-
   }
 
   void onClosed() {
-    new Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       _doConnect();
     });
   }
 
   void onError(err, StackTrace stackTrace) {
     print("websocket error:" + err.toString());
-    if (stackTrace != null) {
-      print(stackTrace);
-    }
+    print(stackTrace);
   }
 
   void close() {
@@ -1082,7 +1103,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     super.dispose();
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void tabListener() {
     setState(() {
@@ -1102,7 +1123,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     );
   }
 
-  @override
   File? image;
 
   @override
@@ -1116,8 +1136,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             controller: _tabController,
             indicatorColor: Colors.white,
             indicatorWeight: 4,
-            labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            tabs: [
+            labelStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            tabs: const [
               Tab(
                 text: 'News',
               ),
@@ -1136,54 +1157,63 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             },
             
           ),
-          title: Text('eOffice',
-            style: TextStyle(fontSize: 17),),
+          title: const Text(
+            'eOffice',
+            style: TextStyle(fontSize: 17),
+          ),
           actions: <Widget>[
             InkWell(
-              child: Icon(Icons.search),
+              child: const Icon(Icons.search),
               onTap: () => searchOnTap(),
             ),
-            SizedBox(
+            const SizedBox(
               width: 10,
             ),
             InkWell(
-                onTap: () =>_scaffoldKey.currentState?.openEndDrawer(),
-                child: Icon(
-                    Icons.more_vert
-                )
-            ),
-            SizedBox(
+                onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+                child: const Icon(Icons.more_vert)),
+            const SizedBox(
               width: 10,
             ),
-            SizedBox(
+            const SizedBox(
               width: 5,
             ),
           ],
         ),
         endDrawer: Drawer(
           child: ListView(
-            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
             children: [
-              SizedBox(height: 50,),
+              const SizedBox(
+                height: 50,
+              ),
               ListTile(
                 title: Row(
                   children: [
                     Icon(
                       Icons.calendar_month_rounded,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Attendance',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Attendance',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Attendance()),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Attendance()),
                   );
                 },
               ),
@@ -1192,20 +1222,29 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   children: [
                     Icon(
                       Icons.person_outline_rounded,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Profile',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Profile',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProfilePage()),
                   );
                 },
               ),
@@ -1214,20 +1253,29 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   children: [
                     Icon(
                       Icons.chat_bubble_outline,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Chats',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Chats',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ChatSettingPage()),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ChatSettingPage()),
                   );
                 },
               ),
@@ -1236,20 +1284,29 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   children: [
                     Icon(
                       Icons.notifications_none_rounded,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Notification',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Notification',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NotificationPage()),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotificationPage()),
                   );
                 },
               ),
@@ -1258,20 +1315,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   children: [
                     Icon(
                       Icons.info_outline_rounded,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Info',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Info',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => AboutPage(version, buildNumber)),
+                    MaterialPageRoute(
+                        builder: (context) => AboutPage(version, buildNumber)),
                   );
                 },
               ),
@@ -1280,15 +1345,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   children: [
                     Icon(
                       Icons.exit_to_app_rounded,
-                      color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
+                      color: Theme.of(context)
+                          .inputDecorationTheme
+                          .labelStyle
+                          ?.color,
                       size: 20,
                     ),
-                    SizedBox(width: 10,),
-                    Text('Logout',
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      'Logout',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                      ),),
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
@@ -1302,29 +1374,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           children: [
             FeedTabScreen(),
             ChatTabScreen(),
-            XploreTabScreen(),
+            const XploreTabScreen(),
             History(),
           ],
           controller: _tabController,
         ),
-        floatingActionButton: _selectedTab == 1 ? FloatingActionButton(
-          elevation: 0,
-          child: Icon(Icons.add),
-          onPressed: (){
-            Navigator.push(context,
-              MaterialPageRoute(builder: (context) => (ContactPage())),
-            );
-          },
-        ) : Container(),
+        floatingActionButton: _selectedTab == 1
+            ? FloatingActionButton(
+                elevation: 0,
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => (const ContactPage())),
+                  );
+                },
+              )
+            : Container(),
       ),
     );
   }
 
-  void onSelected(BuildContext context, int item)  {
+  void onSelected(BuildContext context, int item) {
     switch (item) {
       case 0:
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
         break;
       case 1:
@@ -1339,7 +1415,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         break;
       case 3:
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => AboutPage(version, buildNumber)),
+          MaterialPageRoute(
+              builder: (context) => AboutPage(version, buildNumber)),
         );
         break;
     }
@@ -1348,15 +1425,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   void saveAttendance(AttendanceModel attendance) async {
     var id = mains.objectbox.boxAttendance.put(attendance);
     var attendanceNew = mains.objectbox.boxAttendance.get(id)!;
-    String url ='https://chat.dev.r17.co.id/save_attendance.php';
+    String url = 'https://chat.dev.r17.co.id/save_attendance.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'id_user': mains.objectbox.boxUser.get(1)?.userId,
       'latitude': attendance.latitude.toString(),
       'longitude': attendance.longitude.toString(),
       'status': attendance.status,
-      'datetime': attendance.status == 1 ? attendance.checkInAt : attendance.checkOutAt,
+      'datetime':
+          attendance.status == 1 ? attendance.checkInAt : attendance.checkOutAt,
     };
 
     attendanceNew.id = attendanceNew.id;
@@ -1427,59 +1505,53 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   }
 
   Future<http.Response> getDataUser() async {
-
-    String url ='https://chat.dev.r17.co.id/get_user.php';
+    String url = 'https://chat.dev.r17.co.id/get_user.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'email': mains.objectbox.boxUser.get(1)?.email,
     };
 
     //encode Map to JSON
     //var body = "?api_key="+this.apiKey;
 
-    var response = await http.post(Uri.parse(url),
+    var response = await http.post(
+      Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
+      body: jsonEncode(data),
     );
-    if(response.statusCode == 200){
-      //print("${response.body}");
+    if (response.statusCode == 200) {
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
-      if(userMap['code_status'] == 0){
-
+      if (userMap['code_status'] == 0) {
         var user = UserModel(
-          id: 1,
-          email: email,
-          userId: userMap['id'],
-          userName: userMap['name'],
-          phone: userMap['phone'],
-          photo: userMap['photo'],
-          fcmToken: userMap['fcm_token']
-        );
+            id: 1,
+            email: email,
+            userId: userMap['id'],
+            userName: userMap['name'],
+            phone: userMap['phone'],
+            photo: userMap['photo'],
+            fcmToken: userMap['fcm_token']);
 
         print('ini id user: ${user.userId}');
 
         mains.objectbox.boxUser.put(user);
-
-      }else{
+      } else {
         print("ada yang salah!");
         print(userMap['code_status']);
         print(userMap['error']);
       }
-    }
-    else{
+    } else {
       print("Gagal terhubung ke server!");
     }
     return response;
   }
 
   Future<http.Response> checkFcmToken() async {
-
-    String url ='https://chat.dev.r17.co.id/check_fcm.php';
+    String url = 'https://chat.dev.r17.co.id/check_fcm.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'email': mains.objectbox.boxUser.get(1)!.email,
       'fcm_token': mains.objectbox.boxUser.get(1)!.fcmToken,
     };
@@ -1487,99 +1559,310 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     //encode Map to JSON
     //var body = "?api_key="+this.apiKey;
 
-    var response = await http.post(Uri.parse(url),
+    var response = await http.post(
+      Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
+      body: jsonEncode(data),
     );
     
     if(response.statusCode == 200){
       //print("${response.body}");
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
-      if(userMap['code_status'] == 0){
+      if (userMap['code_status'] == 0) {
         // print('ini fcm hasil check fcm api: ${userMap['fcm_token']}');
         // print('ini fcm di objectbox manggil di home: ${mains.objectbox.boxUser.get(1)!.fcmToken}');
-        print('fcm same: ${userMap['same']}');
-        if(userMap['same'] == 1){
+        // print('fcm same: ${userMap['same']}');
+        if (userMap['same'] == 1) {
           getDataUser();
-        }else{
-        //  logout
-          // _openDialogAutoLogout(context);
+        } else {
+          //  logout
+          _openDialogAutoLogout(context);
         }
-      }else{
+      } else {
         print("ada yang salah!");
         print(userMap['code_status']);
         print(userMap['error']);
       }
-    }
-    else{
+    } else {
       print("Gagal terhubung ke server!");
     }
     return response;
   }
 
   Future<http.Response> getListContact() async {
-    String url ='https://chat.dev.r17.co.id/list_contact.php';
+    String url = 'https://chat.dev.r17.co.id/list_contact.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'email': mains.objectbox.boxUser.get(1)?.email,
     };
 
     //encode Map to JSON
     //var body = "?api_key="+this.apiKey;
 
-    var response =  await http.post(Uri.parse(url),
+    var response = await http.post(
+      Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
+      body: jsonEncode(data),
     );
-    if(response.statusCode == 200){
-      //print("${response.body}");
+    if (response.statusCode == 200) {
       Map<String, dynamic> userMap = json.decode(response.body);
 
-      if(userMap['code_status'] == 1){
-
-
+      if (userMap['code_status'] == 1) {
         contactData = userMap['data'];
-        for(int i = 0; i < userMap['data'].length; i++){
+        for (int i = 0; i < userMap['data'].length; i++) {
           contactList = Map<String, dynamic>.from(userMap['data'][i]);
           // contactName = contactList['name'];
           nameList.insert(i, contactList['name']);
 
-          var query = mains.objectbox.boxContact.query(ContactModel_.email.equals(contactList['email'].toString())).build();
+          var query = mains.objectbox.boxContact
+              .query(
+                  ContactModel_.email.equals(contactList['email'].toString()))
+              .build();
 
-          if(query.find().isNotEmpty) {
+          if (query.find().isNotEmpty) {
             final contact = ContactModel(
               id: query.find().first.id,
               userId: query.find().first.userId,
               userName: contactList['name'],
               email: query.find().first.email,
-              photo: contactList['photo']=='' || contactList['photo'] == null ? '':contactList['photo'],
+              photo: contactList['photo'] == '' || contactList['photo'] == null
+                  ? ''
+                  : contactList['photo'],
               phone: contactList['phone'],
             );
 
             mains.objectbox.boxContact.put(contact);
-          }
-          else{
+          } else {
             final contact = ContactModel(
               userId: contactList['id'],
               userName: contactList['name'],
               email: contactList['email'],
-              photo: contactList['photo']=='' || contactList['photo'] == null ? '':contactList['photo'],
+              photo: contactList['photo'] == '' || contactList['photo'] == null
+                  ? ''
+                  : contactList['photo'],
               phone: contactList['phone'],
-
             );
 
             mains.objectbox.boxContact.put(contact);
           }
         }
-
-      }else{
+      } else {
         print("ada yang salah!");
       }
-    }
-    else{
+    } else {
       print("Gagal terhubung ke server!");
+    }
+    return response;
+  }
+
+  Future<http.Response> getAllMessages() async {
+    String url = 'https://chat.dev.r17.co.id/get_all_messages.php';
+
+    Map<String, dynamic> data = {
+      'api_key': apiKey,
+      'email': mains.objectbox.boxUser.get(1)!.email,
+      'type': 'get_all_message',
+      'id_user': mains.objectbox.boxUser.get(1)!.userId,
+
+    };
+
+    var response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      // print(response.body);
+      Map<String, dynamic> messagesMap = jsonDecode(response.body);
+
+      if (messagesMap['code_status'] == 0) {
+        int messagesLength = messagesMap['array_messages'].length;
+        for(int i = 0; i < messagesLength; i++) {
+          var dataMessage = Map<String, dynamic>.from(jsonDecode(messagesMap['array_messages'][i]));
+          // our messages
+          if(dataMessage['id_sender'] == mains.objectbox.boxUser.get(1)!.userId){
+            // if message is image
+            if (dataMessage['msg_tipe'] == "image") {
+              var contentImage =
+              _createImageFromUint(base64.decode(dataMessage['img_data']));
+
+              final chat = ChatModel(
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: 'image',
+                date: dataMessage['msg_date'],
+                tipe: 'image',
+                content: await contentImage,
+                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                delivered: dataMessage['delivered'],
+                read: dataMessage['read'],
+              );
+
+              mains.objectbox.boxChat.put(chat);
+            }
+            // if message is file
+            else if (dataMessage['msg_tipe'] == "file") {
+              var contentFile =
+              _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+              final chat = ChatModel(
+                idChatFriends: dataMessage['id_chat_model'],
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: dataMessage['msg_data'],
+                date: dataMessage['msg_date'],
+                tipe: 'file',
+                content: await contentFile,
+                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                delivered: dataMessage['delivered'],
+                read: dataMessage['read'],
+              );
+
+              mains.objectbox.boxChat.put(chat);
+            }
+            // if message is text
+            else {
+              //update Chat Model
+              final chat = ChatModel(
+                idChatFriends: dataMessage['id_chat_model'],
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: dataMessage['msg_data'],
+                date: dataMessage['msg_date'],
+                tipe: 'text',
+                content: null,
+                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                delivered: dataMessage['delivered'],
+                read: dataMessage['read'],
+              );
+              mains.objectbox.boxChat.put(chat);
+            }
+          }
+          // someone else's message
+          else{
+            var query = mains.objectbox.boxConversation
+                .query(ConversationModel_.idReceiver.equals(dataMessage['id_sender']))
+                .build();
+            if (query.find().isNotEmpty) {
+              int? count = query.find().first.messageCout;
+              // if (count == null) {
+              //   count = 1;
+              // } else if(dataMessage['read'] == 0){
+              //   count = count + 1;
+              // }
+
+              ConversationModel objConversation = ConversationModel(
+                  id: query.find().first.id,
+                  idReceiver: dataMessage['id_sender'],
+                  fullName: dataMessage['name_sender'] == ''
+                      ? query.find().first.fullName
+                      : dataMessage['name_sender'],
+                  image: query.find().first.image,
+                  photoProfile: dataMessage['photo'] == ''
+                      ? query.find().first.photoProfile
+                      : dataMessage['photo'],
+                  message: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  messageCout: count,
+                  statusReceiver: query.find().first.statusReceiver,
+                  roomId: dataMessage['room_id']);
+              mains.objectbox.boxConversation.put(objConversation);
+            } else {
+              ConversationModel objConversation = ConversationModel(
+                  id: 0,
+                  idReceiver: dataMessage['id_sender'],
+                  fullName: dataMessage['name_sender'],
+                  image: '',
+                  photoProfile: dataMessage['photo'] == null ? '' : dataMessage['photo'],
+                  message: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  messageCout: 0,
+                  statusReceiver: '',
+                  roomId: dataMessage['room_id']);
+              mains.objectbox.boxConversation.put(objConversation);
+            }
+
+            // if message is image
+            if (dataMessage['msg_tipe'] == "image") {
+              var contentImage =
+              _createImageFromUint(base64.decode(dataMessage['img_data']));
+
+              final chat = ChatModel(
+                idChatFriends: dataMessage['id_chat_model'],
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: "image",
+                date: dataMessage['msg_date'],
+                tipe: 'image',
+                content: await contentImage,
+                sendStatus: '',
+                delivered: 0,
+                read: 0,
+              );
+
+              mains.objectbox.boxChat.put(chat);
+            }
+            // if message is file
+            else if (dataMessage['msg_tipe'] == "file") {
+              var contentFile =
+              _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+              final chat = ChatModel(
+                idChatFriends: dataMessage['id_chat_model'],
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: dataMessage['msg_data'],
+                date: dataMessage['msg_date'],
+                tipe: 'file',
+                content: await contentFile,
+                sendStatus: '',
+                delivered: 0,
+                read: 0,
+              );
+
+              mains.objectbox.boxChat.put(chat);
+            }
+            // if message is text
+            else {
+              //update Chat Model
+              final chat = ChatModel(
+                idChatFriends: dataMessage['id_chat_model'],
+                idSender: dataMessage['id_sender'],
+                idReceiver: dataMessage['id_receiver'],
+                text: dataMessage['msg_data'],
+                date: dataMessage['msg_date'],
+                tipe: 'text',
+                sendStatus: '',
+                content: null,
+                delivered: 0,
+                read: 0,
+              );
+              mains.objectbox.boxChat.put(chat);
+            }
+          }
+          if(i == messagesLength/4){
+            print('ini message ke ${i}');
+            setState(() {});
+          }else if(i == messagesLength/2){
+            print('ini message ke ${i}');
+            setState(() {});
+          }else if(i == messagesLength*0.75){
+            print('ini message ke ${i}');
+            setState(() {});
+          }else if(i == messagesLength){
+            print('ini message ke ${i}');
+            setState(() {});
+          }
+        }
+        EasyLoading.showSuccess('Done!');
+      }
+      else {
+        EasyLoading.showError(messagesMap['error']);
+      }
+    } else {
+      EasyLoading.showError('Gagal terhubung ke server!');
     }
     return response;
   }
@@ -1598,7 +1881,7 @@ void _openDialogLogout(ctx) {
   Future<void> _deleteAppDir() async {
     final appDir = await getApplicationSupportDirectory();
 
-    if(appDir.existsSync()){
+    if (appDir.existsSync()) {
       appDir.deleteSync(recursive: true);
     }
   }
@@ -1606,54 +1889,50 @@ void _openDialogLogout(ctx) {
   showCupertinoDialog(
       context: ctx,
       builder: (_) => CupertinoAlertDialog(
-        title: Text("Logout"),
-        content: Text("Are you sure you want to logout?"),
-        actions: [
-          // Close the dialog
-          // You can use the CupertinoDialogAction widget instead
-          CupertinoButton(
-              child: Text('Cancel',
-                style: TextStyle(
-                    color: Color(0xFF2481CF)
+            title: const Text("Logout"),
+            content: const Text("Are you sure you want to logout?"),
+            actions: [
+              // Close the dialog
+              // You can use the CupertinoDialogAction widget instead
+              CupertinoButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Color(0xFF2481CF)),
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  }),
+              CupertinoButton(
+                child: const Text(
+                  'Yes',
+                  style: TextStyle(color: Colors.red),
                 ),
-              ),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              }),
-          CupertinoButton(
-            child: Text('Yes',
-              style: TextStyle(
-                  color: Colors.red
-              ),
-            ),
-            onPressed: () {
+                onPressed: () {
+                  _deleteAppDir();
+                  _deleteCacheDir();
 
-              _deleteAppDir();
-              _deleteCacheDir();
+                  mains.objectbox.boxConversation.removeAll();
+                  mains.objectbox.boxChat.removeAll();
+                  mains.objectbox.boxContact.removeAll();
+                  mains.objectbox.boxUser.removeAll();
+                  mains.objectbox.boxAttendance.removeAll();
+                  mains.objectbox.boxSurat.removeAll();
+                  mains.objectbox.boxBadge.removeAll();
+                  mains.objectbox.boxNews.removeAll();
+                  mains.objectbox.boxUserPreference.removeAll();
 
-              mains.objectbox.boxConversation.removeAll();
-              mains.objectbox.boxChat.removeAll();
-              mains.objectbox.boxContact.removeAll();
-              mains.objectbox.boxUser.removeAll();
-              mains.objectbox.boxAttendance.removeAll();
-              mains.objectbox.boxSurat.removeAll();
-              mains.objectbox.boxBadge.removeAll();
-              mains.objectbox.boxNews.removeAll();
-              mains.objectbox.boxUserPreference.removeAll();
-
-
-              Navigator.pushAndRemoveUntil(
-                ctx,
-                MaterialPageRoute(builder: (context) => Login()),
+                  Navigator.pushAndRemoveUntil(
+                    ctx,
+                    MaterialPageRoute(builder: (context) => Login()),
                     (Route<dynamic> route) => false,
-              );
+                  );
 
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-              exit(0);
-            },
-          )
-        ],
-      ));
+                  SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                  exit(0);
+                },
+              )
+            ],
+          ));
 }
 
 void _openDialogAutoLogout(ctx) {
@@ -1668,51 +1947,53 @@ void _openDialogAutoLogout(ctx) {
   Future<void> _deleteAppDir() async {
     final appDir = await getApplicationSupportDirectory();
 
-    if(appDir.existsSync()){
+    if (appDir.existsSync()) {
       appDir.deleteSync(recursive: true);
     }
   }
 
   showCupertinoDialog(
       context: ctx,
-      builder: (_) => CupertinoAlertDialog(
-        title: Text("Info"),
-        content: Text("Logged out because you logged in from another device. You can only be logged in on one device at a time"),
-        actions: [
-          // Close the dialog
-          // You can use the CupertinoDialogAction widget instead
-          CupertinoButton(
-            child: Text('Ok',
-              style: TextStyle(
-                  color: Color(0xFF2481CF)
-              ),
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+            onWillPop: () async => false,
+            child: CupertinoAlertDialog(
+              title: const Text("Logged Out"),
+              content: const Text(
+                  "Logged out because you logged in from another device. You can only be logged in on one device at a time."),
+              actions: [
+                // Close the dialog
+                // You can use the CupertinoDialogAction widget instead
+                CupertinoButton(
+                  child: const Text(
+                    'Ok',
+                    style: TextStyle(color: Color(0xFF2481CF)),
+                  ),
+                  onPressed: () {
+                    _deleteAppDir();
+                    _deleteCacheDir();
+
+                    mains.objectbox.boxConversation.removeAll();
+                    mains.objectbox.boxChat.removeAll();
+                    mains.objectbox.boxContact.removeAll();
+                    mains.objectbox.boxUser.removeAll();
+                    mains.objectbox.boxAttendance.removeAll();
+                    mains.objectbox.boxSurat.removeAll();
+                    mains.objectbox.boxBadge.removeAll();
+                    mains.objectbox.boxNews.removeAll();
+                    mains.objectbox.boxUserPreference.removeAll();
+
+                    // Navigator.pushAndRemoveUntil(
+                    //   ctx,
+                    //   MaterialPageRoute(builder: (context) => Login()),
+                    //       (Route<dynamic> route) => false,
+                    // );
+
+                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                    exit(0);
+                  },
+                )
+              ],
             ),
-            onPressed: () {
-
-              _deleteAppDir();
-              _deleteCacheDir();
-
-              mains.objectbox.boxConversation.removeAll();
-              mains.objectbox.boxChat.removeAll();
-              mains.objectbox.boxContact.removeAll();
-              mains.objectbox.boxUser.removeAll();
-              mains.objectbox.boxAttendance.removeAll();
-              mains.objectbox.boxSurat.removeAll();
-              mains.objectbox.boxBadge.removeAll();
-              mains.objectbox.boxNews.removeAll();
-              mains.objectbox.boxUserPreference.removeAll();
-
-
-              Navigator.pushAndRemoveUntil(
-                ctx,
-                MaterialPageRoute(builder: (context) => Login()),
-                    (Route<dynamic> route) => false,
-              );
-
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-              exit(0);
-            },
-          )
-        ],
-      ));
+          ));
 }

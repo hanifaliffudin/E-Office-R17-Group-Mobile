@@ -19,7 +19,6 @@ import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
 import 'models/ConversationModel.dart';
-import 'models/LoadChatModel.dart';
 import 'models/NewsModel.dart';
 import 'models/NoteModel.dart';
 import 'models/SuratModel.dart';
@@ -361,7 +360,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(7, 2414097441055247438),
       name: 'SuratModel',
-      lastPropertyId: const IdUid(15, 695512295959142384),
+      lastPropertyId: const IdUid(16, 3708736985555398852),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -433,6 +432,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(15, 695512295959142384),
             name: 'penerima',
             type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(16, 3708736985555398852),
+            name: 'isSelected',
+            type: 1,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -683,7 +687,7 @@ ModelDefinition getObjectBoxModel() {
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
-      retiredEntityUids: const [],
+      retiredEntityUids: const [1435125642557611699],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
         4809186185575546396,
@@ -1071,7 +1075,7 @@ ModelDefinition getObjectBoxModel() {
           final penerimaOffset = object.penerima == null
               ? null
               : fbb.writeString(object.penerima!);
-          fbb.startTable(16);
+          fbb.startTable(17);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, idSuratOffset);
           fbb.addOffset(2, namaSuratOffset);
@@ -1086,6 +1090,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(12, editorOffset);
           fbb.addOffset(13, approverOffset);
           fbb.addOffset(14, penerimaOffset);
+          fbb.addBool(15, object.isSelected);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1115,7 +1120,8 @@ ModelDefinition getObjectBoxModel() {
               url: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 24),
               tipeSurat: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 26),
               approver: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 30),
-              penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32));
+              penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32),
+              isSelected: const fb.BoolReader().vTableGet(buffer, rootOffset, 34, false));
 
           return object;
         }),
@@ -1652,6 +1658,10 @@ class SuratModel_ {
   /// see [SuratModel.penerima]
   static final penerima =
       QueryStringProperty<SuratModel>(_entities[6].properties[13]);
+
+  /// see [SuratModel.isSelected]
+  static final isSelected =
+      QueryBooleanProperty<SuratModel>(_entities[6].properties[14]);
 }
 
 /// [NewsModel] entity fields to define ObjectBox queries.

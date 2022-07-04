@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:militarymessenger/NeedApprove.dart';
+import 'package:intl/intl.dart';
+import 'package:militarymessenger/NeedReview.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
+import 'package:militarymessenger/tracking.dart';
 import 'objectbox.g.dart';
 import 'package:badges/badges.dart';
 import 'document.dart';
@@ -43,46 +45,74 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const NeedApprove()),
+                        MaterialPageRoute(builder: (context) => const InboxPage()),
                       );
                     },
                     child: Column(
                       children: [
                         Badge(
                           position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
-                          mains.objectbox.boxBadge.get(1)!.badgeNeedApprove == 0 ? false : true
+                          showBadge:mains.objectbox.boxBadge.get(1) != null ?
+                          mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true
                               :
                           false,
                           badgeContent: Text(
                             mains.objectbox.boxBadge.get(1) != null ?
-                            mains.objectbox.boxBadge.get(1)!.badgeNeedApprove.toString()
+                            mains.objectbox.boxBadge.get(1)!.badgeInbox.toString()
                                 :
                             '',
                             style: const TextStyle(
-                                color: Colors.white
+                              color: Colors.white,
                             ),
                           ),
                           badgeColor: const Color(0xFFE2574C),
                           child: const CircleAvatar(
                             radius: 30,
-                            backgroundColor: Color(0xFF3B8880),
+                            backgroundColor: Color(0xFF5584AC),
                             child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
-                              backgroundColor: Color(0xFF3B8880),
+                              backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
+                              backgroundColor: Color(0xFF5584AC),
                               radius: 20,
                             ),
                           ),
                         ),
+                        const Text(
+                          'Inbox',
+                          style: TextStyle(
+                            height: 2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => const SignedPage()),
+                      );
+                    },
+                    child: Column(
+                      children: const [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Color(0xFFE49D23),
+                          child: CircleAvatar(
+                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
+                            backgroundColor: Color(0xFFE49D23),
+                            radius: 20,
+                          ),
+                        ),
                         Text(
-                          'Need Approve',
+                          'Signed',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -137,42 +167,88 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const InboxPage()),
+                        MaterialPageRoute(builder: (context) => const NeedReview()),
                       );
                     },
                     child: Column(
                       children: [
                         Badge(
-                              position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                              showBadge:mains.objectbox.boxBadge.get(1) != null ?
-                              mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true
-                                  :
-                              false,
-                              badgeContent: Text(
-                                mains.objectbox.boxBadge.get(1) != null ?
-                                mains.objectbox.boxBadge.get(1)!.badgeInbox.toString()
-                                    :
-                                '',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                ),
-                              ),
-                              badgeColor: const Color(0xFFE2574C),
-                              child: const CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Color(0xFF5584AC),
-                                child: CircleAvatar(
-                                  backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
-                                  backgroundColor: Color(0xFF5584AC),
-                                  radius: 20,
-                                ),
-                              ),
+                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: mains.objectbox.boxBadge.get(1) != null ?
+                          mains.objectbox.boxBadge.get(1)!.badgeNeedApprove == 0 ? false : true
+                              :
+                          false,
+                          badgeContent: Text(
+                            mains.objectbox.boxBadge.get(1) != null ?
+                            mains.objectbox.boxBadge.get(1)!.badgeNeedApprove.toString()
+                                :
+                            '',
+                            style: const TextStyle(
+                                color: Colors.white
                             ),
-                        const Text(
-                          'Inbox',
+                          ),
+                          badgeColor: const Color(0xFFE2574C),
+                          child: const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Color(0xFF3B8880),
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
+                              backgroundColor: Color(0xFF3B8880),
+                              radius: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Need Review',
+                          style: TextStyle(
+                            height: 2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      // Navigator.push(context,
+                      //   MaterialPageRoute(builder: (context) => const NeedReview()),
+                      // );
+                    },
+                    child: Column(
+                      children: [
+                        Badge(
+                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: false,
+                          badgeContent: const Text('',
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                          badgeColor: const Color(0xFFE2574C),
+                          child: const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Color(0xFFF54040),
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
+                              backgroundColor: Color(0xFFF54040),
+                              radius: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Canceled',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -185,22 +261,32 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const SignedPage()),
+                        MaterialPageRoute(builder: (context) => const TrackingPage()),
                       );
                     },
                     child: Column(
-                      children: const [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Color(0xFFE49D23),
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
-                            backgroundColor: Color(0xFFE49D23),
-                            radius: 20,
+                      children: [
+                        Badge(
+                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                          showBadge: false,
+                          badgeContent: const Text('',
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                          badgeColor: const Color(0xFFE2574C),
+                          child: const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Color(0xFFF5C840),
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
+                              backgroundColor: Color(0xFFF5C840),
+                              radius: 20,
+                            ),
                           ),
                         ),
                         Text(
-                          'Signed',
+                          'Tracking',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -262,7 +348,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           List<SuratModel> listSurat = query.find().reversed.toList();
                           if(listSurat.isEmpty){
                             return Container(
-                                margin: const EdgeInsets.only(top: 15.0),
+                                margin: const EdgeInsets.only(top: 5.0),
                                 width: MediaQuery.of(context).size.width,
                                 child :const Text(
                                   'No recents yet.',
@@ -272,6 +358,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             );
                           }
                           else{
+                            DateTime now = new DateTime.now();
+                            DateTime date = new DateTime(now.year, now.month, now.day);
+
                             return ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 scrollDirection: Axis.vertical,
@@ -280,78 +369,101 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                 itemBuilder:(BuildContext context,index){
                                   return InkWell(
                                     onTap: () {
-                                      if(listSurat[index].kategori == 'history'){
-                                        String kategori =
-                                        listSurat[index].status == "APPROVE" ?
-                                        'approved'
-                                            :
-                                        listSurat[index].status == "RETURN" ?
-                                        'returned'
-                                            :
-                                        listSurat[index].status == "REJECT" ?
-                                        'rejected'
-                                            :
-                                        listSurat[index].status == "READ" ?
-                                        'inbox'
-                                            :
-                                        listSurat[index].status == "SUBMIT" ?
-                                        'sent'
-                                            :
-                                        listSurat[index].status == "APPROVED" ?
-                                        'approved'
-                                            :
-                                        listSurat[index].status == "SIGNED" ?
-                                        'signed'
-                                            :
-                                        '';
+                                      String kategori =
+                                      listSurat[index].status == "APPROVE" ?
+                                      'approved'
+                                          :
+                                      listSurat[index].status == "RETURN" ?
+                                      'returned'
+                                          :
+                                      listSurat[index].status == "REJECT" ?
+                                      'rejected'
+                                          :
+                                      listSurat[index].status == "READ" ?
+                                      'inbox'
+                                          :
+                                      listSurat[index].status == "SUBMIT" ?
+                                      'sent'
+                                          :
+                                      listSurat[index].status == "APPROVED" ?
+                                      'approved'
+                                          :
+                                      listSurat[index].status == "SIGNED" ?
+                                      'signed'
+                                          :
+                                      '';
 
-                                        var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals(kategori)).build();
-                                        if(query.find().isNotEmpty) {
-                                          Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
-                                        }
-                                      }else{
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
-                                        );
+                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals(kategori)).build();
+                                      if(query.find().isNotEmpty) {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
                                       }
                                     },
                                     child: Card(
+                                      margin: EdgeInsets.symmetric(vertical: 5),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  margin: const EdgeInsets.only(right: 20.0),
-                                                  child: const Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    ConstrainedBox(
-                                                      constraints: const BoxConstraints(
-                                                          maxWidth: 200
+                                            Container(
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    margin: EdgeInsets.only(right: 10.0),
+                                                    child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      ConstrainedBox(
+                                                        constraints: BoxConstraints(
+                                                            maxWidth: 200
+                                                        ),
+                                                        child: Text(listSurat[index].namaSurat!,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                          style: TextStyle(fontWeight: FontWeight.bold),),
                                                       ),
-                                                      child: Text(listSurat[index].perihal!,
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
-                                                        style: const TextStyle(fontWeight: FontWeight.bold),),
-                                                    ),
-                                                    const SizedBox(height: 5,),
-                                                    Text(listSurat[index].tglBuat!),
-                                                  ],
-                                                ),
-                                              ],
+                                                      SizedBox(height: 5,),
+                                                      date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                                      Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                                          :
+                                                      Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                                      SizedBox(height: 5,),
+                                                      Text(listSurat[index].status!),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             Container(
                                               height: 50,
                                               width: 30,
-                                              decoration: const BoxDecoration(
-                                                  image: DecorationImage(
-                                                      image: AssetImage("assets/icons/download_icon.png")
-                                                  )
-                                              ),
+
+                                              child:
+                                              listSurat[index].status == "APPROVE" ?
+                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                                  :
+                                              listSurat[index].status == "RETURN" ?
+                                              Image(image: AssetImage("assets/icons/return.png"))
+                                                  :
+                                              listSurat[index].status == "REJECT" ?
+                                              Image(image: AssetImage("assets/icons/reject.png"))
+                                                  :
+                                              listSurat[index].status == "READ" ?
+                                              Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                                  :
+                                              listSurat[index].status == "SUBMIT" ?
+                                              Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                                  :
+                                              listSurat[index].status == "APPROVED" ?
+                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                                  :
+                                              listSurat[index].status == "SIGNED" ?
+                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                                  :
+                                              Container()
+                                              ,
                                             ),
                                           ],
                                         ),
@@ -376,7 +488,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   }
 
   Future<http.Response> getBadgeInbox() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeInbox';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeInbox';
 
     Map<String, dynamic> data = {
 
@@ -393,7 +505,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       if(suratMap['message'] == 'success'){
@@ -433,7 +544,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   }
 
   Future<http.Response> getBadgeSign() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeSign';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeSign';
 
     Map<String, dynamic> data = {
 
@@ -450,7 +561,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       if(suratMap['message'] == 'success' || suratMap['message'] == 'No Document'){
@@ -486,7 +596,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   }
 
   Future<http.Response> getBadgeNeedApprove() async {
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
 
     Map<String, dynamic> data = {
 
@@ -540,7 +650,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
 
   Future<http.Response> getRecent() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/recent';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/recent';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -556,7 +666,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history')).build();

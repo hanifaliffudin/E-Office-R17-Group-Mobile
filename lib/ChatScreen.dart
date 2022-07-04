@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:io' as Io;
 
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -290,8 +291,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final ImagePicker _picker = ImagePicker();
     final XFile? imagePicked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 25);
 
-    if(imagePicked!=null)
+    if(imagePicked!=null) {
       cropImage(imagePicked.path);
+    }
   }
 
   Future getCamera() async {
@@ -307,13 +309,13 @@ class _ChatScreenState extends State<ChatScreen> {
         aspectRatioPresets: [
           CropAspectRatioPreset.square,
         ],
-        androidUiSettings: AndroidUiSettings(
+        androidUiSettings: const AndroidUiSettings(
             toolbarTitle: 'Crop image',
             toolbarColor: Color(0xFF2481CF),
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false),
-        iosUiSettings: IOSUiSettings(
+        iosUiSettings: const IOSUiSettings(
           minimumAspectRatio: 1.0,
         )
     );
@@ -323,38 +325,50 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         image = croppedImage;
         final bytes = Io.File(croppedImage.path).readAsBytesSync();
-        String img64 = base64Encode(bytes);
+        final bytesSize = Io.File(croppedImage.path).readAsBytesSync().lengthInBytes;
+        final kb = bytesSize / 1024;
+        final mb = kb / 1024;
+        if(mb < 16){
+          String img64 = base64Encode(bytes);
 
-        // send image message
-        final chat = ChatModel (
-          idSender: idUser,
-          idReceiver: idReceiver,
-          text: "Photo",
-          date: DateTime.now().toString(),
-          tipe: "image",
-          content: croppedImage.path,
-          sendStatus: '',
-          delivered: 0,
-          read: 0,
-        );
+          // send image message
+          final chat = ChatModel (
+            idSender: idUser,
+            idReceiver: idReceiver,
+            text: "Photo",
+            date: DateTime.now().toString(),
+            tipe: "image",
+            content: croppedImage.path,
+            sendStatus: '',
+            delivered: 0,
+            read: 0,
+          );
 
-        int id = mains.objectbox.boxChat.put(chat);
+          int id = mains.objectbox.boxChat.put(chat);
 
-        var msg = {};
-        msg["api_key"] = apiKey;
-        msg["decrypt_key"] = "";
-        msg["id_chat_model"] = id;
-        msg["type"] = "pm";
-        msg["id_sender"] = idUser;
-        msg["id_receiver"] = idReceiver;
-        msg["msg_tipe"] = 'image';
-        msg["msg_data"] = "Photo";
-        msg["room_id"] = roomId;
-        msg["image"] = img64;
+          var msg = {};
+          msg["api_key"] = apiKey;
+          msg["decrypt_key"] = "";
+          msg["id_chat_model"] = id;
+          msg["type"] = "pm";
+          msg["id_sender"] = idUser;
+          msg["id_receiver"] = idReceiver;
+          msg["msg_tipe"] = 'image';
+          msg["msg_data"] = "Photo";
+          msg["room_id"] = roomId;
+          msg["image"] = img64;
 
-        String msgString = json.encode(msg);
+          String msgString = json.encode(msg);
 
-        homes.channel.sink.add(msgString);
+          homes.channel.sink.add(msgString);
+        }
+        else{
+          Flushbar(
+            backgroundColor: Colors.grey,
+            message: '1 image you tried adding is larger than the 16MB limit.',
+            duration: const Duration(seconds: 3),
+          ).show(context);
+        }
       });
     }
   }
@@ -1009,43 +1023,51 @@ class _ChatScreenState extends State<ChatScreen> {
       allowedExtensions: ['doc', 'pdf'],
     );
     if (result != null) {
-      // File file = File(result.files.single.path!);
       PlatformFile file = result.files.first;
-      // print(file.extension);
-      final bytes = Io.File(file.path!).readAsBytesSync();
-      String file64 = base64Encode(bytes);
+      if(file.size < 16777216){
+        final bytes = Io.File(file.path!).readAsBytesSync();
+        String file64 = base64Encode(bytes);
 
-      final chat = ChatModel (
-        idSender: idUser,
-        idReceiver: idReceiver,
-        text: file.name,
-        date: DateTime.now().toString(),
-        tipe: "file",
-        content: file.path,
-        sendStatus: '',
-        delivered: 0,
-        read: 0,
-      );
+        final chat = ChatModel (
+          idSender: idUser,
+          idReceiver: idReceiver,
+          text: file.name,
+          date: DateTime.now().toString(),
+          tipe: "file",
+          content: file.path,
+          sendStatus: '',
+          delivered: 0,
+          read: 0,
+        );
 
-      int id = mains.objectbox.boxChat.put(chat);
+        int id = mains.objectbox.boxChat.put(chat);
 
-      //send file message
-      var msg = {};
-      msg["api_key"] = apiKey;
-      msg["decrypt_key"] = "";
-      msg["id_chat_model"] = id;
-      msg["type"] = "pm";
-      msg["id_sender"] = idUser;
-      msg["id_receiver"] = idReceiver;
-      msg["msg_tipe"] = 'file';
-      msg["msg_data"] = file.name;
-      msg["room_id"] = roomId;
-      msg["file"] = file64;
+        //send file message
+        var msg = {};
+        msg["api_key"] = apiKey;
+        msg["decrypt_key"] = "";
+        msg["id_chat_model"] = id;
+        msg["type"] = "pm";
+        msg["id_sender"] = idUser;
+        msg["id_receiver"] = idReceiver;
+        msg["msg_tipe"] = 'file';
+        msg["msg_data"] = file.name;
+        msg["room_id"] = roomId;
+        msg["file"] = file64;
 
-      String msgString = json.encode(msg);
+        String msgString = json.encode(msg);
 
-      homes.channel.sink.add(msgString);
-    } else {
+        homes.channel.sink.add(msgString);
+      }
+      else{
+        Flushbar(
+          backgroundColor: Colors.grey,
+          message: '1 file you tried adding is larger than the 16MB limit.',
+          duration: const Duration(seconds: 3),
+        ).show(context);
+      }
+    }
+    else {
       return;
     }
 
