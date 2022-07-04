@@ -13,6 +13,7 @@ import 'package:objectbox/internal.dart'; // generated code can access "internal
 import 'package:objectbox/objectbox.dart';
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'models/AttendanceHistoryModel.dart';
 import 'models/AttendanceModel.dart';
 import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
@@ -596,6 +597,69 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(11, 1435125642557611699),
+      name: 'LoadChatModel',
+      lastPropertyId: const IdUid(2, 4949612167761542987),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 8107107720145537335),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 4949612167761542987),
+            name: 'loaded',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(12, 5002030077723218516),
+      name: 'AttendanceHistoryModel',
+      lastPropertyId: const IdUid(8, 7050715817132016200),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 8612324553882073277),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 5102338448072367350),
+            name: 'date',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 5918159213822378240),
+            name: 'datetime',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(4, 6296066933052675365),
+            name: 'latitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(5, 4546837026799442203),
+            name: 'longitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(7, 5347994061376552449),
+            name: 'status',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(8, 7050715817132016200),
+            name: 'server',
+            type: 1,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -619,7 +683,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(11, 1435125642557611699),
+      lastEntityId: const IdUid(12, 5002030077723218516),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -629,8 +693,7 @@ ModelDefinition getObjectBoxModel() {
         4809186185575546396,
         4729195407902185397,
         3922386874057685126,
-        8107107720145537335,
-        4949612167761542987
+        3568183607304925893
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1227,6 +1290,78 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGet(buffer, rootOffset, 20, false));
 
           return object;
+        }),
+    LoadChatModel: EntityDefinition<LoadChatModel>(
+        model: _entities[10],
+        toOneRelations: (LoadChatModel object) => [],
+        toManyRelations: (LoadChatModel object) => {},
+        getId: (LoadChatModel object) => object.id,
+        setId: (LoadChatModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (LoadChatModel object, fb.Builder fbb) {
+          fbb.startTable(3);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.loaded);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = LoadChatModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              loaded:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
+
+          return object;
+        }),
+    AttendanceHistoryModel: EntityDefinition<AttendanceHistoryModel>(
+        model: _entities[11],
+        toOneRelations: (AttendanceHistoryModel object) => [],
+        toManyRelations: (AttendanceHistoryModel object) => {},
+        getId: (AttendanceHistoryModel object) => object.id,
+        setId: (AttendanceHistoryModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (AttendanceHistoryModel object, fb.Builder fbb) {
+          final dateOffset =
+              object.date == null ? null : fbb.writeString(object.date!);
+          final datetimeOffset = object.datetime == null
+              ? null
+              : fbb.writeString(object.datetime!);
+          fbb.startTable(9);
+          fbb.addInt64(0, object.id);
+          fbb.addOffset(1, dateOffset);
+          fbb.addOffset(2, datetimeOffset);
+          fbb.addFloat64(3, object.latitude);
+          fbb.addFloat64(4, object.longitude);
+          fbb.addInt64(6, object.status);
+          fbb.addBool(7, object.server);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = AttendanceHistoryModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              date: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 6),
+              datetime: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 8),
+              latitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 10),
+              longitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 12),
+              status:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 16, 0),
+              server: const fb.BoolReader()
+                  .vTableGet(buffer, rootOffset, 18, false));
+
+          return object;
         })
   };
 
@@ -1639,4 +1774,46 @@ class AttendanceModel_ {
   /// see [AttendanceModel.server]
   static final server =
       QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
+}
+
+/// [LoadChatModel] entity fields to define ObjectBox queries.
+class LoadChatModel_ {
+  /// see [LoadChatModel.id]
+  static final id =
+      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[0]);
+
+  /// see [LoadChatModel.loaded]
+  static final loaded =
+      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[1]);
+}
+
+/// [AttendanceHistoryModel] entity fields to define ObjectBox queries.
+class AttendanceHistoryModel_ {
+  /// see [AttendanceHistoryModel.id]
+  static final id =
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[0]);
+
+  /// see [AttendanceHistoryModel.date]
+  static final date =
+      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[1]);
+
+  /// see [AttendanceHistoryModel.datetime]
+  static final datetime =
+      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[2]);
+
+  /// see [AttendanceHistoryModel.latitude]
+  static final latitude =
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[3]);
+
+  /// see [AttendanceHistoryModel.longitude]
+  static final longitude =
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[4]);
+
+  /// see [AttendanceHistoryModel.status]
+  static final status =
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[5]);
+
+  /// see [AttendanceHistoryModel.server]
+  static final server =
+      QueryBooleanProperty<AttendanceHistoryModel>(_entities[11].properties[6]);
 }

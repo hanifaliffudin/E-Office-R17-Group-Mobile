@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 
 // https://stackoverflow.com/questions/67963713/how-to-cache-memory-image-using-image-memory-or-memoryimage-flutter
 
-class CacheImageProvider extends ImageProvider<CacheImageProvider> {
+class CacheImageProviderWidget extends ImageProvider<CacheImageProviderWidget> {
   final String tag; //the cache id use to get cache
   final Uint8List img; //the bytes of image to cache
 
-  CacheImageProvider(this.tag, this.img);
+  CacheImageProviderWidget(this.tag, this.img);
 
   @override
-  ImageStreamCompleter load(CacheImageProvider key, DecoderCallback decode) {
+  ImageStreamCompleter load(CacheImageProviderWidget key, DecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(decode),
       scale: 1.0,
@@ -37,14 +37,14 @@ class CacheImageProvider extends ImageProvider<CacheImageProvider> {
   }
 
   @override
-  Future<CacheImageProvider> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture<CacheImageProvider>(this);
+  Future<CacheImageProviderWidget> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<CacheImageProviderWidget>(this);
   }
 
   @override
   bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
-    bool res = other is CacheImageProvider && other.tag == tag;
+    bool res = other is CacheImageProviderWidget && other.tag == tag;
     return res;
   }
 
@@ -53,5 +53,5 @@ class CacheImageProvider extends ImageProvider<CacheImageProvider> {
 
   @override
   String toString() =>
-      '${objectRuntimeType(this, 'CacheImageProvider')}("$tag")';
+      '${objectRuntimeType(this, 'CacheImageProviderWidget')}("$tag")';
 }

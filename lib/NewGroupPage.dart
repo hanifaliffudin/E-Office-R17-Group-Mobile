@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:militarymessenger/NewGroupDetail.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
-import 'package:militarymessenger/widgets/CacheImageProvider.dart';
+import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -255,7 +255,7 @@ class _NewGroupPageState extends State<NewGroupPage> {
                                                 radius: 20,
                                                 backgroundColor: Color(0xffF2F1F6),
                                                 // backgroundImage: _getPhoto(_foundContact[index]),
-                                                backgroundImage: CacheImageProvider(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
+                                                backgroundImage: CacheImageProviderWidget(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
                                               )
                                           ),
                                           Column(

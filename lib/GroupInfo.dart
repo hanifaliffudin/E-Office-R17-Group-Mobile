@@ -37,6 +37,43 @@ class _GroupInfoState extends State<GroupInfo> {
 
   _GroupInfoState(this.conversation, this.roomId);
 
+  void pictureOnTap(String photo) {
+    showGeneralDialog(
+      context: context, 
+      barrierDismissible: false,
+      // barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      // barrierColor: Colors.black,
+      // transitionDuration: Duration(),
+      pageBuilder: (BuildContext context, Animation first, Animation second) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            foregroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back, 
+                color: Colors.blue,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          body: Container(
+            alignment: Alignment.center,
+            width: MediaQuery.of(context).size.width, //- 10
+            // height: MediaQuery.of(context).size.height - 80,
+            // color: Colors.white,
+            child: Image(
+              image: Image.memory(base64.decode(photo)).image,
+            ),
+          ),
+        );
+      }
+    );
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -76,10 +113,13 @@ class _GroupInfoState extends State<GroupInfo> {
           children: [
             Center(
               child: conversation!.photoProfile != '' && conversation!.photoProfile != null ?
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Color(0xffF2F1F6),
-                backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+              InkWell(
+                onTap: () => pictureOnTap(conversation!.photoProfile!),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Color(0xffF2F1F6),
+                  backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                ),
               )
                   :
               CircleAvatar(
@@ -143,33 +183,34 @@ class _GroupInfoState extends State<GroupInfo> {
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             itemCount: listContactGroup.length,
-                            itemBuilder: (BuildContext context, index)=>
-                                Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        listContactGroup[index].photo == '' ? CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: Color(0xffdde1ea),
-                                          child:  Icon(
-                                            Icons.person,
-                                            color: Colors.grey,
-                                          ),
-                                        ) :CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: Color(0xffF2F1F6),
-                                          backgroundImage: Image.memory(base64.decode(listContactGroup[index].photo!)).image,
+                            itemBuilder: (BuildContext context, index) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      listContactGroup[index].photo == '' ? CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: Color(0xffdde1ea),
+                                        child:  Icon(
+                                          Icons.person,
+                                          color: Colors.grey,
                                         ),
-                                        SizedBox(width: 15,),
-                                        listContactGroup[index].userId == mains.objectbox.boxUser.get(1)?.userId?
-                                        Text("You")
-                                            :
-                                        Text(listContactGroup[index].userName!)
-                                      ],
-                                    ),
-                                    SizedBox(height: 15,),
-                                  ],
-                                ),
+                                      ) :CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: Color(0xffF2F1F6),
+                                        backgroundImage: Image.memory(base64.decode(listContactGroup[index].photo!)).image,
+                                      ),
+                                      SizedBox(width: 15,),
+                                      listContactGroup[index].userId == mains.objectbox.boxUser.get(1)?.userId?
+                                      Text("You")
+                                          :
+                                      Text(listContactGroup[index].userName!)
+                                    ],
+                                  ),
+                                  SizedBox(height: 15,),
+                                ],
+                              );
+                            }
                           ),
                         ),
                         SizedBox(height: 20,),
@@ -338,12 +379,14 @@ class _GroupInfoState extends State<GroupInfo> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
+      List<int> tempIds = [];
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
       if(userMap['code_status'] == 0){
 
         for(int i = 0; i < userMap['data'].length; i++){
           contactList = Map<String, dynamic>.from(userMap['data'][i]);
+          tempIds.add(userMap['data'][i]['id']);
 
           contactGroup.add(ContactGroupModel(
               id: i,
@@ -356,7 +399,8 @@ class _GroupInfoState extends State<GroupInfo> {
         }
 
         StreamControllerContactGroup!.add(contactGroup);
-
+        // conversation!.idReceiversGroup = jsonEncode(tempIds);
+        // mains.objectbox.boxConversation.put(conversation!);
       }else{
         print("ada yang salah!");
       }
