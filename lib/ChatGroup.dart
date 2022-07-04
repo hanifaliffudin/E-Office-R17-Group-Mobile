@@ -992,7 +992,6 @@ class _ChatGroupState extends State<ChatGroup> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
       if(userMap['code_status'] == 0){

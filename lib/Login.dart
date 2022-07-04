@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:militarymessenger/PinVerification.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
@@ -161,7 +162,6 @@ class LoginPageState extends State<Login>  {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    print('ini fcm di login.dart: ${fcmToken}');
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
       'api_key': apiKey,
@@ -177,13 +177,11 @@ class LoginPageState extends State<Login>  {
     );
 
     if(response.statusCode == 200){
-      // print(response.body);
-      // Map<String, dynamic> userMap = json.decode(response.body);
-
-      //pinFailedSnackBar(context,"PIN yang anda masukkan salah!");
+      EasyLoading.showToast('Sending OTP...');
     }
     else{
-      pinFailedSnackBar(context,"Email gagal dikirim!");
+      EasyLoading.showError('${response.statusCode}, failed to send OTP.');
+      // pinFailedSnackBar(context,"Email gagal dikirim!");
     }
     return response;
   }

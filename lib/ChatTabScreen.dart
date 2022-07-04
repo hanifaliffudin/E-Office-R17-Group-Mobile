@@ -597,10 +597,6 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                         itemBuilder:(BuildContext context,index)=>
                             InkWell(
                                 onTap: (){
-                                  print(conversationList.length);
-                                  print(pp.length);
-                                  print(_tempConv.length);
-
                                   if (isVisible == true) {
                                     setState(() {
                                       isChecked = true;
@@ -654,7 +650,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                             Expanded(
                                               child: ListTile(
                                                 leading: ClipOval(
-                                                    child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==''
+                                                    child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==null
                                                         ?
                                                     CircleAvatar(
                                                       radius: 25,
@@ -664,7 +660,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         color: Colors.grey,
                                                       ),
                                                     )
-                                                        : conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
+                                                        :
+                                                    conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
                                                     CircleAvatar(
                                                         radius: 25,
                                                         backgroundColor: Color(0xffdde1ea),
@@ -673,12 +670,13 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           color: Colors.grey,
                                                         )
                                                     )
-                                                        : conversationList[index].photoProfile=="" ?
+                                                        :
+                                                    conversationList[index].photoProfile=="" ?
                                                     CircleAvatar(
                                                       radius: 25,
                                                       backgroundColor: Color(0xffdde1ea),
                                                       child:  Icon(
-                                                        Icons.people_rounded,
+                                                        Icons.person,
                                                         color: Colors.grey,
                                                       ),
                                                     )
@@ -850,7 +848,6 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
       if(userMap['code_status'] == 0){

@@ -232,7 +232,7 @@ class _InboxPageState extends State<InboxPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/getSuratMasuk';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getSuratMasuk';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -248,7 +248,6 @@ class _InboxPageState extends State<InboxPage> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox')).build();

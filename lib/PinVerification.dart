@@ -1,11 +1,13 @@
 import 'package:countdown_widget/countdown_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:militarymessenger/models/UserModel.dart';
 import 'package:militarymessenger/Home.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pinput/pinput.dart';
+import 'package:web_socket_channel/io.dart';
 
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -16,8 +18,7 @@ class PinVerification extends StatefulWidget {
   String email = '';
   String? fcmToken;
 
-  PinVerification(String email, this.fcmToken){
-    this.email = email;
+  PinVerification(this.email, this.fcmToken, {Key? key}) : super(key: key){
     globalEmail = email;
   }
 
@@ -34,8 +35,7 @@ class PinVerificationState extends State<PinVerification> {
 
   String email = '';
 
-  PinVerificationState(String email, this.fcmToken){
-    this.email = email;
+  PinVerificationState(this.email, this.fcmToken){
     globalEmail = email;
   }
 
@@ -45,16 +45,9 @@ class PinVerificationState extends State<PinVerification> {
 
   final List<Widget> _pinPuts = [];
 
-  final List<Color> _bgColors = [
-    Colors.white,
-    const Color.fromRGBO(43, 36, 198, 1),
-    Colors.white,
-    const Color.fromRGBO(75, 83, 214, 1),
-    const Color.fromRGBO(43, 46, 66, 1),
-  ];
-
   @override
   void initState() {
+    _pinPutFocusNode.requestFocus();
     _pinPuts.addAll([
       onlySelectedBorderPinPut(),
     ]);
@@ -72,7 +65,7 @@ class PinVerificationState extends State<PinVerification> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Verification'.toUpperCase(),
-          style: TextStyle(
+          style: const TextStyle(
             letterSpacing: 2.0,
             fontWeight: FontWeight.bold,
           ),),
@@ -120,15 +113,15 @@ class PinVerificationState extends State<PinVerification> {
       key: _formKey,
       child: Column(
         children: [
-          SizedBox(
+          const SizedBox(
             height: 50,
           ),
           Text(
             'Enter 6 digit code we sent to ' + email,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey),
+            style: const TextStyle(color: Colors.grey),
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           GestureDetector(
@@ -144,7 +137,7 @@ class PinVerificationState extends State<PinVerification> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               defaultPinTheme: PinTheme(
                 textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
-                margin: EdgeInsets.all(0),
+                margin: const EdgeInsets.all(0),
                 width: 45,
                 height: 55,
                 decoration: pinPutDecoration,
@@ -154,7 +147,7 @@ class PinVerificationState extends State<PinVerification> {
               controller: _pinPutController,
               focusedPinTheme: PinTheme(
                 textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
-                margin: EdgeInsets.all(0),
+                margin: const EdgeInsets.all(0),
                 width: 45,
                 height: 55,
                 decoration: pinPutDecoration.copyWith(
@@ -168,31 +161,31 @@ class PinVerificationState extends State<PinVerification> {
               pinAnimationType: PinAnimationType.scale,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           CountDownWidget(
-            duration: Duration(seconds: 40),
+            duration: const Duration(minutes: 5),
             builder: (context, duration) {
               return Column(
                 children: [
-                  Text('00.' + duration.inSeconds.toString(),
+                  Text('${duration.toString().substring(2, 7)}',
                     style: TextStyle(
                         color: Theme.of(context).inputDecorationTheme.labelStyle?.color,
                         fontSize: 14
                     ),
                   ),
-                  SizedBox(height: 30,),
+                  const SizedBox(height: 30,),
                   Visibility(
                       visible: duration.inSeconds == 0,
                       child: Column(
                         children: [
-                          Text('Haven\'t recieved the code?',
+                          const Text('Haven\'t recieved the code?',
                             style: TextStyle(
                                 color: Colors.grey
                             ),
                           ),
-                          SizedBox(height: 10,),
+                          const SizedBox(height: 10,),
                           InkWell(
                             onTap: () {
                               restart();
@@ -214,10 +207,7 @@ class PinVerificationState extends State<PinVerification> {
             onControllerReady: (controller) {
               _countDownController = controller;
             },
-            onDurationRemainChanged: (duration) {
-              print('duration:${duration.toString()}');
-            },
-          )
+            )
         ],
       ),
     );
@@ -226,7 +216,7 @@ class PinVerificationState extends State<PinVerification> {
   Future<http.Response> sendEmail(String email) async {
     String url ='https://chat.dev.r17.co.id/send_email.php';
     Map data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'email': email,
       'fcm_token': fcmToken
     };
@@ -240,9 +230,11 @@ class PinVerificationState extends State<PinVerification> {
 
     if(response.statusCode == 200){
       // print("${response.body}");
+      EasyLoading.showToast('Sending OTP...');
     }
     else{
-      pinFailedSnackBar(context,"Email gagal dikirim!");
+      EasyLoading.showError('${response.statusCode}, failed to send OTP.');
+      // pinFailedSnackBar(context,"Email gagal dikirim!");
     }
     return response;
   }
@@ -255,7 +247,7 @@ class PinVerificationState extends State<PinVerification> {
     return Pinput(
       defaultPinTheme: PinTheme(
         textStyle: const TextStyle(color: Colors.white, fontSize: 20.0, height: 1),
-        margin: EdgeInsets.symmetric(horizontal: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 10),
         width: 50,
         height: 50,
         decoration: pinPutDecoration,
@@ -267,7 +259,7 @@ class PinVerificationState extends State<PinVerification> {
       onSubmitted: (String pin) => postRequest(pin),
       focusedPinTheme: PinTheme(
         textStyle: const TextStyle(fontSize: 25.0, color: Colors.black),
-        margin: EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
         width: 45,
         height: 55,
         decoration: pinPutDecoration
@@ -279,35 +271,6 @@ class PinVerificationState extends State<PinVerification> {
     );
   }
 
-  Widget get _bottomAppBar {
-    return Positioned(
-      bottom: MediaQuery.of(context).padding.bottom,
-      left: 0,
-      right: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          TextButton(
-            onPressed: () => _pinPutFocusNode.requestFocus(),
-            child: const Text('Focus'),
-          ),
-          TextButton(
-            onPressed: () => _pinPutFocusNode.unfocus(),
-            child: const Text('Unfocus'),
-          ),
-          TextButton(
-            onPressed: () => _pinPutController.text = '',
-            child: const Text('Clear All'),
-          ),
-          TextButton(
-            child: Text('Paste'),
-            onPressed: () => _pinPutController.text = '234',
-          ),
-        ],
-      ),
-    );
-  }
-
   void _submit() {
     //kirim email
     sendEmail(email);
@@ -316,7 +279,7 @@ class PinVerificationState extends State<PinVerification> {
   Future<http.Response> postRequest(String pin) async {
     String url ='https://chat.dev.r17.co.id/register.php';
     Map data = {
-      'api_key': this.apiKey,
+      'api_key': apiKey,
       'email': globalEmail,
       'pin': pin,
       'fcm_token': fcmToken,
@@ -344,26 +307,35 @@ class PinVerificationState extends State<PinVerification> {
         );
 
         mains.objectbox.boxUser.put(user);
-        print('ini fcm di pinverif.dart: ${user.fcmToken}');
-        print('ini fcm old: ${userMap['fcm_old']}');
-        print('ini last_connection: ${userMap['last_connection']}');
+        // print('ini fcm di pinverif.dart: ${user.fcmToken}');
+        // print('ini fcm old: ${userMap['fcm_old']}');
+        // print('ini last_connection: ${userMap['last_connection']}');
 
         if(userMap['last_connection'] != 0){
+          var channel = IOWebSocketChannel.connect(
+            Uri.parse('wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
+            pingInterval: const Duration(
+              seconds: 1,
+            ),
+          );
+
           // sink last conn
           var msg = {};
           msg["api_key"] = apiKey;
           msg["decrypt_key"] = "";
           msg["type"] = "logout";
-          msg["msg_tipe"] = 'text';
-          msg["room_id"] = 12;
+          msg["last_connection"] = userMap['last_connection'];
+          msg["fcm_old"] = userMap['fcm_old'];
 
           String msgString = json.encode(msg);
           // print(msgString);
 
-          homes.channel.sink.add(msgString);
+          channel.sink.add(msgString);
+
+          channel.sink.close();
         }
 
-        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home()), (Route<dynamic> route) => false);
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const Home()), (Route<dynamic> route) => false);
 
       }
       else{
@@ -384,7 +356,7 @@ void pinFailedSnackBar(context,text){
   pinFailedSnackBar;
   final snackBar = SnackBar(
     duration: const Duration(seconds: 3),
-    content: Container(
+    content: SizedBox(
       height: 25.0,
       child: Center(
         child: Text(
@@ -393,7 +365,7 @@ void pinFailedSnackBar(context,text){
         ),
       ),
     ),
-    backgroundColor: Color(0xfffc125d),
+    backgroundColor: const Color(0xfffc125d),
   );
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -404,21 +376,21 @@ class RoundedButton extends StatelessWidget {
   final String? title;
   final VoidCallback? onTap;
 
-  RoundedButton({this.title, this.onTap});
+  const RoundedButton({this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          color: const Color(0xFF2381d0),
+          color: Color(0xFF2381d0),
         ),
         alignment: Alignment.center,
         child: Text(
           '$title',
-          style: TextStyle(fontSize: 20, color: Colors.white),
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
     );

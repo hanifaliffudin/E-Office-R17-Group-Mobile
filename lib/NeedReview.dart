@@ -8,14 +8,14 @@ import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
-class NeedApprove extends StatefulWidget {
-  const NeedApprove({Key? key}) : super(key: key);
+class NeedReview extends StatefulWidget {
+  const NeedReview({Key? key}) : super(key: key);
 
   @override
-  _NeedApproveState createState() => _NeedApproveState();
+  _NeedReviewState createState() => _NeedReviewState();
 }
 
-class _NeedApproveState extends State<NeedApprove> {
+class _NeedReviewState extends State<NeedReview> {
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _NeedApproveState extends State<NeedApprove> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Need Approve'.toUpperCase(),
+        title: Text('Need Review'.toUpperCase(),
           style: TextStyle(
               fontSize: 17
           ),
@@ -44,7 +44,7 @@ class _NeedApproveState extends State<NeedApprove> {
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
                     child :Text(
-                      'No need approve yet.',
+                      'No need review yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                     )
@@ -59,7 +59,7 @@ class _NeedApproveState extends State<NeedApprove> {
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
                       child :Text(
-                        'No need approve yet.',
+                        'No need review yet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                       )
@@ -173,7 +173,7 @@ class _NeedApproveState extends State<NeedApprove> {
 
   Future<http.Response> getDataSuratNeedApprove() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/needApprover';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/needApprover';
 
     Map<String, dynamic> data = {
       'payload': {

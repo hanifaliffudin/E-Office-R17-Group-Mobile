@@ -67,6 +67,9 @@ class _SignedPageState extends State<SignedPage> {
                   );
                 }
                 else{
+                  DateTime now = DateTime.now();
+                  DateTime date = DateTime(now.year, now.month, now.day);
+
                   return Container(
                     padding: const EdgeInsets.all(20),
                     child: ListView.builder(
@@ -93,7 +96,7 @@ class _SignedPageState extends State<SignedPage> {
                                     children: [
                                       const Positioned(
                                         left: 0,
-                                        top: 5,
+                                        top: 9,
                                         child: CircleAvatar(
                                           backgroundColor: Colors.white,
                                           child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
@@ -102,14 +105,14 @@ class _SignedPageState extends State<SignedPage> {
                                       ),
                                       Positioned(
                                         left: 65,
-                                        top: 5,
+                                        top: 8,
                                         bottom: 5,
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             ConstrainedBox(
                                               constraints: const BoxConstraints(
-                                                  maxWidth: 250
+                                                  maxWidth: 190
                                               ),
                                               child: Text(
                                                 listSurat[index].perihal!,
@@ -152,7 +155,15 @@ class _SignedPageState extends State<SignedPage> {
                                         top: 10,
                                         child: Padding(
                                             padding: const EdgeInsets.only(left: 20),
-                                            child: Text(
+                                            child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
+                                            Text(
+                                              DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                              style: const TextStyle(
+                                                  fontSize: 11
+                                              ),
+                                            )
+                                            :
+                                            Text(
                                               DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
                                               style: const TextStyle(
                                                   fontSize: 11
@@ -178,7 +189,7 @@ class _SignedPageState extends State<SignedPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/getSuratKirim';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getSuratKirim';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -194,7 +205,6 @@ class _SignedPageState extends State<SignedPage> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();

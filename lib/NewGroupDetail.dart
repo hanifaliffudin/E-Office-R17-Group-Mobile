@@ -432,7 +432,6 @@ class _NewGroupDetailState extends State<NewGroupDetail> {
     );
 
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> userMap = json.decode(response.body);
 
       if(userMap['code_status'] == 1){

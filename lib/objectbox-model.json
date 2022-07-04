@@ -334,7 +334,7 @@
     },
     {
       "id": "7:2414097441055247438",
-      "lastPropertyId": "15:695512295959142384",
+      "lastPropertyId": "16:3708736985555398852",
       "name": "SuratModel",
       "properties": [
         {
@@ -407,6 +407,11 @@
           "id": "15:695512295959142384",
           "name": "penerima",
           "type": 9
+        },
+        {
+          "id": "16:3708736985555398852",
+          "name": "isSelected",
+          "type": 1
         }
       ],
       "relations": []
@@ -567,25 +572,6 @@
         }
       ],
       "relations": []
-    },
-    {
-      "id": "11:1435125642557611699",
-      "lastPropertyId": "2:4949612167761542987",
-      "name": "LoadChatModel",
-      "properties": [
-        {
-          "id": "1:8107107720145537335",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:4949612167761542987",
-          "name": "loaded",
-          "type": 6
-        }
-      ],
-      "relations": []
     }
   ],
   "lastEntityId": "11:1435125642557611699",
@@ -594,12 +580,16 @@
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    1435125642557611699
+  ],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
     4809186185575546396,
     4729195407902185397,
-    3922386874057685126
+    3922386874057685126,
+    8107107720145537335,
+    4949612167761542987
   ],
   "retiredRelationUids": [],
   "version": 1
