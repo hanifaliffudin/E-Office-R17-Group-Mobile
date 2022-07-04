@@ -24,6 +24,43 @@ class _ProfileInfoState extends State<ProfileInfo> {
 
   _ProfileInfoState(this.conversation, this.roomId);
 
+  void pictureOnTap(String photo) {
+    showGeneralDialog(
+      context: context, 
+      barrierDismissible: false,
+      // barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      // barrierColor: Colors.black,
+      // transitionDuration: Duration(),
+      pageBuilder: (BuildContext context, Animation first, Animation second) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            foregroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back, 
+                color: Colors.blue,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          body: Container(
+            alignment: Alignment.center,
+            width: MediaQuery.of(context).size.width, //- 10
+            // height: MediaQuery.of(context).size.height - 80,
+            // color: Colors.white,
+            child: Image(
+              image: Image.memory(base64.decode(photo)).image,
+            ),
+          ),
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +74,15 @@ class _ProfileInfoState extends State<ProfileInfo> {
         ),
         centerTitle: true,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back, 
+            color: Colors.blue,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: StreamBuilder<List<ContactModel>>(
         stream: homes.listControllerContact.stream,
@@ -51,7 +97,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
             child: ListView.builder(
               itemCount: contactList.length,
               itemBuilder: (context, index)=>
-                  Column(
+                Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -66,11 +112,14 @@ class _ProfileInfoState extends State<ProfileInfo> {
                       ),
                     )
                         :
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Color(0xffF2F1F6),
-                      backgroundImage: Image.memory(base64.decode(contactList[index].photo!)).image,
-                    )
+                    InkWell(
+                      onTap: () => pictureOnTap(contactList[index].photo!),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Color(0xffF2F1F6),
+                        backgroundImage: Image.memory(base64.decode(contactList[index].photo!)).image,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 50,),
                   Text('Name'.toUpperCase(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
+import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 
 class Attendance extends StatefulWidget {
@@ -11,8 +12,15 @@ class Attendance extends StatefulWidget {
 }
 
 class _AttendanceState extends State<Attendance> {
+  List<AttendanceModel> _attedanceList = [];
 
-  List<AttendanceModel> _attedanceList = mains.objectbox.boxAttendance.query().build().find().toList();
+  @override
+  void initState() {
+    super.initState();
+
+    QueryBuilder<AttendanceModel> query = mains.objectbox.boxAttendance.query()..order(AttendanceModel_.checkInAt, flags: Order.descending);
+    _attedanceList = query.build().find().toList();
+  }
 
   @override
   Widget build(BuildContext context) {
