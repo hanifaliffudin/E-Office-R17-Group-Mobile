@@ -5,7 +5,7 @@ import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:militarymessenger/widgets/CacheImageProvider.dart';
+import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -267,7 +267,7 @@ class _ContactPageState extends State<ContactPage> {
                                                       radius: 20,
                                                       backgroundColor: Color(0xffF2F1F6),
                                                       // backgroundImage: _getPhoto(_foundContact[index]),
-                                                      backgroundImage: CacheImageProvider(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
+                                                      backgroundImage: CacheImageProviderWidget(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
                                                     )
                                                 ),
                                                 Column(
@@ -375,7 +375,7 @@ class _ContactPageState extends State<ContactPage> {
 
         Navigator.pop(context);
         Navigator.of(context).push(
-            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation, roomId!))
+            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation, roomId!, null))
         );
 
 

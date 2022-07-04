@@ -18,6 +18,7 @@ import 'package:militarymessenger/cards/group_friend_message_card.dart';
 import 'package:militarymessenger/cards/group_my_message_card.dart';
 import 'package:militarymessenger/cards/system_message.dart';
 import 'package:militarymessenger/contact.dart';
+import 'package:militarymessenger/functions/index_function.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ContactGroupModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
@@ -260,12 +261,6 @@ class _ChatGroupState extends State<ChatGroup> {
     });
   }
 
-  int daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-    return (to.difference(from).inHours / 24).round();
-  }
-
   @override
   Widget build(BuildContext context) {
     List<ContactModel> contactList = [];
@@ -488,9 +483,11 @@ class _ChatGroupState extends State<ChatGroup> {
                                   Colors.blueGrey,
                                 ];
 
-                                for(var item in json.decode(conversation!.idReceiversGroup!)){
-                                  if(!bubbleColor.map((e) => e.idUser).contains(item)){
-                                    bubbleColor.add(BubbleColor(idUser: item, Color: primary[Random().nextInt(primary.length)]));
+                                if (conversation!.idReceiversGroup != null) {
+                                  for(var item in json.decode(conversation!.idReceiversGroup!)){
+                                    if(!bubbleColor.map((e) => e.idUser).contains(item)){
+                                      bubbleColor.add(BubbleColor(idUser: item, Color: primary[Random().nextInt(primary.length)]));
+                                    }
                                   }
                                 }
 
@@ -593,7 +590,6 @@ class _ChatGroupState extends State<ChatGroup> {
                                       );
                                     
                                       DateTime date2 = DateTime.parse(chats[index].date);
-                                      bool isLessThan7 = daysBetween(date2, now) <= 7;
                                       bool isSame = false;
                                       String desc = "";
 
@@ -602,9 +598,9 @@ class _ChatGroupState extends State<ChatGroup> {
                                       }
 
                                       if (!isSame) {
-                                        if (isLessThan7) {
+                                        if (IndexFunction.daysBetween(date2, now) <= 7) {
                                           bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
-                                          bool isYesterday = daysBetween(date2, now) == 1;
+                                          bool isYesterday = IndexFunction.daysBetween(date2, now) == 1;
 
                                           if (isToday) {
                                             desc = "Today";

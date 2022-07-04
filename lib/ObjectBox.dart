@@ -1,3 +1,4 @@
+import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
@@ -29,6 +30,7 @@ class ObjectBox {
   late final Box<BadgeModel> boxBadge;
   late final Box<AttendanceModel> boxAttendance;
   late final Box<LoadChatModel> boxLoadChat;
+  late final Box<AttendanceHistoryModel> boxAttendanceHistory;
 
   /// A stream of all notes ordered by date.
   late final Stream<Query<ChatModel>> queryStreamChat;
@@ -40,6 +42,7 @@ class ObjectBox {
   late final Stream<Query<BadgeModel>> queryStreamBadge;
   late final Stream<Query<AttendanceModel>> queryStreamAttendance;
   late final Stream<Query<LoadChatModel>> queryStreamLoadChat;
+  late final Stream<Query<AttendanceHistoryModel>> queryStreamAttendanceHistory;
 
   ObjectBox._create(this.store) {
     boxChat = Box<ChatModel>(store);
@@ -52,6 +55,7 @@ class ObjectBox {
     boxBadge = Box<BadgeModel>(store);
     boxAttendance = Box<AttendanceModel>(store);
     boxLoadChat = Box<LoadChatModel>(store);
+    boxAttendanceHistory = Box<AttendanceHistoryModel>(store);
 
     final qBuilderChat = boxChat.query()
       ..order(ChatModel_.id, flags: Order.descending);
@@ -88,6 +92,10 @@ class ObjectBox {
     final qBuilderLoadChat = boxLoadChat.query()
       ..order(LoadChatModel_.id, flags: Order.descending);
     queryStreamLoadChat = qBuilderLoadChat.watch(triggerImmediately: true);
+
+    final qBuilderAttendanceHistory = boxAttendanceHistory.query()
+      ..order(AttendanceHistoryModel_.id, flags: Order.descending);
+    queryStreamAttendanceHistory = qBuilderAttendanceHistory.watch(triggerImmediately: true);
 
     // Add some demo data if the box is empty.
     //if (mains.objectbox.boxConversation.isEmpty()) {

@@ -15,7 +15,7 @@ import 'Home.dart' as homes;
 import 'main.dart' as mains;
 import 'package:http/http.dart' as http;
 
-import 'widgets/CacheImageProvider.dart';
+import 'widgets/cache_image_provider_widget.dart';
 
 class TempConversation {
   int? idReceiver;
@@ -103,7 +103,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
   
   String getIdUnique(ConversationModel conversation) {
-    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.idReceiversGroup!;
+    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.photoProfile!;
   }
 
   @override
@@ -264,7 +264,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                     else {
                                       if(conversationList[index].idReceiver != null){
                                         Navigator.of(context).push(
-                                            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(conversationList[index], conversationList[index].roomId!))
+                                            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(conversationList[index], conversationList[index].roomId!, null))
                                         );
                                       }else{
                                         Navigator.of(context).push(
@@ -362,7 +362,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           :
                                                       CircleAvatar(
                                                         // backgroundImage: _tempConv[index].photoProfile,
-                                                        backgroundImage: CacheImageProvider(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                        backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -594,13 +594,10 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                     ),
                     child: ListView.builder(
                         itemCount: conversationList.length,
-                        itemBuilder:(BuildContext context,index)=>
-                            InkWell(
+                        itemBuilder:(BuildContext context,index) {
+                            // print('id: ${conversationList[index].photoProfile} ${conversationList[index].idReceiver} ${conversationList[index].idReceiversGroup} $index');
+                            return InkWell(
                                 onTap: (){
-                                  print(conversationList.length);
-                                  print(pp.length);
-                                  print(_tempConv.length);
-
                                   if (isVisible == true) {
                                     setState(() {
                                       isChecked = true;
@@ -608,7 +605,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                   } else {
                                     if(conversationList[index].idReceiver != null){
                                       Navigator.of(context).push(
-                                          MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(conversationList[index], conversationList[index].roomId!))
+                                          MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(conversationList[index], conversationList[index].roomId!, null))
                                       );
                                     }else{
                                       Navigator.of(context).push(
@@ -685,7 +682,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         :
                                                     CircleAvatar(
                                                       // backgroundImage: _getPhoto(conversationList[index]),
-                                                      backgroundImage: CacheImageProvider(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                      backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                       backgroundColor: Colors.transparent,
                                                       radius: 25,
                                                       // child: Image(
@@ -783,7 +780,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                     ),
                                   ),
                                 )
-                            )
+                            );
+                        }
                     ),
                   ),
                 ),

@@ -25,6 +25,7 @@ import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/main.dart';
+import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/LoadChatModel.dart';
@@ -193,7 +194,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             mains.objectbox.boxConversation.put(objConversation2);
 
             Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']))
+                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']), null)
                 ));
 
           }
@@ -212,7 +213,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             mains.objectbox.boxConversation.put(objConversation2);
 
             Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']))
+                MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(dataPayload['room_id']), null)
                 ));
           }
 
@@ -338,7 +339,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxConversation.put(objConversation2);
 
         Navigator.of(context).push(
-            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
+            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']), null)
             ));
 
       }
@@ -357,7 +358,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         mains.objectbox.boxConversation.put(objConversation2);
 
         Navigator.of(context).push(
-            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']))
+            MaterialPageRoute(builder: (BuildContext context)=>ChatScreen(objConversation2, int.parse(message.data['room_id']), null)
             ));
       }
 
@@ -444,48 +445,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     return 12742 * asin(sqrt(a));
   }
 
-  // void locationAttendanceOld(LocationData locationData){
-
-  //   DateTime now = new DateTime.now();
-  //   DateTime date = new DateTime(now.year, now.month, now.day);
-
-  //   if(locationData != null){
-
-  //     double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
-
-  //     if(distanceOnMeter <= 50 && DateTime.now().hour >= 7){
-  //       var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-  //       if(query.find().isNotEmpty) {
-  //         print('status attendance: ${query.find().first.status}');
-  //         if(query.find().first.status == 0){
-  //           // call check in if after check out on the same day
-  //           print('call check in');
-  //           saveAttendance(locationData.latitude!, locationData.longitude!);
-  //         }
-  //       }else{
-  //         // call check in
-  //         print('first time call check in');
-  //         saveAttendance(locationData.latitude!, locationData.longitude!);
-  //       }
-  //     }else if(distanceOnMeter > 50){
-  //       var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(date).toString())).build();
-  //       if(query.find().isNotEmpty) {
-  //         if(query.find().first.status == 1){
-  //           // call check out
-  //           print('call check out');
-  //           saveAttendance(locationData.latitude!, locationData.longitude!);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  void locationAttendance(LocationData locationData){
+  void locationAttendance(LocationData locationData) {
     DateTime now = DateTime.now();
 
     if (locationData != null) {
       double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
-      print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
+      // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
       if (distanceOnMeter <= 50 && now.hour >= 7) {
         var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy').format(now).toString())).build();
 
@@ -582,12 +547,29 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
       if (_permissionGranted == PermissionStatus.granted) {
         location.enableBackgroundMode(enable: true);
+        location.changeSettings(accuracy: LocationAccuracy.high);
+        location.onLocationChanged.listen((locationData) async {
+          try {
+            final result = await InternetAddress.lookup('google.com');
 
-        location.onLocationChanged.listen((locationData) {
-          locationAttendance(locationData);
+            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+              locationAttendance(locationData);
+            }
+          } catch (e) {
+            // print(e.toString());
+          }
         });
       }
     }
+  }
+
+  void getAllMessages(){
+    var msg = {};
+    msg["api_key"] = apiKey;
+    msg["type"] = "get_all_message";
+    msg["id_receiver"] = mains.objectbox.boxUser.get(1)!.userId;
+    String msgString = json.encode(msg);
+    channel.sink.add(msgString);
   }
 
   String? version;
@@ -597,12 +579,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   void initState()  {
     DateTime now = new DateTime.now();
 // mains.objectbox.boxAttendance.removeAll();
+// mains.objectbox.boxAttendanceHistory.removeAll();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _locationService();
     });
 
     _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
+    _tabController?.addListener(() => tabListener());
 
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
       version = packageInfo.version;
@@ -629,7 +613,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       }
       else{
         // panggil get all messages
-        // getAllMessages();
+        getAllMessages();
 
         var loaded = LoadChatModel(
           loaded: 1,
@@ -1100,14 +1084,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
+  void tabListener() {
+    setState(() {
+      _selectedTab = _tabController!.index;
+    });
+  }
+
   void searchOnTap() {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (c, a1, a2) => const ChatSearchScreen(),
-        transitionsBuilder: (c, anim, a2, child) => FadeTransition(opacity: anim, child: child),
-        // transitionDuration: Duration(milliseconds: 300),
-      ),
+      MaterialPageRoute(builder: (BuildContext context) => const ChatSearchScreen()),
+      // PageRouteBuilder(
+      //   pageBuilder: (c, a1, a2) => const ChatSearchScreen(),
+      //   transitionsBuilder: (c, anim, a2, child) => FadeTransition(opacity: anim, child: child),
+      //   // transitionDuration: Duration(milliseconds: 300),
+      // ),
     );
   }
 
@@ -1141,10 +1132,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               ),
             ],
             onTap: (int index) {
-              setState(() {
-                _selectedTab = index;
-              });
+              
             },
+            
           ),
           title: Text('eOffice',
             style: TextStyle(fontSize: 17),),
@@ -1355,7 +1345,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     }
   }
 
-  Future<http.Response> saveAttendance(AttendanceModel attendance) async {
+  void saveAttendance(AttendanceModel attendance) async {
     var id = mains.objectbox.boxAttendance.put(attendance);
     var attendanceNew = mains.objectbox.boxAttendance.get(id)!;
     String url ='https://chat.dev.r17.co.id/save_attendance.php';
@@ -1369,51 +1359,71 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       'datetime': attendance.status == 1 ? attendance.checkInAt : attendance.checkOutAt,
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
+    attendanceNew.id = attendanceNew.id;
+    attendanceNew.date = attendanceNew.date;
+    attendanceNew.latitude = attendanceNew.latitude;
+    attendanceNew.longitude = attendanceNew.longitude;
+    attendanceNew.status = attendanceNew.status;
+    attendanceNew.checkInAt = attendanceNew.checkInAt;
+    attendanceNew.checkOutAt = attendanceNew.checkOutAt;
+    attendanceNew.server = attendanceNew.server;
 
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(data),
-    );
-print(response.body);
-    if(response.statusCode == 200){
-      // print("${response.body}");
-      Map<String, dynamic> attendanceMap = jsonDecode(response.body);
+    try {
+      var response = await http.post(Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(data),
+      );
 
-      if(attendanceMap['code_status'] == 0){
-        attendanceNew.id = attendanceNew.id;
-        attendanceNew.date = attendanceNew.date;
-        attendanceNew.latitude = attendanceNew.latitude;
-        attendanceNew.longitude = attendanceNew.longitude;
-        attendanceNew.status = attendanceNew.status;
-        attendanceNew.checkInAt = attendanceNew.checkInAt;
-        attendanceNew.checkOutAt = attendanceNew.checkOutAt;
-        attendanceNew.server = true;
+      if(response.statusCode == 200){
+        print("${response.body}");
+        Map<String, dynamic> attendanceMap = jsonDecode(response.body);
 
-        if (attendanceMap['data'] != null) {
-          if(attendanceMap['data']['check_in'] != null){
-            attendanceNew.checkInAt = attendanceMap['data']['check_in'];
-            attendanceNew.checkOutAt = attendanceNew.checkOutAt;
+        if(attendanceMap['code_status'] == 0){
+          if (attendanceMap['data'] != null) {
+            if (attendanceMap['data']['check_in'] != null) {
+              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_in'])).toString();
+              attendanceNew.checkInAt = attendanceMap['data']['check_in'];
+            } else if (attendanceMap['data']['check_out'] != null) {
+              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString();
+              attendanceNew.checkOutAt = attendanceMap['data']['check_out'];
+            }
           }
-          else if(attendanceMap['data']['check_out'] != null){
-            attendanceNew.checkOutAt = attendanceMap['data']['check_out'];
-            attendanceNew.checkInAt = attendanceNew.checkInAt;
-          }
+
+          attendanceNew.server = true;
+          var attendanceHistory = AttendanceHistoryModel(
+            date: attendanceNew.date,
+            latitude: attendanceNew.latitude,
+            longitude: attendanceNew.longitude,
+            datetime: attendanceNew.status == 1 ? attendanceNew.checkInAt : attendanceNew.checkOutAt,
+            status: attendanceNew.status,
+            server: attendanceNew.server,
+          );
+          mains.objectbox.boxAttendance.put(attendanceNew);
+          mains.objectbox.boxAttendanceHistory.put(attendanceHistory);
         }
+        else{
+          print("ada yang salah!");
+          print(attendanceMap['code_status']);
+          print(attendanceMap['error']);
+        }
+      } else {
+        print("Gagal terhubung ke server!");
+      }
+    } catch (e) {
+      // var attendanceHistory = AttendanceHistoryModel(
+      //   date: attendanceNew.date,
+      //   latitude: attendanceNew.latitude,
+      //   longitude: attendanceNew.longitude,
+      //   datetime: attendanceNew.status == 1 ? attendanceNew.checkInAt : attendanceNew.checkOutAt,
+      //   status: attendanceNew.status,
+      //   server: attendanceNew.server,
+      // );
+      // mains.objectbox.boxAttendance.put(attendanceNew);
+      // mains.objectbox.boxAttendanceHistory.put(attendanceHistory);
+      mains.objectbox.boxAttendance.remove(attendanceNew.id);
 
-        mains.objectbox.boxAttendance.put(attendanceNew);
-      }
-      else{
-        print("ada yang salah!");
-        print(attendanceMap['code_status']);
-        print(attendanceMap['error']);
-      }
+      print(e.toString());
     }
-    else{
-      print("Gagal terhubung ke server!");
-    }
-    return response;
   }
 
   Future<http.Response> getDataUser() async {
@@ -1481,6 +1491,7 @@ print(response.body);
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
     );
+    
     if(response.statusCode == 200){
       //print("${response.body}");
       Map<String, dynamic> userMap = jsonDecode(response.body);
@@ -1493,7 +1504,7 @@ print(response.body);
           getDataUser();
         }else{
         //  logout
-          _openDialogAutoLogout(context);
+          // _openDialogAutoLogout(context);
         }
       }else{
         print("ada yang salah!");

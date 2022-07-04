@@ -67,6 +67,7 @@ dependencies:
   flutter_easyloading: ^3.0.5
   location: ^4.4.0
   flutter_cached_pdfview: ^0.4.1
+  scrollable_positioned_list: ^0.3.2
 
 dev_dependencies:
   flutter_test:

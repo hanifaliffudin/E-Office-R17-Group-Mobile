@@ -11,12 +11,14 @@ import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/cards/friend_message_card_personal.dart';
 import 'package:militarymessenger/cards/my_message_card_personal.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:open_file/open_file.dart';
+import 'functions/index_function.dart';
 
 import 'objectbox.g.dart';
 import 'dart:async';
@@ -30,20 +32,29 @@ class ChatScreen extends StatefulWidget {
   final ConversationModel? conversation;
   Store? store;
   int roomId;
+  ChatModel? chatFocus;
 
-  ChatScreen(this.conversation, this.roomId);
+  ChatScreen(
+    this.conversation, 
+    this.roomId,
+    this.chatFocus,
+  );
 
 
   @override
-  _ChatScreenState createState() => _ChatScreenState(conversation,roomId);
+  _ChatScreenState createState() => _ChatScreenState(conversation,roomId,chatFocus);
 }
 
 class _ChatScreenState extends State<ChatScreen> {
   final ConversationModel? conversation;
   int? roomId;
   Store? store;
+  ChatModel? chatFocus;
+  final itemKey = GlobalKey();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
-  _ChatScreenState(this.conversation, this.roomId);
+  _ChatScreenState(this.conversation, this.roomId, this.chatFocus);
   int? idUser;
   int? idReceiver;
 
@@ -348,10 +359,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  int daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-    return (to.difference(from).inHours / 24).round();
+  void chatOnSwipe(ChatModel chat) {
+    print(chat.text);
   }
 
   @override
@@ -553,17 +562,32 @@ class _ChatScreenState extends State<ChatScreen> {
                           );
                           mains.objectbox.boxConversation.put(objConversation);
                         }
+
+                        if (chatFocus != null) {
+                          int indexFocus = chats.indexWhere((element) => element.id == chatFocus?.id);
+
+                          if (firstTime == true && indexFocus != -1) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              itemScrollController.jumpTo(
+                                index: indexFocus,
+                                alignment: 0.4,
+                              );
+                            });
+                          }
+                        }
+
                         firstTime = false;
 
-                        return ListView.builder(
+                        return ScrollablePositionedList.builder(
                             scrollDirection: Axis.vertical,
                             reverse: true,
                             shrinkWrap: false,
+                            itemScrollController: itemScrollController,
+                            itemPositionsListener: itemPositionsListener,
                             padding: const EdgeInsets.all(2),
                             itemCount: chats.isNotEmpty ? chats.length : 0,
                             itemBuilder: (context, index) {
                               DateTime date2 = DateTime.parse(chats[index].date);
-                              bool isLessThan7 = daysBetween(date2, now) <= 7;
                               bool isSame = false;
                               String desc = "";
                               bool showTriangleRight = false;
@@ -574,18 +598,18 @@ class _ChatScreenState extends State<ChatScreen> {
                               }
 
                               if (!isSame) {
-                                if (isLessThan7) {
+                                if (IndexFunction.daysBetween(date2, now) < 7) {
                                   bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
 
                                   if (isToday) {
                                     desc = "Today";
-                                  } else if (daysBetween(date2, now) == 1) {
+                                  } else if (IndexFunction.daysBetween(date2, now) == 1) {
                                     desc = "Yesterday";
                                   } else {
                                     desc = DateFormat('EEEE').format(DateTime.parse(chats[index].date));
                                   }
                                 } else {
-                                  desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
+                                  desc = DateFormat('dd-MM-yyyy').format(DateTime.parse(chats[index].date));
                                 }
 
                                 showTriangleLeft = true;
@@ -598,99 +622,86 @@ class _ChatScreenState extends State<ChatScreen> {
                                 if (chats[index].idSender != chats[index+1].idSender) {
                                   showTriangleRight = true;
                                 }
-                              }
+                              }                    
 
                               var content = chats[index].idSender == idUser ?
-                                  SwipeTo(
-                                      onLeftSwipe: () {
-                                      },
-                                      child: chats[index].tipe == 'text' ?
-                                      //    text
-                                      MyMessageCardPersonal(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                          :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].sendStatus,
-                                          chats[index].tipe!,
-                                          '',
-                                          // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                          showTriangleRight,
-                                          false
-                                      )
-                                          : chats[index].tipe == 'image' ?
-                                      //    image
-                                      MyMessageCardPersonal(
-                                          chats[index].content!,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].sendStatus,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true
-                                      )
-                                          :
-                                      //    file
-                                      MyMessageCardPersonal(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].sendStatus,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true
-                                      )
-
-                                  )
-                                      : chats[index].idSender == idReceiver ?
-                                  chats[index].tipe == 'text' ?
-                                  FriendMessageCardPersonal(
+                                SwipeTo(
+                                  onRightSwipe: () => chatOnSwipe(chats[index]),
+                                  child: chats[index].tipe == 'text' ?
+                                    //    text
+                                    MyMessageCardPersonal(
                                       chats[index].text,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      chats[index].sendStatus == "" ? "" : DateFormat.Hm().format(DateTime.parse(chats[index].date)),
+                                      chats[index].sendStatus,
+                                      chats[index].tipe!,
+                                      '',
+                                      // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      showTriangleRight,
+                                      false
+                                    ) : chats[index].tipe == 'image' ?
+                                    //    image
+                                    MyMessageCardPersonal(
+                                      chats[index].content!,
+                                      chats[index].sendStatus == "" ? "" : DateFormat.Hm().format(DateTime.parse(chats[index].date)),
+                                      chats[index].sendStatus,
+                                      chats[index].tipe!,
+                                      chats[index].content!,
+                                      false,
+                                      true
+                                    ) : 
+                                    MyMessageCardPersonal(
+                                      chats[index].text,
+                                      chats[index].sendStatus == "" ? "" : DateFormat.Hm().format(DateTime.parse(chats[index].date)),
+                                      chats[index].sendStatus,
+                                      chats[index].tipe!,
+                                      chats[index].content!,
+                                      false,
+                                      true
+                                    )
+                                ) : chats[index].idSender == idReceiver ?
+                                SwipeTo(
+                                  onLeftSwipe: () => chatOnSwipe(chats[index]),
+                                  child: chats[index].tipe == 'text' ?
+                                    FriendMessageCardPersonal(
+                                      chats[index].text,
+                                      DateFormat.Hm().format(DateTime.parse(chats[index].date)),
                                       chats[index].tipe!,
                                       '',
                                       // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
                                       showTriangleLeft,
                                       false
-                                  ) : chats[index].tipe == 'image' ?
-                                  FriendMessageCardPersonal(
+                                    ) : chats[index].tipe == 'image' ?
+                                    FriendMessageCardPersonal(
                                       chats[index].content!,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      DateFormat.Hm().format(DateTime.parse(chats[index].date)),
                                       chats[index].tipe!,
                                       chats[index].content!,
                                       false,
                                       true
-                                  )
-                                      :
-                                  FriendMessageCardPersonal(
+                                    ) : 
+                                    FriendMessageCardPersonal(
                                       chats[index].text,
-                                      DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                      DateFormat.Hm().format(DateTime.parse(chats[index].date)),
                                       chats[index].tipe!,
                                       chats[index].content!,
                                       false,
                                       true
-                                  )
-                                      : Container();
+                                    ),
+                                ) : 
+                                Container();
 
-// DateTime lastDayOfMonth = new DateTime(now.year, now.month, (now.day+4)-6);
                               return Column(
                                 children: [
                                   !isSame ?
                                   Container(
                                     padding: const EdgeInsets.all(8.0),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 8.0,
+                                    margin: EdgeInsets.only(
+                                      top: index == chats.length ? 2.0 : 8.0,
+                                      bottom: 10.0,
                                     ),
                                     child: Text(
                                       desc,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 12.0,
                                         color: Colors.white,
                                       ),
@@ -700,7 +711,12 @@ class _ChatScreenState extends State<ChatScreen> {
                                       borderRadius: BorderRadius.circular(10.0),
                                     ),
                                   ) : Container(),
-                                  content,
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: index == 0 ? 8.0 : 2.0,
+                                    ),
+                                    child: content,
+                                  ),
                                 ],
                               );
                             }
@@ -715,7 +731,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 10,),
+              // SizedBox(height: 10,),
               Container(
                 color: Theme.of(context).backgroundColor,
                 padding: Platform.isAndroid ?

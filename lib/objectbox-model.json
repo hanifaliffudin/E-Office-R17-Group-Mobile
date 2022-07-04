@@ -586,9 +586,53 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "12:5002030077723218516",
+      "lastPropertyId": "8:7050715817132016200",
+      "name": "AttendanceHistoryModel",
+      "properties": [
+        {
+          "id": "1:8612324553882073277",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5102338448072367350",
+          "name": "date",
+          "type": 9
+        },
+        {
+          "id": "3:5918159213822378240",
+          "name": "datetime",
+          "type": 9
+        },
+        {
+          "id": "4:6296066933052675365",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "5:4546837026799442203",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "7:5347994061376552449",
+          "name": "status",
+          "type": 6
+        },
+        {
+          "id": "8:7050715817132016200",
+          "name": "server",
+          "type": 1
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "11:1435125642557611699",
+  "lastEntityId": "12:5002030077723218516",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -599,7 +643,8 @@
   "retiredPropertyUids": [
     4809186185575546396,
     4729195407902185397,
-    3922386874057685126
+    3922386874057685126,
+    3568183607304925893
   ],
   "retiredRelationUids": [],
   "version": 1
