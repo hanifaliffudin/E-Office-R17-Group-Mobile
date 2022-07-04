@@ -135,7 +135,7 @@ class _PostPageState extends State<PostPage> {
                                     width: MediaQuery.of(context).size.width * 1,
                                     decoration: BoxDecoration(
                                         image: DecorationImage(
-                                          image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${news!.image}'),
+                                          image: NetworkImage('https://eoffice.dev.digiprimatera.co.id/${news!.image}'),
                                           fit: BoxFit.cover,
                                         ),
                                         borderRadius: BorderRadius.circular(6)
@@ -529,7 +529,7 @@ class _PostPageState extends State<PostPage> {
 
   Future<http.Response> like(int id_news) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/likes';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -611,7 +611,7 @@ class _PostPageState extends State<PostPage> {
 
   Future<http.Response> postComment(int id_news, String comment, String comments) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/postComment';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/postComment';
 
     Map<String, dynamic> data = {
       'payload': {

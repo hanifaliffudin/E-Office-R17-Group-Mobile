@@ -53,8 +53,8 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                   var query = queryBuilder.build();
                   List<NewsModel> listNews = query.find().reversed.toList();
 
-                  DateTime now = new DateTime.now();
-                  DateTime date = new DateTime(now.year, now.month, now.day);
+                  DateTime now = DateTime.now();
+                  DateTime date = DateTime(now.year, now.month, now.day);
 
                   return Column(
                     children: [
@@ -139,7 +139,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                                   width: MediaQuery.of(context).size.width * 1,
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: NetworkImage('http://eoffice.dev.digiprimatera.co.id/${listNews[index].image}'),
+                                                        image: NetworkImage('https://eoffice.dev.digiprimatera.co.id/${listNews[index].image}'),
                                                         fit: BoxFit.cover,
                                                       ),
                                                       borderRadius: BorderRadius.circular(6)
@@ -259,7 +259,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
 
   Future<http.Response> getNews() async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/getNews/';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getNews/';
 
     Map<String, dynamic> data = {
       // 'api_key': this.apiKey,
@@ -273,7 +273,6 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
       headers: {"Content-Type": "application/json"},
     );
     if(response.statusCode == 200){
-      //print("${response.body}");
       Map<String, dynamic> newsMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxNews.query(NewsModel_.id.notNull()).build();
@@ -360,7 +359,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
 
   Future<http.Response> like(int id_news) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/likes';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {

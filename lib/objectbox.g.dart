@@ -18,7 +18,6 @@ import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
 import 'models/ConversationModel.dart';
-import 'models/LoadChatModel.dart';
 import 'models/NewsModel.dart';
 import 'models/NoteModel.dart';
 import 'models/SuratModel.dart';
@@ -360,7 +359,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(7, 2414097441055247438),
       name: 'SuratModel',
-      lastPropertyId: const IdUid(15, 695512295959142384),
+      lastPropertyId: const IdUid(16, 3708736985555398852),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -432,6 +431,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(15, 695512295959142384),
             name: 'penerima',
             type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(16, 3708736985555398852),
+            name: 'isSelected',
+            type: 1,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -592,25 +596,6 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
-      backlinks: <ModelBacklink>[]),
-  ModelEntity(
-      id: const IdUid(11, 1435125642557611699),
-      name: 'LoadChatModel',
-      lastPropertyId: const IdUid(2, 4949612167761542987),
-      flags: 0,
-      properties: <ModelProperty>[
-        ModelProperty(
-            id: const IdUid(1, 8107107720145537335),
-            name: 'id',
-            type: 6,
-            flags: 1),
-        ModelProperty(
-            id: const IdUid(2, 4949612167761542987),
-            name: 'loaded',
-            type: 6,
-            flags: 0)
-      ],
-      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -638,12 +623,14 @@ ModelDefinition getObjectBoxModel() {
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
-      retiredEntityUids: const [],
+      retiredEntityUids: const [1435125642557611699],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
         4809186185575546396,
         4729195407902185397,
-        3922386874057685126
+        3922386874057685126,
+        8107107720145537335,
+        4949612167761542987
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1025,7 +1012,7 @@ ModelDefinition getObjectBoxModel() {
           final penerimaOffset = object.penerima == null
               ? null
               : fbb.writeString(object.penerima!);
-          fbb.startTable(16);
+          fbb.startTable(17);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, idSuratOffset);
           fbb.addOffset(2, namaSuratOffset);
@@ -1040,6 +1027,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(12, editorOffset);
           fbb.addOffset(13, approverOffset);
           fbb.addOffset(14, penerimaOffset);
+          fbb.addBool(15, object.isSelected);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1069,7 +1057,8 @@ ModelDefinition getObjectBoxModel() {
               url: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 24),
               tipeSurat: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 26),
               approver: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 30),
-              penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32));
+              penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32),
+              isSelected: const fb.BoolReader().vTableGet(buffer, rootOffset, 34, false));
 
           return object;
         }),
@@ -1236,32 +1225,6 @@ ModelDefinition getObjectBoxModel() {
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
               server: const fb.BoolReader()
                   .vTableGet(buffer, rootOffset, 20, false));
-
-          return object;
-        }),
-    LoadChatModel: EntityDefinition<LoadChatModel>(
-        model: _entities[10],
-        toOneRelations: (LoadChatModel object) => [],
-        toManyRelations: (LoadChatModel object) => {},
-        getId: (LoadChatModel object) => object.id,
-        setId: (LoadChatModel object, int id) {
-          object.id = id;
-        },
-        objectToFB: (LoadChatModel object, fb.Builder fbb) {
-          fbb.startTable(3);
-          fbb.addInt64(0, object.id);
-          fbb.addInt64(1, object.loaded);
-          fbb.finish(fbb.endTable());
-          return object.id;
-        },
-        objectFromFB: (Store store, ByteData fbData) {
-          final buffer = fb.BufferContext(fbData);
-          final rootOffset = buffer.derefObject(0);
-
-          final object = LoadChatModel(
-              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
-              loaded:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
 
           return object;
         })
@@ -1560,6 +1523,10 @@ class SuratModel_ {
   /// see [SuratModel.penerima]
   static final penerima =
       QueryStringProperty<SuratModel>(_entities[6].properties[13]);
+
+  /// see [SuratModel.isSelected]
+  static final isSelected =
+      QueryBooleanProperty<SuratModel>(_entities[6].properties[14]);
 }
 
 /// [NewsModel] entity fields to define ObjectBox queries.
@@ -1672,15 +1639,4 @@ class AttendanceModel_ {
   /// see [AttendanceModel.server]
   static final server =
       QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
-}
-
-/// [LoadChatModel] entity fields to define ObjectBox queries.
-class LoadChatModel_ {
-  /// see [LoadChatModel.id]
-  static final id =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[0]);
-
-  /// see [LoadChatModel.loaded]
-  static final loaded =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[1]);
 }

@@ -10,7 +10,6 @@ import 'package:militarymessenger/objectbox.g.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pinput/pinput.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -105,7 +104,7 @@ class _DocumentPageState extends State<DocumentPage> {
                             autoSpacing: false,
                             pageFling: false,
                           ).cachedFromUrl(
-                            'http://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
+                            'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
                             placeholder: (progress) => Center(child: Text('$progress %')),
                             errorWidget: (error) => Center(child: Text(error.toString())),
                           )
@@ -267,7 +266,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 radius: 18,
                               ),
                               const SizedBox(width: 10,),
-                              Text(surat!.editor! == null ? '' : surat!.editor! ,
+                              Text(surat!.editor == null ? '' : surat!.editor! ,
                                 style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold
@@ -590,7 +589,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 Container(
                                   width: 100,
                                   decoration: BoxDecoration(
-                                      color: Color(0xFF029FE6),
+                                      color: const Color(0xFF029FE6),
                                       borderRadius: BorderRadius.circular(6)
                                   ),
                                   child: TextButton(
@@ -599,7 +598,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                         Flushbar(
                                           backgroundColor: Colors.red,
                                           message: 'Silahkan isi catatan terlebih dahulu',
-                                          duration: Duration(seconds: 2),
+                                          duration: const Duration(seconds: 2),
                                         ).show(context);
                                       }else{
                                         EasyLoading.show(status: 'returning...');
@@ -623,12 +622,12 @@ class _DocumentPageState extends State<DocumentPage> {
                         primary: Colors.white,
                         elevation: 0
                     ),
-                    icon: Icon(
+                    icon: const Icon(
                         Icons.undo_rounded,
                         size: 13,
                         color: Color(0xFF2481CF)
                     ),
-                    label: Text("Return",
+                    label: const Text("Return",
                       style: TextStyle(
                           color: Color(0xFF2481CF),
                           fontSize: 16
@@ -653,20 +652,20 @@ class _DocumentPageState extends State<DocumentPage> {
                             Container(
                               width: 90,
                               height: 90,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   image: DecorationImage(
                                       image: AssetImage('assets/icons/approve.png')
                                   )
                               ),
                             ),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                             const Text('Are you sure?',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             const Text('Do you really want to approve this document?',
@@ -675,7 +674,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                   fontSize: 12
                               ),
                             ),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                             const Text('Please explain your reason for approving this document or add some corrective notes :',
                               style: TextStyle(
                                   color: Color(0xFF94A3B8),
@@ -684,7 +683,7 @@ class _DocumentPageState extends State<DocumentPage> {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                             Scrollbar(
                               child: TextField(
                                 maxLines: 4,
@@ -700,7 +699,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20,),
+                            const SizedBox(height: 20,),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -709,7 +708,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                          color: Color(0xFF029FE6)
+                                          color: const Color(0xFF029FE6)
                                       )
                                   ),
                                   child: TextButton(
@@ -724,7 +723,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 Container(
                                   width: 100,
                                   decoration: BoxDecoration(
-                                      color: Color(0xFF029FE6),
+                                      color: const Color(0xFF029FE6),
                                       borderRadius: BorderRadius.circular(6)
                                   ),
                                   child: TextButton(
@@ -746,7 +745,7 @@ class _DocumentPageState extends State<DocumentPage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                        primary: Color(0xFF1FA463),
+                        primary: const Color(0xFF1FA463),
                         elevation: 0
                     ),
                     icon: const Icon(
@@ -780,17 +779,17 @@ class _DocumentPageState extends State<DocumentPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         const Text('Are you sure?',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 24
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
-                        SizedBox(height: 20,),
+                        const SizedBox(height: 20,),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -799,7 +798,7 @@ class _DocumentPageState extends State<DocumentPage> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                      color: Color(0xFF029FE6)
+                                      color: const Color(0xFF029FE6)
                                   )
                               ),
                               child: TextButton(
@@ -814,7 +813,7 @@ class _DocumentPageState extends State<DocumentPage> {
                             Container(
                               width: 100,
                               decoration: BoxDecoration(
-                                  color: Color(0xFF029FE6),
+                                  color: const Color(0xFF029FE6),
                                   borderRadius: BorderRadius.circular(6)
                               ),
                               child: TextButton(
@@ -826,22 +825,22 @@ class _DocumentPageState extends State<DocumentPage> {
                                   showDialog<String>(
                                     context: context,
                                     builder: (BuildContext context) => AlertDialog(
-                                      insetPadding: EdgeInsets.symmetric(horizontal: 7),
+                                      insetPadding: const EdgeInsets.symmetric(horizontal: 7),
                                       content: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text('OTP',
+                                          const Text('OTP',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 24
                                             ),
                                           ),
-                                          SizedBox(height: 20,),
+                                          const SizedBox(height: 20,),
                                           Scrollbar(
                                             child: buildPinPut(surat!.idSurat!),
                                           ),
-                                          SizedBox(height: 20,),
+                                          const SizedBox(height: 20,),
                                         ],
                                       ),
                                     ),
@@ -860,11 +859,11 @@ class _DocumentPageState extends State<DocumentPage> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                    primary: Color(0xFF2481CF),
+                    primary: const Color(0xFF2481CF),
                     elevation: 0
                 ),
 
-                child: Text("Sign",
+                child: const Text("Sign",
                   style: TextStyle(
                       color: Color(0xFFfffffF),
                       fontSize: 16
@@ -880,12 +879,12 @@ class _DocumentPageState extends State<DocumentPage> {
                   minHeight: 48,
                   maxHeight: 50
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color(0xFFECFDF5)
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                children: const [
                   Icon(
                       Icons.check,
                     color: Color(0xFF1FA463),
@@ -915,12 +914,12 @@ class _DocumentPageState extends State<DocumentPage> {
                     minHeight: 48,
                     maxHeight: 50
                 ),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Color(0xFFeaf6ff)
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: const [
                     Icon(
                       Icons.check,
                       color: Color(0xFF2481cf),
@@ -950,12 +949,12 @@ class _DocumentPageState extends State<DocumentPage> {
                     minHeight: 48,
                     maxHeight: 50
                 ),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Color(0xFFffebea)
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: const [
                     Icon(
                       Icons.clear,
                       color: Color(0xFFdc2626),
@@ -985,12 +984,12 @@ class _DocumentPageState extends State<DocumentPage> {
                     minHeight: 48,
                     maxHeight: 50
                 ),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Color(0xFFECFDF5)
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: const [
                     Icon(
                       Icons.check,
                       color: Color(0xFF1FA463),
@@ -1014,7 +1013,7 @@ class _DocumentPageState extends State<DocumentPage> {
                 :
             Container()
             ,
-            SizedBox(height: 5,),
+            const SizedBox(height: 5,),
             mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "needApprove"?
             Container()
                 :
@@ -1034,15 +1033,15 @@ class _DocumentPageState extends State<DocumentPage> {
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(MediaQuery.of(context).size.width, 40) ,
-                  primary: Color(0xFF1FA463),
+                  primary: const Color(0xFF1FA463),
                   elevation: 0,
               ),
-              icon: Icon(
+              icon: const Icon(
                   Icons.download_rounded,
                   size: 13,
                   color: Colors.white
               ),
-              label: Text("Download",
+              label: const Text("Download",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 16
@@ -1055,25 +1054,25 @@ class _DocumentPageState extends State<DocumentPage> {
 
   }
 
-  Widget buildPinPut(String id_surat) {
+  Widget buildPinPut(String idSurat) {
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
-      textStyle: TextStyle(fontSize: 20, color: Color.fromRGBO(30, 60, 87, 1), fontWeight: FontWeight.w600),
+      textStyle: const TextStyle(fontSize: 20, color: Color.fromRGBO(30, 60, 87, 1), fontWeight: FontWeight.w600),
       decoration: BoxDecoration(
-        border: Border.all(color: Color.fromRGBO(234, 239, 243, 1)),
+        border: Border.all(color: const Color.fromRGBO(234, 239, 243, 1)),
         borderRadius: BorderRadius.circular(10),
       ),
     );
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: Color.fromRGBO(114, 178, 238, 1)),
+      border: Border.all(color: const Color.fromRGBO(114, 178, 238, 1)),
       borderRadius: BorderRadius.circular(8),
     );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration?.copyWith(
-        color: Color.fromRGBO(234, 239, 243, 1),
+        color: const Color.fromRGBO(234, 239, 243, 1),
       ),
     );
 
@@ -1083,7 +1082,7 @@ class _DocumentPageState extends State<DocumentPage> {
       length: 6,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
-        signing(id_surat, pin);
+        signing(idSurat, pin);
         },
     );
   }
@@ -1094,23 +1093,23 @@ class _DocumentPageState extends State<DocumentPage> {
         maxWidth: MediaQuery.of(context).size.width * 1,
         minWidth: MediaQuery.of(context).size.width * 1,
       ),
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       child: Text(text,
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
         ),
       ),
     );
   }
 
-  Future<http.Response> approve(String id_surat, String catatan) async {
+  Future<http.Response> approve(String idSurat, String catatan) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/approve';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/approve';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_surat': id_surat,
+        'id_surat': idSurat,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
         'catatan': catatan,
       }
@@ -1127,7 +1126,7 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> approveMap = jsonDecode(response.body);
 
       if(approveMap['code'] == 0){
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
           if(query.find().isNotEmpty) {
             final surat = SuratModel(
               id: query.find().first.id,
@@ -1163,13 +1162,13 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> returnSurat(String id_surat, String catatan) async {
+  Future<http.Response> returnSurat(String idSurat, String catatan) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/return';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/return';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_surat': id_surat,
+        'id_surat': idSurat,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
         'catatan': catatan,
       }
@@ -1187,7 +1186,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
       if(returnMap['code'] != 95){
         if(returnMap['code'] == 0){
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
           if(query.find().isNotEmpty) {
             final surat = SuratModel(
               id: query.find().first.id,
@@ -1226,13 +1225,13 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> cancel(String id_surat, String catatan) async {
+  Future<http.Response> cancel(String idSurat, String catatan) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/reject';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/reject';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_surat': id_surat,
+        'id_surat': idSurat,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
         'catatan': catatan,
       }
@@ -1249,7 +1248,7 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> rejectMap = jsonDecode(response.body);
 
       if(rejectMap['code'] == 0){
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
           if(query.find().isNotEmpty) {
             final surat = SuratModel(
               id: query.find().first.id,
@@ -1286,13 +1285,13 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> readSurat(String id_surat) async {
+  Future<http.Response> readSurat(String idSurat) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/reader';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/reader';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_surat': id_surat,
+        'id_surat': idSurat,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
@@ -1320,14 +1319,14 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> download(String id_surat, String nama_surat) async {
+  Future<http.Response> download(String idSurat, String namaSurat) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/download';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/download';
 
     Map<String, dynamic> data = {
       'payload': {
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
-        'id_surat': id_surat,
+        'id_surat': idSurat,
       }
     };
 
@@ -1343,7 +1342,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
       if(downloadMap['code'] == 0){
           EasyLoading.dismiss();
-          var contentFile = _createFileFromUint(base64.decode(downloadMap['data']), nama_surat);
+          var contentFile = _createFileFromUint(base64.decode(downloadMap['data']), namaSurat);
           OpenFile.open(await contentFile);
       }
       else{
@@ -1359,15 +1358,15 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> getOtp(String id_surat) async {
+  Future<http.Response> getOtp(String idSurat) async {
     EasyLoading.showToast('Sending OTP');
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/getOtp';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtp';
 
     Map<String, dynamic> data = {
       'payload': {
         'users_id': mains.objectbox.boxUser.get(1)!.userId,
-        'surat_id': id_surat,
+        'surat_id': idSurat,
       }
     };
 
@@ -1383,7 +1382,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
       if(otpMap['code'] == 0){
           EasyLoading.show(status: 'loading...');
-          signing(id_surat, otpMap['otp']);
+          signing(idSurat, otpMap['otp']);
         }
       else{
         EasyLoading.showError(otpMap['message']);
@@ -1393,20 +1392,19 @@ class _DocumentPageState extends State<DocumentPage> {
       }
     }
     else{
-      print("Gagal terhubung ke server!");
-      print(response.statusCode);
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
 
-  Future<http.Response> signing(String id_surat, String token) async {
+  Future<http.Response> signing(String idSurat, String token) async {
 
-    String url ='http://eoffice.dev.digiprimatera.co.id/api/signing';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/signing';
 
     Map<String, dynamic> data = {
       'payload': {
         'users_id': mains.objectbox.boxUser.get(1)!.userId,
-        'surat_id': id_surat,
+        'surat_id': idSurat,
         "token": token,
       }
     };
@@ -1422,7 +1420,7 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> signingMap = jsonDecode(response.body);
 
       if(signingMap['code'] == 0){
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(id_surat)).build();
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
           if(query.find().isNotEmpty) {
             final surat = SuratModel(
               id: query.find().first.id,
