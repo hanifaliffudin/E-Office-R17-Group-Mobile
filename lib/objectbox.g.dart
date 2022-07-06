@@ -518,7 +518,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(9, 3436676157863920729),
       name: 'BadgeModel',
-      lastPropertyId: const IdUid(4, 3380206623835819827),
+      lastPropertyId: const IdUid(6, 4177655746767577483),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -539,6 +539,11 @@ final _entities = <ModelEntity>[
         ModelProperty(
             id: const IdUid(4, 3380206623835819827),
             name: 'badgeNeedApprove',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(6, 4177655746767577483),
+            name: 'badgeMeterai',
             type: 6,
             flags: 0)
       ],
@@ -594,25 +599,6 @@ final _entities = <ModelEntity>[
             id: const IdUid(9, 2477052192921268610),
             name: 'server',
             type: 1,
-            flags: 0)
-      ],
-      relations: <ModelRelation>[],
-      backlinks: <ModelBacklink>[]),
-  ModelEntity(
-      id: const IdUid(11, 1435125642557611699),
-      name: 'LoadChatModel',
-      lastPropertyId: const IdUid(2, 4949612167761542987),
-      flags: 0,
-      properties: <ModelProperty>[
-        ModelProperty(
-            id: const IdUid(1, 8107107720145537335),
-            name: 'id',
-            type: 6,
-            flags: 1),
-        ModelProperty(
-            id: const IdUid(2, 4949612167761542987),
-            name: 'loaded',
-            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -687,13 +673,16 @@ ModelDefinition getObjectBoxModel() {
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
-      retiredEntityUids: const [1435125642557611699],
+      retiredEntityUids: const [1435125642557611699, 1435125642557611699],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
         4809186185575546396,
         4729195407902185397,
         3922386874057685126,
-        3568183607304925893
+        3568183607304925893,
+        8107107720145537335,
+        4949612167761542987,
+        638927138085380728
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1210,11 +1199,12 @@ ModelDefinition getObjectBoxModel() {
           object.id = id;
         },
         objectToFB: (BadgeModel object, fb.Builder fbb) {
-          fbb.startTable(5);
+          fbb.startTable(7);
           fbb.addInt64(0, object.id);
           fbb.addInt64(1, object.badgeInbox);
           fbb.addInt64(2, object.badgeNeedSign);
           fbb.addInt64(3, object.badgeNeedApprove);
+          fbb.addInt64(5, object.badgeMeterai);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1229,7 +1219,9 @@ ModelDefinition getObjectBoxModel() {
               badgeNeedSign:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
               badgeNeedApprove:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0));
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+              badgeMeterai:
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 14, 0));
 
           return object;
         }),
@@ -1291,34 +1283,8 @@ ModelDefinition getObjectBoxModel() {
 
           return object;
         }),
-    LoadChatModel: EntityDefinition<LoadChatModel>(
-        model: _entities[10],
-        toOneRelations: (LoadChatModel object) => [],
-        toManyRelations: (LoadChatModel object) => {},
-        getId: (LoadChatModel object) => object.id,
-        setId: (LoadChatModel object, int id) {
-          object.id = id;
-        },
-        objectToFB: (LoadChatModel object, fb.Builder fbb) {
-          fbb.startTable(3);
-          fbb.addInt64(0, object.id);
-          fbb.addInt64(1, object.loaded);
-          fbb.finish(fbb.endTable());
-          return object.id;
-        },
-        objectFromFB: (Store store, ByteData fbData) {
-          final buffer = fb.BufferContext(fbData);
-          final rootOffset = buffer.derefObject(0);
-
-          final object = LoadChatModel(
-              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
-              loaded:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
-
-          return object;
-        }),
     AttendanceHistoryModel: EntityDefinition<AttendanceHistoryModel>(
-        model: _entities[11],
+        model: _entities[10],
         toOneRelations: (AttendanceHistoryModel object) => [],
         toManyRelations: (AttendanceHistoryModel object) => {},
         getId: (AttendanceHistoryModel object) => object.id,
@@ -1735,6 +1701,10 @@ class BadgeModel_ {
   /// see [BadgeModel.badgeNeedApprove]
   static final badgeNeedApprove =
       QueryIntegerProperty<BadgeModel>(_entities[8].properties[3]);
+
+  /// see [BadgeModel.badgeMeterai]
+  static final badgeMeterai =
+      QueryIntegerProperty<BadgeModel>(_entities[8].properties[4]);
 }
 
 /// [AttendanceModel] entity fields to define ObjectBox queries.
@@ -1776,44 +1746,33 @@ class AttendanceModel_ {
       QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
 }
 
-/// [LoadChatModel] entity fields to define ObjectBox queries.
-class LoadChatModel_ {
-  /// see [LoadChatModel.id]
-  static final id =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[0]);
-
-  /// see [LoadChatModel.loaded]
-  static final loaded =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[1]);
-}
-
 /// [AttendanceHistoryModel] entity fields to define ObjectBox queries.
 class AttendanceHistoryModel_ {
   /// see [AttendanceHistoryModel.id]
   static final id =
-      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[0]);
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[10].properties[0]);
 
   /// see [AttendanceHistoryModel.date]
   static final date =
-      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[1]);
+      QueryStringProperty<AttendanceHistoryModel>(_entities[10].properties[1]);
 
   /// see [AttendanceHistoryModel.datetime]
   static final datetime =
-      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[2]);
+      QueryStringProperty<AttendanceHistoryModel>(_entities[10].properties[2]);
 
   /// see [AttendanceHistoryModel.latitude]
   static final latitude =
-      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[3]);
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[10].properties[3]);
 
   /// see [AttendanceHistoryModel.longitude]
   static final longitude =
-      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[4]);
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[10].properties[4]);
 
   /// see [AttendanceHistoryModel.status]
   static final status =
-      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[5]);
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[10].properties[5]);
 
   /// see [AttendanceHistoryModel.server]
   static final server =
-      QueryBooleanProperty<AttendanceHistoryModel>(_entities[11].properties[6]);
+      QueryBooleanProperty<AttendanceHistoryModel>(_entities[10].properties[6]);
 }
