@@ -574,25 +574,6 @@
       "relations": []
     },
     {
-      "id": "11:1435125642557611699",
-      "lastPropertyId": "2:4949612167761542987",
-      "name": "LoadChatModel",
-      "properties": [
-        {
-          "id": "1:8107107720145537335",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:4949612167761542987",
-          "name": "loaded",
-          "type": 6
-        }
-      ],
-      "relations": []
-    },
-    {
       "id": "12:5002030077723218516",
       "lastPropertyId": "8:7050715817132016200",
       "name": "AttendanceHistoryModel",
@@ -644,6 +625,7 @@
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [
+    1435125642557611699,
     1435125642557611699
   ],
   "retiredIndexUids": [],
@@ -651,7 +633,9 @@
     4809186185575546396,
     4729195407902185397,
     3922386874057685126,
-    3568183607304925893
+    3568183607304925893,
+    8107107720145537335,
+    4949612167761542987
   ],
   "retiredRelationUids": [],
   "version": 1

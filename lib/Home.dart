@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,7 @@ StreamController<List<UserModel>> listControllerUser = BehaviorSubject();
 StreamController<List<SuratModel>> listControllerSurat = BehaviorSubject();
 StreamController<List<NewsModel>> listControllerNews = BehaviorSubject();
 StreamController<List<BadgeModel>> listControllerBadge = BehaviorSubject();
+StreamController<List<AttendanceModel>> listControlerAttendance = BehaviorSubject();
 
 String apiKeyCore =
     '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
@@ -81,6 +83,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Uint8List? bytes;
   var contactList, contactData, contactName;
   Location location = Location();
+  bool pushToAttendance = true;
 
   Future<void> setupInteractedMessage() async {
     // Get any messages which caused the application to open from
@@ -466,7 +469,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return 12742 * asin(sqrt(a));
   }
 
-  void locationAttendance(LocationData locationData) {
+  void _locationAttendance(LocationData locationData) {
     DateTime now = DateTime.now();
 
     if (locationData != null) {
@@ -475,17 +478,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       if (distanceOnMeter <= 50 && now.hour >= 7) {
         var query = mains.objectbox.boxAttendance
             .query(AttendanceModel_.date
-                .equals(DateFormat('dd MM yyyy').format(now).toString()))
+                .equals(DateFormat('dd MM yyyy').format(now)))
             .build();
 
         if (query.find().isNotEmpty) {
           var attendance = query.find().first;
 
           if (attendance.status == 0) {
-            print('time call check in');
-            attendance.date = DateFormat('dd MM yyyy').format(now).toString();
-            attendance.checkInAt =
-                DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+            // print('time call check in');
+            attendance.date = DateFormat('dd MM yyyy').format(now);
+            // attendance.checkInAt =
+            //     DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+            attendance.checkInAt = attendance.checkInAt;
             attendance.checkOutAt = attendance.checkOutAt;
             attendance.latitude = locationData.latitude;
             attendance.longitude = locationData.longitude;
@@ -494,10 +498,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             saveAttendance(attendance);
           }
         } else {
-          print('first time call check in');
+          // print('first time call check in');
           var attendance = AttendanceModel(
-            date: DateFormat('dd MM yyyy').format(now).toString(),
-            checkInAt: DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString(),
+            date: DateFormat('dd MM yyyy').format(now),
+            checkInAt: DateFormat('yyyy-MM-dd HH:mm:ss').format(now),
             latitude: locationData.latitude,
             longitude: locationData.longitude,
             status: 1,
@@ -509,7 +513,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         if (now.hour >= 7) {
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date
-                      .equals(DateFormat('dd MM yyyy').format(now).toString()) &
+                      .equals(DateFormat('dd MM yyyy').format(now)) &
                   AttendanceModel_.status.equals(1))
               .build();
 
@@ -520,7 +524,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             attendance.date = attendance.date;
             attendance.checkInAt = attendance.checkInAt;
             attendance.checkOutAt =
-                DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+                DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
             attendance.latitude = attendance.latitude;
             attendance.longitude = attendance.longitude;
             attendance.status = 0;
@@ -531,8 +535,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy')
-                      .format(dateYesterday)
-                      .toString()) &
+                      .format(dateYesterday)) &
                   AttendanceModel_.status.equals(1))
               .build();
 
@@ -590,7 +593,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             final result = await InternetAddress.lookup('google.com');
 
             if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              locationAttendance(locationData);
+              _locationAttendance(locationData);
             }
           } catch (e) {
             // print(e.toString());
@@ -600,25 +603,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
+  Future<bool> _getAllData() async {
+    // get all messages
+    List<ChatModel> listChat = mains.objectbox.boxChat.getAll();
+    if (listChat.isEmpty) {
+      EasyLoading.show(status: 'Downloading all messages...');
+      await getAllMessages();
+    }
+
+    List<AttendanceModel> attendances = mains.objectbox.boxAttendance.getAll();
+    if (attendances.isEmpty) {
+      EasyLoading.show(status: 'Downloading all attendances...');
+      await _getAllAttendances();
+    }
+
+    return true;
+  }
 
   String? version;
   String? buildNumber;
 
   @override
   void initState() {
-    // get all messages
-    List<ChatModel> listChat = mains.objectbox.boxChat.getAll();
-    if (listChat.isEmpty) {
-      EasyLoading.show(status: 'Downloading all messages...');
-      getAllMessages();
-    }
-
-    DateTime now = DateTime.now();
-// mains.objectbox.boxAttendance.removeAll();
-// mains.objectbox.boxAttendanceHistory.removeAll();
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      // _locationService();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      if (await checkFcmToken() == true) {
+        await _getAllData();
+        _locationService();
+      }
     });
 
     _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
@@ -632,7 +643,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     super.initState();
 
     getListContact();
-    checkFcmToken();
     // getDataUser();
 
     listController
@@ -641,6 +651,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         mains.objectbox.queryStreamConversation.map((q) => q.find()));
     listControllerContact
         .addStream(mains.objectbox.queryStreamContact.map((q) => q.find()));
+    listControlerAttendance.addStream(mains.objectbox.queryStreamAttendance.map((event) => event.find()));
 
     if (mains.objectbox.boxUser.isEmpty()) {
     } else {
@@ -1123,6 +1134,76 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
+  void showAttendanceNotif(bool error, String? type, String title, String message) {
+    Flushbar(
+      flushbarPosition: FlushbarPosition.TOP,
+      titleText: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 15.0,
+        ),
+      ),
+      messageText: Padding(
+        padding: const EdgeInsets.only(
+          left: 0.0,
+        ),
+        child: Text(
+          message,
+          style: const TextStyle(
+            fontSize: 13.0,
+          ),
+        ),
+      ),
+      icon: Padding(
+        padding: const EdgeInsets.only(
+          left: 4,
+        ),
+        child: Icon(
+          error == false ? type == 'in' ? Icons.login_rounded : Icons.logout_rounded : Icons.error_rounded,
+          size: 28.0,
+          color: error == false ? type == 'in' ? Colors.blue : Colors.grey : Colors.red,
+        ),
+      ),
+      // duration: const Duration(
+      //   seconds: 3,
+      // ),
+      leftBarIndicatorColor: error == false ? type == 'in' ? Colors.blue : Colors.grey : Colors.red,
+      padding: const EdgeInsets.only(
+        top: 11.0,
+        bottom: 14.0,
+      ),
+      margin: const EdgeInsets.all(8),
+      borderRadius: BorderRadius.circular(5),
+      backgroundColor: Theme.of(context).cardColor,
+      boxShadows: const [
+        BoxShadow(
+          color: Colors.black26,
+          offset: Offset(0.0, 2.5), 
+          blurRadius: 3.0,
+        ),
+      ],
+      onTap: (Flushbar<dynamic> flushbar) {
+        if (error == false && pushToAttendance == true) {
+          setState(() {
+            pushToAttendance = false;
+          });
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Attendance()),
+          ).then((value) {
+            setState(() {
+              pushToAttendance = true;
+            });
+          });
+        }
+
+        flushbar.dismiss(true);
+      },
+    ).show(context);
+  }
+
   File? image;
 
   @override
@@ -1211,10 +1292,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   ],
                 ),
                 onTap: () {
+                  setState(() {
+                    pushToAttendance = false;
+                  });
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const Attendance()),
-                  );
+                  ).then((_) {
+                    setState(() {
+                      pushToAttendance = true;
+                    });
+                  });
                 },
               ),
               ListTile(
@@ -1457,17 +1546,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         Map<String, dynamic> attendanceMap = jsonDecode(response.body);
 
         if(attendanceMap['code_status'] == 0){
-          if (attendanceMap['data'] != null) {
-            if (attendanceMap['data']['check_in'] != null) {
-              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_in'])).toString();
-              attendanceNew.checkInAt = attendanceMap['data']['check_in'];
-            } else if (attendanceMap['data']['check_out'] != null) {
-              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out'])).toString();
-              attendanceNew.checkOutAt = attendanceMap['data']['check_out'];
-            }
-          }
-
-          attendanceNew.server = true;
+          String type = '';
           var attendanceHistory = AttendanceHistoryModel(
             date: attendanceNew.date,
             latitude: attendanceNew.latitude,
@@ -1476,15 +1555,41 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             status: attendanceNew.status,
             server: attendanceNew.server,
           );
+
+          if (attendanceMap['data'] != null) {
+            if (attendanceMap['data']['check_in'] != null) {
+              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_in']));
+
+              if (attendanceNew.checkOutAt == null) {
+                attendanceNew.checkInAt = attendanceMap['data']['check_in'];
+              }
+
+              attendanceHistory.datetime = attendanceMap['data']['check_in'];
+              type = 'in';
+            } else if (attendanceMap['data']['check_out'] != null) {
+              attendanceNew.date = DateFormat('dd MM yyyy').format(DateTime.parse(attendanceMap['data']['check_out']));
+              attendanceNew.checkOutAt = attendanceMap['data']['check_out'];
+              attendanceHistory.datetime = attendanceMap['data']['check_out'];
+              type = 'out';
+            }
+          }
+
+          attendanceNew.server = true;
           mains.objectbox.boxAttendance.put(attendanceNew);
           mains.objectbox.boxAttendanceHistory.put(attendanceHistory);
-        }
-        else{
-          print("ada yang salah!");
+
+          showAttendanceNotif(false, type, 'Attendance', 'Check $type at: ${DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.parse(attendanceHistory.datetime!))}');
+        } else {
+          mains.objectbox.boxAttendance.remove(attendanceNew.id);
+
+          // showAttendanceNotif(true, null, 'Error', attendanceMap['message']);
           print(attendanceMap['code_status']);
           print(attendanceMap['error']);
         }
       } else {
+        mains.objectbox.boxAttendance.remove(attendanceNew.id);
+
+        // showAttendanceNotif(true, null, 'Error', 'Something wrong');
         print("Gagal terhubung ke server!");
       }
     } catch (e) {
@@ -1500,6 +1605,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       // mains.objectbox.boxAttendanceHistory.put(attendanceHistory);
       mains.objectbox.boxAttendance.remove(attendanceNew.id);
 
+      // showAttendanceNotif(true, null, 'Error', 'Catch error');
       print(e.toString());
     }
   }
@@ -1547,7 +1653,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return response;
   }
 
-  Future<http.Response> checkFcmToken() async {
+  Future<bool> checkFcmToken() async {
     String url = 'https://chat.dev.r17.co.id/check_fcm.php';
 
     Map<String, dynamic> data = {
@@ -1575,19 +1681,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         // print('fcm same: ${userMap['same']}');
         if (userMap['same'] == 1) {
           getDataUser();
+          return true;
         } else {
           //  logout
           _openDialogAutoLogout(context);
+          return false;
         }
       } else {
         print("ada yang salah!");
         print(userMap['code_status']);
         print(userMap['error']);
+        return false;
       }
     } else {
       print("Gagal terhubung ke server!");
+      return false;
     }
-    return response;
   }
 
   Future<http.Response> getListContact() async {
@@ -1867,6 +1976,64 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return response;
   }
 
+  Future<http.Response> _getAllAttendances() async {
+    String url = 'https://chat.dev.r17.co.id/get_all_attendances.php';
+
+    Map<String, dynamic> data = {
+      'api_key': apiKey,
+      'email': mains.objectbox.boxUser.get(1)!.email,
+      'type': 'get_all_message',
+      'id_user': mains.objectbox.boxUser.get(1)!.userId,
+    };
+
+    var response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> bodyMap = jsonDecode(response.body);
+
+      Map<String, dynamic> data = bodyMap['data'];
+      List<dynamic> attendances = data['attendances'];
+      List<dynamic> attendanceHistories = data['attendance_histories'];
+
+      for (var i = 0; i < attendances.length; i++) {
+        Map<String, dynamic> attendance = Map<String, dynamic>.from(jsonDecode(attendances[i]));
+        final AttendanceModel newAttendance = AttendanceModel(
+          date: attendance['date'],
+          checkInAt: attendance['check_in_at'],
+          checkOutAt: attendance['check_out_at'],
+          latitude: double.parse(attendance['latitude_in']),
+          longitude: double.parse(attendance['longitude_in']),
+          status: attendance['status'],
+          server: true,
+        );
+        mains.objectbox.boxAttendance.put(newAttendance);
+      }
+
+      for (var i = 0; i < attendanceHistories.length; i++) {
+        Map<String, dynamic> attendanceHistory = Map<String, dynamic>.from(jsonDecode(attendanceHistories[i]));
+        final AttendanceHistoryModel newAttendanceHistory = AttendanceHistoryModel(
+          date: attendanceHistory['date'],
+          datetime: attendanceHistory['datetime'],
+          latitude: double.parse(attendanceHistory['latitude']),
+          longitude: double.parse(attendanceHistory['longitude']),
+          status: attendanceHistory['status'],
+          server: true,
+        );
+        mains.objectbox.boxAttendanceHistory.put(newAttendanceHistory);
+      }
+
+      EasyLoading.showSuccess('Done!');
+    } else {
+      EasyLoading.showError('Gagal terhubung ke server!');
+    }
+
+    return response;
+  }
+
 }
 
 void _openDialogLogout(ctx) {
@@ -1916,6 +2083,7 @@ void _openDialogLogout(ctx) {
                   mains.objectbox.boxContact.removeAll();
                   mains.objectbox.boxUser.removeAll();
                   mains.objectbox.boxAttendance.removeAll();
+                  mains.objectbox.boxAttendanceHistory.removeAll();
                   mains.objectbox.boxSurat.removeAll();
                   mains.objectbox.boxBadge.removeAll();
                   mains.objectbox.boxNews.removeAll();

@@ -599,25 +599,6 @@ final _entities = <ModelEntity>[
       relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[]),
   ModelEntity(
-      id: const IdUid(11, 1435125642557611699),
-      name: 'LoadChatModel',
-      lastPropertyId: const IdUid(2, 4949612167761542987),
-      flags: 0,
-      properties: <ModelProperty>[
-        ModelProperty(
-            id: const IdUid(1, 8107107720145537335),
-            name: 'id',
-            type: 6,
-            flags: 1),
-        ModelProperty(
-            id: const IdUid(2, 4949612167761542987),
-            name: 'loaded',
-            type: 6,
-            flags: 0)
-      ],
-      relations: <ModelRelation>[],
-      backlinks: <ModelBacklink>[]),
-  ModelEntity(
       id: const IdUid(12, 5002030077723218516),
       name: 'AttendanceHistoryModel',
       lastPropertyId: const IdUid(8, 7050715817132016200),
@@ -687,13 +668,15 @@ ModelDefinition getObjectBoxModel() {
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
-      retiredEntityUids: const [1435125642557611699],
+      retiredEntityUids: const [1435125642557611699, 1435125642557611699],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
         4809186185575546396,
         4729195407902185397,
         3922386874057685126,
-        3568183607304925893
+        3568183607304925893,
+        8107107720145537335,
+        4949612167761542987
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1291,34 +1274,8 @@ ModelDefinition getObjectBoxModel() {
 
           return object;
         }),
-    LoadChatModel: EntityDefinition<LoadChatModel>(
-        model: _entities[10],
-        toOneRelations: (LoadChatModel object) => [],
-        toManyRelations: (LoadChatModel object) => {},
-        getId: (LoadChatModel object) => object.id,
-        setId: (LoadChatModel object, int id) {
-          object.id = id;
-        },
-        objectToFB: (LoadChatModel object, fb.Builder fbb) {
-          fbb.startTable(3);
-          fbb.addInt64(0, object.id);
-          fbb.addInt64(1, object.loaded);
-          fbb.finish(fbb.endTable());
-          return object.id;
-        },
-        objectFromFB: (Store store, ByteData fbData) {
-          final buffer = fb.BufferContext(fbData);
-          final rootOffset = buffer.derefObject(0);
-
-          final object = LoadChatModel(
-              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
-              loaded:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
-
-          return object;
-        }),
     AttendanceHistoryModel: EntityDefinition<AttendanceHistoryModel>(
-        model: _entities[11],
+        model: _entities[10],
         toOneRelations: (AttendanceHistoryModel object) => [],
         toManyRelations: (AttendanceHistoryModel object) => {},
         getId: (AttendanceHistoryModel object) => object.id,
@@ -1776,44 +1733,33 @@ class AttendanceModel_ {
       QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
 }
 
-/// [LoadChatModel] entity fields to define ObjectBox queries.
-class LoadChatModel_ {
-  /// see [LoadChatModel.id]
-  static final id =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[0]);
-
-  /// see [LoadChatModel.loaded]
-  static final loaded =
-      QueryIntegerProperty<LoadChatModel>(_entities[10].properties[1]);
-}
-
 /// [AttendanceHistoryModel] entity fields to define ObjectBox queries.
 class AttendanceHistoryModel_ {
   /// see [AttendanceHistoryModel.id]
   static final id =
-      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[0]);
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[10].properties[0]);
 
   /// see [AttendanceHistoryModel.date]
   static final date =
-      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[1]);
+      QueryStringProperty<AttendanceHistoryModel>(_entities[10].properties[1]);
 
   /// see [AttendanceHistoryModel.datetime]
   static final datetime =
-      QueryStringProperty<AttendanceHistoryModel>(_entities[11].properties[2]);
+      QueryStringProperty<AttendanceHistoryModel>(_entities[10].properties[2]);
 
   /// see [AttendanceHistoryModel.latitude]
   static final latitude =
-      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[3]);
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[10].properties[3]);
 
   /// see [AttendanceHistoryModel.longitude]
   static final longitude =
-      QueryDoubleProperty<AttendanceHistoryModel>(_entities[11].properties[4]);
+      QueryDoubleProperty<AttendanceHistoryModel>(_entities[10].properties[4]);
 
   /// see [AttendanceHistoryModel.status]
   static final status =
-      QueryIntegerProperty<AttendanceHistoryModel>(_entities[11].properties[5]);
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[10].properties[5]);
 
   /// see [AttendanceHistoryModel.server]
   static final server =
-      QueryBooleanProperty<AttendanceHistoryModel>(_entities[11].properties[6]);
+      QueryBooleanProperty<AttendanceHistoryModel>(_entities[10].properties[6]);
 }
