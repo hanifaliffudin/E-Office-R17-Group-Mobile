@@ -54,6 +54,15 @@ class FriendMessageCardGroup extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          color.length < 40 ?
+                          Text(name,
+                            style: TextStyle(
+                              color: Colors.black,
+                              // color: Color(int.parse(color.substring(40, color.length-3), radix: 16) + 0xFF000000),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                              :
                           Text(name,
                             style: TextStyle(
                                 color: Color(int.parse(color.substring(40, color.length-3), radix: 16) + 0xFF000000),

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
@@ -35,14 +35,12 @@ class _NeedSignState extends State<NeedSign> {
     super.dispose();
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Need Sign'.toUpperCase(),
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 17
           ),
         ),
@@ -51,10 +49,10 @@ class _NeedSignState extends State<NeedSign> {
           Theme(
             data: Theme.of(context).copyWith(
               dividerColor: Colors.white,
-              textTheme: TextTheme().apply(bodyColor: Colors.white),
+              textTheme: const TextTheme().apply(bodyColor: Colors.white),
             ),
             child: PopupMenuButton<int>(
-              icon: Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_vert),
               color: Colors.white,
               onSelected: (item) => onSelected(context, item),
               itemBuilder: (context) => [
@@ -111,8 +109,11 @@ class _NeedSignState extends State<NeedSign> {
                 );
               }
               else{
+                DateTime now = DateTime.now();
+                DateTime date = DateTime(now.year, now.month, now.day);
+
                 return Container(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -189,21 +190,21 @@ class _NeedSignState extends State<NeedSign> {
                               }
                             },
                             child: Container(
-                            margin: EdgeInsets.only(bottom: 5),
+                            margin: const EdgeInsets.only(bottom: 5),
                             height: 95,
                             width: 500,
                             child: Card(
-                              margin: EdgeInsets.symmetric(vertical: 3),
+                              margin: const EdgeInsets.symmetric(vertical: 3),
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
                                 child: Stack(
                                   children: [
-                                    Positioned(
+                                    const Positioned(
                                       left: 0,
                                       top: 5,
                                       child: CircleAvatar(
                                         backgroundColor: Colors.white,
-                                        child: Icon(Icons.person),
+                                        child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
                                         radius: 25,
                                       ),
                                     ),
@@ -222,32 +223,45 @@ class _NeedSignState extends State<NeedSign> {
                                               listSurat[index].namaSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ),
                                           Text(
-                                            listSurat[index].tglSelesai!,
+                                            listSurat[index].nomorSurat!,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w400,
                                               height: 1.5,
                                             ),
                                           ),
+                                          date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
                                           Text(
-                                            listSurat[index].nomorSurat!,
+                                            DateFormat('dd MMM yyyy  H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w400,
                                               height: 1.5,
                                             ),
                                           )
+                                          :
+                                          Text(
+                                            DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.5,
+                                            ),
+                                          ),
+
                                         ],
                                       ),
                                     ),
@@ -293,7 +307,7 @@ class _NeedSignState extends State<NeedSign> {
                                       ),
                                     )
                                     :
-                                    SizedBox(),
+                                    const SizedBox(),
                                   ],
                                 ),
                               ),
@@ -304,7 +318,6 @@ class _NeedSignState extends State<NeedSign> {
                       suratSelected.isNotEmpty ?
                       ElevatedButton.icon(
                         onPressed: (){
-                          if(suratSelected.length > 1){
                             List listMapSurat = [];
 
                             for(var surat in suratSelected){
@@ -399,15 +412,6 @@ class _NeedSignState extends State<NeedSign> {
                                 ),
                               ),
                             );
-                          }
-                          else{
-                            Flushbar(
-                              backgroundColor: Colors.red,
-                              message: 'At least 2 documents must be selected.',
-                              duration: const Duration(seconds: 2),
-                            ).show(context);
-                          }
-
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(MediaQuery.of(context).size.width, 40) ,
@@ -426,7 +430,7 @@ class _NeedSignState extends State<NeedSign> {
                           ),),
                       )
                           :
-                      SizedBox()
+                      const SizedBox()
                     ],
                   ),
                 );
@@ -591,8 +595,7 @@ class _NeedSignState extends State<NeedSign> {
 
     }
     else{
-      print(response.statusCode);
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
@@ -677,8 +680,8 @@ class _NeedSignState extends State<NeedSign> {
             //
             // mains.objectbox.boxSurat.put(surat);
             EasyLoading.showSuccess('Berhasil Signing!');
-            setState(() {});
             Navigator.pop(context);
+            setState(() {});
             // Navigator.push(
             //   context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
             // );
@@ -686,7 +689,6 @@ class _NeedSignState extends State<NeedSign> {
         }
       }
       else{
-        print(signingMap['message']);
         EasyLoading.showError(signingMap['message']);
       }
     }

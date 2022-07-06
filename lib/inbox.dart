@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
@@ -31,7 +32,7 @@ class _InboxPageState extends State<InboxPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text('Inbox'.toUpperCase(),
-        style: TextStyle(
+        style: const TextStyle(
             fontSize: 17
         ),
       ),
@@ -46,7 +47,7 @@ class _InboxPageState extends State<InboxPage> {
             return Container(
                 margin: const EdgeInsets.only(top: 15.0),
                 width: MediaQuery.of(context).size.width,
-                child :Text(
+                child :const Text(
                   'No inbox yet.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -56,11 +57,11 @@ class _InboxPageState extends State<InboxPage> {
           else{
             var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox')).build();
             List<SuratModel> listSurat = queryInbox.find().toList();
-            if(listSurat.length==0){
+            if(listSurat.isEmpty){
               return Container(
                   margin: const EdgeInsets.only(top: 15.0),
                   width: MediaQuery.of(context).size.width,
-                  child :Text(
+                  child :const Text(
                     'No inbox yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -69,7 +70,7 @@ class _InboxPageState extends State<InboxPage> {
             }
             else{
               return Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: ListView.builder(
                   scrollDirection: Axis.vertical,
                   shrinkWrap: true,
@@ -104,8 +105,6 @@ class _InboxPageState extends State<InboxPage> {
                                 badgeNeedSign: queryBadge.find().first.badgeNeedSign,
                               );
 
-                              print(queryBadge.find().first.badgeInbox);
-
                               mains.objectbox.boxBadge.put(badge);
                             }
                             setState(() {});
@@ -119,16 +118,16 @@ class _InboxPageState extends State<InboxPage> {
                           );
                         },
                         child: Container(
-                          margin: EdgeInsets.only(bottom: 5),
+                          margin: const EdgeInsets.only(bottom: 5),
                           height: 95,
                           width: 500,
                           child: Card(
-                            margin: EdgeInsets.symmetric(vertical: 3),
+                            margin: const EdgeInsets.symmetric(vertical: 3),
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Stack(
                                 children: [
-                                  Positioned(
+                                  const Positioned(
                                     left: 0,
                                     top: 5,
                                     child: CircleAvatar(
@@ -145,7 +144,7 @@ class _InboxPageState extends State<InboxPage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         ConstrainedBox(
-                                          constraints: BoxConstraints(
+                                          constraints: const BoxConstraints(
                                               maxWidth: 250
                                           ),
                                           child: Text(
@@ -260,7 +259,6 @@ class _InboxPageState extends State<InboxPage> {
         if(suratMap['count']>0){
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-            print(dataSurat);
             var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('inbox')).build();
             if(query.find().isNotEmpty) {
               final surat = SuratModel(
@@ -310,18 +308,13 @@ class _InboxPageState extends State<InboxPage> {
             }
           }
         }
-        else{
-          print("inbox kosong");
-        }
       }
       else{
-        print(suratMap['code']);
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }

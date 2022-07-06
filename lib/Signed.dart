@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
@@ -53,8 +54,9 @@ class _SignedPageState extends State<SignedPage> {
                 );
               }
               else{
-                var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
-                List<SuratModel> listSurat = queryInbox.find().toList();
+                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglBuat, flags: Order.descending);
+                var query = querySigned.build();
+                List<SuratModel> listSurat = query.find().toList();
                 if(listSurat.isEmpty){
                   return Container(
                       margin: const EdgeInsets.only(top: 15.0),
@@ -156,11 +158,22 @@ class _SignedPageState extends State<SignedPage> {
                                         child: Padding(
                                             padding: const EdgeInsets.only(left: 20),
                                             child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
-                                            Text(
-                                              DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 11
-                                              ),
+                                            Column(
+                                              children: [
+                                                Text(
+                                                  DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 11
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 5,),
+                                                Text(
+                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 11
+                                                  ),
+                                                ),
+                                              ],
                                             )
                                             :
                                             Text(
@@ -267,13 +280,11 @@ class _SignedPageState extends State<SignedPage> {
         }
       }
       else{
-        print(suratMap['code']);
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }

@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
@@ -29,7 +31,7 @@ class _NeedReviewState extends State<NeedReview> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Need Review'.toUpperCase(),
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 17
           ),
         ),
@@ -43,7 +45,7 @@ class _NeedReviewState extends State<NeedReview> {
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
-                    child :Text(
+                    child :const Text(
                       'No need review yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -54,19 +56,22 @@ class _NeedReviewState extends State<NeedReview> {
                 var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove'))..order(SuratModel_.tglBuat);
                 var query = queryNeedApprove.build();
                 List<SuratModel> listSurat = query.find().reversed.toList();
-                if(listSurat.length==0){
+                if(listSurat.isEmpty){
                   return Container(
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
-                      child :Text(
+                      child :const Text(
                         'No need review yet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                       )
                   );
                 }else{
+                  DateTime now = DateTime.now();
+                  DateTime date = DateTime(now.year, now.month, now.day);
+
                   return Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: ListView.builder(
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
@@ -79,21 +84,21 @@ class _NeedReviewState extends State<NeedReview> {
                               );
                             },
                             child: Container(
-                              margin: EdgeInsets.only(bottom: 5),
+                              margin: const EdgeInsets.only(bottom: 5),
                               height: 95,
                               width: 500,
                               child: Card(
-                                margin: EdgeInsets.symmetric(vertical: 3),
+                                margin: const EdgeInsets.symmetric(vertical: 3),
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Stack(
                                     children: [
-                                      Positioned(
+                                      const Positioned(
                                         left: 0,
                                         top: 5,
                                         child: CircleAvatar(
                                           backgroundColor: Colors.white,
-                                          child: Icon(Icons.person),
+                                          child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
                                           radius: 25,
                                         ),
                                       ),
@@ -105,39 +110,51 @@ class _NeedReviewState extends State<NeedReview> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             ConstrainedBox(
-                                              constraints: BoxConstraints(
+                                              constraints: const BoxConstraints(
                                                   maxWidth: 250
                                               ),
                                               child: Text(
                                                 listSurat[index].perihal!,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].tglBuat!,
+                                              listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
                                                 height: 1.5,
                                               ),
                                             ),
+                                            date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
                                             Text(
-                                              listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
+                                              DateFormat('dd MMM yyyy  H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
                                                 height: 1.5,
                                               ),
                                             )
+                                            :
+                                            Text(
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -251,11 +268,11 @@ class _NeedReviewState extends State<NeedReview> {
         }
       }
       else{
-        print(suratMap['message']);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
