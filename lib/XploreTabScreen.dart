@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/NeedReview.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
@@ -9,7 +10,7 @@ import 'package:militarymessenger/tracking.dart';
 import 'objectbox.g.dart';
 import 'package:badges/badges.dart';
 import 'document.dart';
-import 'package:militarymessenger/needSign.dart';
+import 'package:militarymessenger/NeedSign.dart';
 import 'package:militarymessenger/inbox.dart';
 import 'package:militarymessenger/Signed.dart';
 import 'package:militarymessenger/document.dart';
@@ -34,6 +35,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     getBadgeInbox();
     getBadgeSign();
     getBadgeNeedApprove();
+    getBadgeMeterai();
     getRecent();
     super.initState();
   }
@@ -97,34 +99,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const SignedPage()),
-                      );
-                    },
-                    child: Column(
-                      children: const [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Color(0xFFE49D23),
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
-                            backgroundColor: Color(0xFFE49D23),
-                            radius: 20,
-                          ),
-                        ),
-                        Text(
-                          'Signed',
-                          style: TextStyle(
-                            height: 2,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const NeedSign()),
                       );
                     },
@@ -167,14 +141,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
@@ -209,8 +175,44 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             ),
                           ),
                         ),
-                        Text(
+                        const Text(
                           'Need Review',
+                          style: TextStyle(
+                            height: 2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => const SignedPage()),
+                      );
+                    },
+                    child: Column(
+                      children: const [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Color(0xFFE49D23),
+                          child: CircleAvatar(
+                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
+                            backgroundColor: Color(0xFFE49D23),
+                            radius: 20,
+                          ),
+                        ),
+                        Text(
+                          'Signed',
                           style: TextStyle(
                             height: 2,
                             fontSize: 10,
@@ -247,7 +249,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             ),
                           ),
                         ),
-                        Text(
+                        const Text(
                           'Canceled',
                           style: TextStyle(
                             height: 2,
@@ -285,7 +287,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             ),
                           ),
                         ),
-                        Text(
+                        const Text(
                           'Tracking',
                           style: TextStyle(
                             height: 2,
@@ -343,8 +345,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           );
                         }
                         else{
-                          var queryNeedApprove = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history'))..order(SuratModel_.tglBuat);
-                          var query = queryNeedApprove.build();
+                          var queryRecents = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history'))..order(SuratModel_.tglBuat);
+                          var query = queryRecents.build();
                           List<SuratModel> listSurat = query.find().reversed.toList();
                           if(listSurat.isEmpty){
                             return Container(
@@ -358,8 +360,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                             );
                           }
                           else{
-                            DateTime now = new DateTime.now();
-                            DateTime date = new DateTime(now.year, now.month, now.day);
+                            DateTime now = DateTime.now();
+                            DateTime date = DateTime(now.year, now.month, now.day);
 
                             return ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
@@ -399,68 +401,66 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                       }
                                     },
                                     child: Card(
-                                      margin: EdgeInsets.symmetric(vertical: 5),
+                                      margin: const EdgeInsets.symmetric(vertical: 5),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                              child: Row(
-                                                children: [
-                                                  Container(
-                                                    margin: EdgeInsets.only(right: 10.0),
-                                                    child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
-                                                  ),
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      ConstrainedBox(
-                                                        constraints: BoxConstraints(
-                                                            maxWidth: 200
-                                                        ),
-                                                        child: Text(listSurat[index].namaSurat!,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                          style: TextStyle(fontWeight: FontWeight.bold),),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  margin: const EdgeInsets.only(right: 10.0),
+                                                  child: const Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    ConstrainedBox(
+                                                      constraints: const BoxConstraints(
+                                                          maxWidth: 200
                                                       ),
-                                                      SizedBox(height: 5,),
-                                                      date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
-                                                      Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
-                                                          :
-                                                      Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
-                                                      SizedBox(height: 5,),
-                                                      Text(listSurat[index].status!),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
+                                                      child: Text(listSurat[index].namaSurat!,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(fontWeight: FontWeight.bold),),
+                                                    ),
+                                                    const SizedBox(height: 5,),
+                                                    date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                                    Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                                        :
+                                                    Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                                    const SizedBox(height: 5,),
+                                                    Text(listSurat[index].status!),
+                                                  ],
+                                                ),
+                                              ],
                                             ),
-                                            Container(
+                                            SizedBox(
                                               height: 50,
                                               width: 30,
 
                                               child:
                                               listSurat[index].status == "APPROVE" ?
-                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                              const Image(image: AssetImage("assets/icons/approve.png"))
                                                   :
                                               listSurat[index].status == "RETURN" ?
-                                              Image(image: AssetImage("assets/icons/return.png"))
+                                              const Image(image: AssetImage("assets/icons/return.png"))
                                                   :
                                               listSurat[index].status == "REJECT" ?
-                                              Image(image: AssetImage("assets/icons/reject.png"))
+                                              const Image(image: AssetImage("assets/icons/reject.png"))
                                                   :
                                               listSurat[index].status == "READ" ?
-                                              Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                              const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
                                                   :
                                               listSurat[index].status == "SUBMIT" ?
-                                              Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                              const Icon(Icons.upload_file_rounded, color: Colors.black,)
                                                   :
                                               listSurat[index].status == "APPROVED" ?
-                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                              const Image(image: AssetImage("assets/icons/approve.png"))
                                                   :
                                               listSurat[index].status == "SIGNED" ?
-                                              Image(image: AssetImage("assets/icons/approve.png"))
+                                              const Image(image: AssetImage("assets/icons/approve.png"))
                                                   :
                                               Container()
                                               ,
@@ -533,12 +533,11 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
           }
       }
       else{
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
@@ -585,12 +584,11 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
           }
       }
       else{
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
@@ -633,17 +631,69 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
               badgeNeedApprove: suratMap['total'],
             );
 
-            // mains.objectbox.boxBadge.put(badge);
+            mains.objectbox.boxBadge.put(badge);
             setState(() {});
           }
       }
       else{
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
+    }
+    return response;
+  }
+
+  Future<http.Response> getBadgeMeterai() async {
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeMeterai';
+
+    Map<String, dynamic> data = {
+
+      'payload': {
+        'id_user': mains.objectbox.boxUser.get(1)!.userId,
+      }
+    };
+
+    //encode Map to JSON
+    //var body = "?api_key="+this.apiKey;
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      // print("${response.body}");
+      Map<String, dynamic> suratMap = jsonDecode(response.body);
+
+      if(suratMap['message'] == 'success' ){
+          var query = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
+          if(query.find().isNotEmpty) {
+            var badge = BadgeModel(
+              id: 1,
+              badgeInbox: query.find().first.badgeInbox,
+              badgeNeedSign: query.find().first.badgeNeedSign,
+              badgeNeedApprove: query.find().first.badgeNeedApprove,
+              badgeMeterai: suratMap['data']
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }else{
+            var badge = BadgeModel(
+              badgeNeedApprove: suratMap['data'],
+            );
+
+            mains.objectbox.boxBadge.put(badge);
+            setState(() {});
+          }
+      }
+      else{
+        EasyLoading.showError(suratMap['message']);
+      }
+    }
+    else{
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
@@ -696,13 +746,11 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
         }
       }
       else{
-        print(suratMap['code']);
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }

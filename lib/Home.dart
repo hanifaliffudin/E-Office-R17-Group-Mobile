@@ -107,7 +107,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         _openDialogAutoLogout(context);
       }
       RemoteNotification notification = message.notification!;
-      AndroidNotification android = message.notification!.android!;
       flutterLocalNotificationsPlugin.show(
         notification.hashCode,
         notification.title,
@@ -606,6 +605,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    // mains.objectbox.boxChat.removeAll();
+    // mains.objectbox.boxConversation.removeAll();
     // get all messages
     List<ChatModel> listChat = mains.objectbox.boxChat.getAll();
     if (listChat.isEmpty) {
@@ -613,12 +614,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       getAllMessages();
     }
 
-    DateTime now = DateTime.now();
-// mains.objectbox.boxAttendance.removeAll();
-// mains.objectbox.boxAttendanceHistory.removeAll();
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      // _locationService();
+      _locationService();
     });
 
     _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
@@ -1570,9 +1567,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       Map<String, dynamic> userMap = jsonDecode(response.body);
 
       if (userMap['code_status'] == 0) {
-        // print('ini fcm hasil check fcm api: ${userMap['fcm_token']}');
-        // print('ini fcm di objectbox manggil di home: ${mains.objectbox.boxUser.get(1)!.fcmToken}');
-        // print('fcm same: ${userMap['same']}');
         if (userMap['same'] == 1) {
           getDataUser();
         } else {
@@ -1580,7 +1574,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           _openDialogAutoLogout(context);
         }
       } else {
-        print("ada yang salah!");
         print(userMap['code_status']);
         print(userMap['error']);
       }
@@ -1613,7 +1606,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         contactData = userMap['data'];
         for (int i = 0; i < userMap['data'].length; i++) {
           contactList = Map<String, dynamic>.from(userMap['data'][i]);
-          // contactName = contactList['name'];
           nameList.insert(i, contactList['name']);
 
           var query = mains.objectbox.boxContact
@@ -1674,185 +1666,429 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       body: jsonEncode(data),
     );
     if (response.statusCode == 200) {
-      // print(response.body);
+
       Map<String, dynamic> messagesMap = jsonDecode(response.body);
 
       if (messagesMap['code_status'] == 0) {
+        List chatList = mains.objectbox.boxChat.getAll();
+
         int messagesLength = messagesMap['array_messages'].length;
         for(int i = 0; i < messagesLength; i++) {
           var dataMessage = Map<String, dynamic>.from(jsonDecode(messagesMap['array_messages'][i]));
-          // our messages
-          if(dataMessage['id_sender'] == mains.objectbox.boxUser.get(1)!.userId){
-            // if message is image
-            if (dataMessage['msg_tipe'] == "image") {
-              var contentImage =
-              _createImageFromUint(base64.decode(dataMessage['img_data']));
+          // personal messages
+          if(dataMessage['type'] == 'pm'){
+            // our messages
+            if(dataMessage['id_sender'] == mains.objectbox.boxUser.get(1)!.userId){
+              var query = mains.objectbox.boxConversation.query(ConversationModel_.idReceiver.equals(dataMessage['id_receiver'])).build();
 
-              final chat = ChatModel(
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: 'image',
-                date: dataMessage['msg_date'],
-                tipe: 'image',
-                content: await contentImage,
-                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
-                delivered: dataMessage['delivered'],
-                read: dataMessage['read'],
-              );
 
-              mains.objectbox.boxChat.put(chat);
+              ConversationModel objConversation;
+
+              if(query.find().isNotEmpty) {
+                objConversation = ConversationModel(
+                    id: query.find().first.id,
+                    idReceiver: dataMessage['id_receiver'],
+                    fullName: dataMessage['name_receiver'],
+                    image: '',
+                    message: dataMessage['msg_data'],
+                    photoProfile: query.find().first.photoProfile,
+                    date: dataMessage['msg_date'],
+                    roomId: dataMessage['room_id'] ,
+                    messageCout: 0
+                );
+                idConversation = mains.objectbox.boxConversation.put(objConversation);
+              }
+              else{
+                objConversation = ConversationModel(
+                  id: 0,
+                  idReceiver: dataMessage['id_receiver'],
+                  fullName: dataMessage['name_receiver'],
+                  image: '',
+                  photoProfile: '',
+                  date: dataMessage['msg_date'],
+                  roomId: dataMessage['room_id'],
+                  message: dataMessage['msg_data'],
+                  messageCout: 0,
+                );
+                idConversation = mains.objectbox.boxConversation.put(objConversation);
+              }
+
+              // if message is image
+              if (dataMessage['msg_tipe'] == "image") {
+                var contentImage =
+                _createImageFromUint(base64.decode(dataMessage['img_data']));
+
+                final chat = ChatModel(
+                  id: chatList.isEmpty ? 0 : dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: 'image',
+                  date: dataMessage['msg_date'],
+                  tipe: 'image',
+                  content: await contentImage,
+                  sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                  delivered: dataMessage['delivered'],
+                  read: dataMessage['read'],
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is file
+              else if (dataMessage['msg_tipe'] == "file") {
+                var contentFile =
+                _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+                final chat = ChatModel(
+                  id: chatList.isEmpty ? 0 : dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'file',
+                  content: await contentFile,
+                  sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                  delivered: dataMessage['delivered'],
+                  read: dataMessage['read'],
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is text
+              else {
+                //update Chat Model
+                final chat = ChatModel(
+                  id: chatList.isEmpty ? 0 : dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'text',
+                  content: null,
+                  sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
+                  delivered: dataMessage['delivered'],
+                  read: dataMessage['read'],
+                );
+                mains.objectbox.boxChat.put(chat);
+              }
             }
-            // if message is file
-            else if (dataMessage['msg_tipe'] == "file") {
-              var contentFile =
-              _createFileFromUint(base64.decode(dataMessage['file_data']));
+            // someone else's message
+            else{
+              var query = mains.objectbox.boxConversation
+                  .query(ConversationModel_.idReceiver.equals(dataMessage['id_sender']))
+                  .build();
+              if (query.find().isNotEmpty) {
 
-              final chat = ChatModel(
-                idChatFriends: dataMessage['id_chat_model'],
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: dataMessage['msg_data'],
-                date: dataMessage['msg_date'],
-                tipe: 'file',
-                content: await contentFile,
-                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
-                delivered: dataMessage['delivered'],
-                read: dataMessage['read'],
-              );
+                ConversationModel objConversation = ConversationModel(
+                    id: query.find().first.id,
+                    idReceiver: dataMessage['id_sender'],
+                    fullName: dataMessage['name_sender'],
+                    image: query.find().first.image,
+                    photoProfile: dataMessage['photo'],
+                    message: dataMessage['msg_data'],
+                    date: dataMessage['msg_date'],
+                    messageCout: 0,
+                    statusReceiver: query.find().first.statusReceiver,
+                    roomId: dataMessage['room_id']);
+                mains.objectbox.boxConversation.put(objConversation);
+              } else {
+                ConversationModel objConversation = ConversationModel(
+                    id: 0,
+                    idReceiver: dataMessage['id_sender'],
+                    fullName: dataMessage['name_sender'],
+                    image: '',
+                    photoProfile: dataMessage['photo'],
+                    message: dataMessage['msg_data'],
+                    date: dataMessage['msg_date'],
+                    messageCout: 0,
+                    statusReceiver: '',
+                    roomId: dataMessage['room_id']);
+                mains.objectbox.boxConversation.put(objConversation);
+              }
 
-              mains.objectbox.boxChat.put(chat);
-            }
-            // if message is text
-            else {
-              //update Chat Model
-              final chat = ChatModel(
-                idChatFriends: dataMessage['id_chat_model'],
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: dataMessage['msg_data'],
-                date: dataMessage['msg_date'],
-                tipe: 'text',
-                content: null,
-                sendStatus: dataMessage['read'] == 1 ? 'R' : dataMessage['delivered'] == 1 ? 'D' : ' ',
-                delivered: dataMessage['delivered'],
-                read: dataMessage['read'],
-              );
-              mains.objectbox.boxChat.put(chat);
+              // if message is image
+              if (dataMessage['msg_tipe'] == "image") {
+                var contentImage =
+                _createImageFromUint(base64.decode(dataMessage['img_data']));
+
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: "image",
+                  date: dataMessage['msg_date'],
+                  tipe: 'image',
+                  content: await contentImage,
+                  sendStatus: '',
+                  delivered: 0,
+                  read: 0,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is file
+              else if (dataMessage['msg_tipe'] == "file") {
+                var contentFile =
+                _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'file',
+                  content: await contentFile,
+                  sendStatus: '',
+                  delivered: 0,
+                  read: 0,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is text
+              else {
+                //update Chat Model
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  idReceiver: dataMessage['id_receiver'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'text',
+                  sendStatus: '',
+                  content: null,
+                  delivered: 0,
+                  read: 0,
+                );
+                mains.objectbox.boxChat.put(chat);
+              }
             }
           }
-          // someone else's message
+          // group messages
           else{
+
+            List<int> idReceivers =
+            json.decode(dataMessage['id_receivers']).cast<int>();
+            idReceivers.removeWhere(
+                    (element) => element == mains.objectbox.boxUser.get(1)!.userId);
+            idReceivers.add(dataMessage['id_sender']);
+
             var query = mains.objectbox.boxConversation
-                .query(ConversationModel_.idReceiver.equals(dataMessage['id_sender']))
+                .query(ConversationModel_.roomId.equals(dataMessage['room_id']))
                 .build();
             if (query.find().isNotEmpty) {
-              int? count = query.find().first.messageCout;
-              // if (count == null) {
-              //   count = 1;
-              // } else if(dataMessage['read'] == 0){
-              //   count = count + 1;
-              // }
-
               ConversationModel objConversation = ConversationModel(
-                  id: query.find().first.id,
-                  idReceiver: dataMessage['id_sender'],
-                  fullName: dataMessage['name_sender'] == ''
-                      ? query.find().first.fullName
-                      : dataMessage['name_sender'],
-                  image: query.find().first.image,
-                  photoProfile: dataMessage['photo'] == ''
-                      ? query.find().first.photoProfile
-                      : dataMessage['photo'],
-                  message: dataMessage['msg_data'],
-                  date: dataMessage['msg_date'],
-                  messageCout: count,
-                  statusReceiver: query.find().first.statusReceiver,
-                  roomId: dataMessage['room_id']);
+                id: query.find().first.id,
+                idReceiversGroup: json.encode(idReceivers),
+                fullName: dataMessage['group_name'],
+                image: query.find().first.image,
+                photoProfile: '',
+                message: "${dataMessage['name_sender']}: ${dataMessage['msg_data']}",
+                date: dataMessage['msg_date'],
+                messageCout: 0,
+                statusReceiver: query.find().first.statusReceiver,
+                roomId: dataMessage['room_id'],
+              );
               mains.objectbox.boxConversation.put(objConversation);
             } else {
               ConversationModel objConversation = ConversationModel(
-                  id: 0,
-                  idReceiver: dataMessage['id_sender'],
-                  fullName: dataMessage['name_sender'],
-                  image: '',
-                  photoProfile: dataMessage['photo'] == null ? '' : dataMessage['photo'],
-                  message: dataMessage['msg_data'],
-                  date: dataMessage['msg_date'],
-                  messageCout: 0,
-                  statusReceiver: '',
-                  roomId: dataMessage['room_id']);
+                id: 0,
+                idReceiversGroup: json.encode(idReceivers),
+                fullName: dataMessage['group_name'],
+                image: '',
+                photoProfile: '',
+                message: "${dataMessage['name_sender']}: ${dataMessage['msg_data']}",
+                date: dataMessage['msg_date'],
+                messageCout: 0,
+                statusReceiver: '',
+                roomId: dataMessage['room_id'],
+              );
               mains.objectbox.boxConversation.put(objConversation);
             }
 
-            // if message is image
-            if (dataMessage['msg_tipe'] == "image") {
-              var contentImage =
-              _createImageFromUint(base64.decode(dataMessage['img_data']));
+            //our messages
+            if(dataMessage['id_sender'] == mains.objectbox.boxUser.get(1)!.userId){
+              // if message is image
+              if (dataMessage['msg_tipe'] == "image") {
+                var contentImage =
+                _createFileFromUint(base64.decode(dataMessage['img_data']));
 
-              final chat = ChatModel(
-                idChatFriends: dataMessage['id_chat_model'],
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: "image",
-                date: dataMessage['msg_date'],
-                tipe: 'image',
-                content: await contentImage,
-                sendStatus: '',
-                delivered: 0,
-                read: 0,
-              );
+                final chat = ChatModel(
+                  id: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: "Photo",
+                  date: dataMessage['msg_date'],
+                  tipe: 'image',
+                  content: await contentImage,
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                );
 
-              mains.objectbox.boxChat.put(chat);
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is file
+              else if (dataMessage['msg_tipe'] == "file") {
+                var contentFile =
+                _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+                final chat = ChatModel(
+                  id: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'file',
+                  content: await contentFile,
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is text
+              else if (dataMessage['msg_tipe'] == "text") {
+                //update Chat Model
+                final chat = ChatModel(
+                  id: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                  tipe: 'text',
+                  content: null,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is system
+              else {
+                final chat = ChatModel(
+                  id: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                  tipe: 'system',
+                  content: null,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
             }
-            // if message is file
-            else if (dataMessage['msg_tipe'] == "file") {
-              var contentFile =
-              _createFileFromUint(base64.decode(dataMessage['file_data']));
+            // someone else's message
+            else{
+              // if message is image
+              if (dataMessage['msg_tipe'] == "image") {
+                var contentImage =
+                _createFileFromUint(base64.decode(dataMessage['img_data']));
 
-              final chat = ChatModel(
-                idChatFriends: dataMessage['id_chat_model'],
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: dataMessage['msg_data'],
-                date: dataMessage['msg_date'],
-                tipe: 'file',
-                content: await contentFile,
-                sendStatus: '',
-                delivered: 0,
-                read: 0,
-              );
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: "Photo",
+                  date: dataMessage['msg_date'],
+                  tipe: 'image',
+                  content: await contentImage,
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                );
 
-              mains.objectbox.boxChat.put(chat);
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is file
+              else if (dataMessage['msg_tipe'] == "file") {
+                var contentFile =
+                _createFileFromUint(base64.decode(dataMessage['file_data']));
+
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  tipe: 'file',
+                  content: await contentFile,
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is text
+              else if (dataMessage['msg_tipe'] == "text") {
+                //update Chat Model
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                  tipe: 'text',
+                  content: null,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
+              // if message is system
+              else {
+                final chat = ChatModel(
+                  idChatFriends: dataMessage['id_chat_model'],
+                  idSender: dataMessage['id_sender'],
+                  nameSender: dataMessage['name_sender'],
+                  idRoom: dataMessage['room_id'],
+                  idReceiversGroup: dataMessage['id_receivers'],
+                  text: dataMessage['msg_data'],
+                  date: dataMessage['msg_date'],
+                  sendStatus: ' ',
+                  delivered: dataMessage['delivered'],
+                  read: 0,
+                  tipe: 'system',
+                  content: null,
+                );
+
+                mains.objectbox.boxChat.put(chat);
+              }
             }
-            // if message is text
-            else {
-              //update Chat Model
-              final chat = ChatModel(
-                idChatFriends: dataMessage['id_chat_model'],
-                idSender: dataMessage['id_sender'],
-                idReceiver: dataMessage['id_receiver'],
-                text: dataMessage['msg_data'],
-                date: dataMessage['msg_date'],
-                tipe: 'text',
-                sendStatus: '',
-                content: null,
-                delivered: 0,
-                read: 0,
-              );
-              mains.objectbox.boxChat.put(chat);
-            }
+
           }
+
+
           if(i == messagesLength/4){
-            print('ini message ke ${i}');
             setState(() {});
           }else if(i == messagesLength/2){
-            print('ini message ke ${i}');
             setState(() {});
           }else if(i == messagesLength*0.75){
-            print('ini message ke ${i}');
             setState(() {});
           }else if(i == messagesLength){
-            print('ini message ke ${i}');
             setState(() {});
           }
         }

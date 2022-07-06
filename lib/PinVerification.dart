@@ -229,12 +229,10 @@ class PinVerificationState extends State<PinVerification> {
     );
 
     if(response.statusCode == 200){
-      // print("${response.body}");
       EasyLoading.showToast('Sending OTP...');
     }
     else{
       EasyLoading.showError('${response.statusCode}, failed to send OTP.');
-      // pinFailedSnackBar(context,"Email gagal dikirim!");
     }
     return response;
   }
