@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/style.dart';
+import 'package:get/instance_manager.dart';
 import 'package:intl/intl.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
@@ -13,11 +16,21 @@ class Attendance extends StatefulWidget {
 }
 
 class _AttendanceState extends State<Attendance> {
+  final StateController _stateController = Get.put(StateController());
   List<AttendanceModel> _attedanceList = [];
 
   @override
   void initState() {
     super.initState();
+
+    _stateController.changeInAttendance(true);
+  }
+
+  @override
+  void dispose() {
+    _stateController.changeInAttendance(false);
+
+    super.dispose();
   }
 
   @override
@@ -83,40 +96,59 @@ class _AttendanceState extends State<Attendance> {
                           ),
                           child: Row(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  right: 5.0,
-                                ),
-                                child: Text(
-                                  // DateFormat('dd-MM-yyyy').format(DateTime.parse(_attedanceList[index].checkInAt!)),
-                                  _attedanceList[index].date!,
-                                ),
-                              ),
                               Expanded(
                                 flex: 1,
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      DateFormat('EEEE').format(DateTime.parse(_attedanceList[index].checkInAt!)),
+                                      style: const TextStyle(
+                                        fontSize: 12.0,
+                                        // color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                    Text(
+                                      DateFormat('dd MMMM yyyy').format(DateTime.parse(_attedanceList[index].checkInAt!)),
+                                      // '31 December 2022',
+                                      style: const TextStyle(
+                                        fontSize: 13.0,
+                                        // color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: 170.0,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                        bottom: 5.0,
+                                        bottom: 7.0,
                                       ),
                                       child: Row(
                                         children: [
-                                          const SizedBox(
-                                            width: 100.0,
+                                          const Expanded(
+                                            flex: 1,
                                             child: Text(
                                               'Check in',
-                                              textAlign: TextAlign.end
+                                              textAlign: TextAlign.end,
+                                              style: TextStyle(
+                                                fontSize: 13.5,
+                                              ),
                                             ),
                                           ),
-                                          Expanded(
-                                            flex: 1,
+                                          SizedBox(
+                                            width: 88.0,
                                             child: Padding(
                                               padding: const EdgeInsets.only(left: 10.0),
                                               child: Text(
-                                                DateFormat('HH:mm:ss').format(DateTime.parse(_attedanceList[index].checkInAt!)),
+                                                DateFormat('HH:mm').format(DateTime.parse(_attedanceList[index].checkInAt!)),
                                                 textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -125,20 +157,26 @@ class _AttendanceState extends State<Attendance> {
                                     ),
                                     Row(
                                       children: [
-                                        const SizedBox(
-                                          width: 100.0,
+                                        const Expanded(
+                                          flex: 1,
                                           child: Text(
                                             'Check out',
                                             textAlign: TextAlign.end,
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                            ),
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 1,
+                                        SizedBox(
+                                          width: 88.0,
                                           child: Padding(
                                             padding: const EdgeInsets.only(left: 10.0),
                                             child: Text(
-                                              _attedanceList[index].status == 0 ? DateFormat('HH:mm:ss').format(DateTime.parse(_attedanceList[index].checkOutAt!)) : '-',
-                                              textAlign: TextAlign.center
+                                              _attedanceList[index].status == 0 ? DateFormat('HH:mm').format(DateTime.parse(_attedanceList[index].checkOutAt!)) : '-',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           )
                                         ),

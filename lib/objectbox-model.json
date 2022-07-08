@@ -621,9 +621,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "13:6077117816353556383",
+      "lastPropertyId": "3:5656664121130420701",
+      "name": "GroupNotifModel",
+      "properties": [
+        {
+          "id": "1:4672031682674208110",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7456693257277162964",
+          "name": "roomId",
+          "type": 6
+        },
+        {
+          "id": "3:5656664121130420701",
+          "name": "notifId",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "12:5002030077723218516",
+  "lastEntityId": "13:6077117816353556383",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

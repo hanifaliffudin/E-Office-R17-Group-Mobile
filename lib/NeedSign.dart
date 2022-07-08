@@ -46,36 +46,30 @@ class _NeedSignState extends State<NeedSign> {
         ),
         centerTitle: true,
         actions: [
-          Theme(
-            data: Theme.of(context).copyWith(
-              dividerColor: Colors.white,
-              textTheme: const TextTheme().apply(bodyColor: Colors.white),
-            ),
-            child: PopupMenuButton<int>(
-              icon: const Icon(Icons.more_vert),
-              color: Colors.white,
-              onSelected: (item) => onSelected(context, item),
-              itemBuilder: (context) => [
-                const PopupMenuItem<int>(
-                  value: 0,
-                  child: Text('Select All',
-                    style: TextStyle(
-                        fontSize: 15
-                    ),
+          PopupMenuButton<int>(
+            icon: const Icon(Icons.more_vert),
+            color: Colors.white,
+            onSelected: (item) => onSelected(context, item),
+            itemBuilder: (context) => [
+              const PopupMenuItem<int>(
+                value: 0,
+                child: Text('Select All',
+                  style: TextStyle(
+                      fontSize: 15
                   ),
-                  textStyle: TextStyle(color: Colors.black,fontSize: 17),
                 ),
-                const PopupMenuItem<int>(
-                  value: 1,
-                  child: Text('Cancel',
-                    style: TextStyle(
-                        fontSize: 15
-                    ),
+                textStyle: TextStyle(color: Colors.black,fontSize: 17),
+              ),
+              const PopupMenuItem<int>(
+                value: 1,
+                child: Text('Cancel',
+                  style: TextStyle(
+                      fontSize: 15
                   ),
-                  textStyle: TextStyle(color: Colors.black,fontSize: 17),
                 ),
-              ],
-            ),
+                textStyle: TextStyle(color: Colors.black,fontSize: 17),
+              ),
+            ],
           ),
         ],
       ),

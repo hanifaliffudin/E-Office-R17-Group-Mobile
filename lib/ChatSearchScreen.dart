@@ -336,16 +336,27 @@ class _MyWidgetState extends State<ChatSearchScreen> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _chats.length,
               itemBuilder: (BuildContext context, index) {
-                ContactModel contact = ContactModel();
-                Query<ContactModel> query;
+                ContactModel contact = ContactModel(
+                  userName: 'Unknown user',
+                );
+                Query<ContactModel>? query;
 
                 if (_self.userId != _chats[index].idSender) {
                   query = mains.objectbox.boxContact.query(ContactModel_.userId.equals(_chats[index].idSender!)).build();
                 } else {
-                  query = mains.objectbox.boxContact.query(ContactModel_.userId.equals(_chats[index].idReceiver!)).build();
+                  if (_chats[index].idReceiver != null) {
+                    query = mains.objectbox.boxContact.query(ContactModel_.userId.equals(_chats[index].idReceiver!)).build();
+                  } else {
+                    query = null;
+                  }
                 }
 
-                contact = query.find().first;
+                if (query != null) {
+                  if (query.find().isNotEmpty) {
+                    contact = query.find().first;
+                  }
+                }
+
                 DateTime now = DateTime.now();
                 DateTime date2 = DateTime.parse(_chats[index].date);
                 String desc = "";

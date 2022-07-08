@@ -6,12 +6,15 @@ import 'dart:io' as Io;
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:militarymessenger/ProfileInfo.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/cards/friend_message_card_personal.dart';
 import 'package:militarymessenger/cards/my_message_card_personal.dart';
+import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,6 +29,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
+import 'main.dart';
 
 int lastConnection = 0;
 
@@ -54,6 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final itemKey = GlobalKey();
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  final StateController _stateController = Get.put(StateController());
 
   _ChatScreenState(this.conversation, this.roomId, this.chatFocus);
   int? idUser;
@@ -70,14 +75,15 @@ class _ChatScreenState extends State<ChatScreen> {
     // TODO: implement initState
     idUser = mains.objectbox.boxUser.get(1)?.userId;
     idReceiver = conversation?.idReceiver;
-
+    _stateController.changeFromRoomId(roomId!);
+    
     // var semua = mains.objectbox.boxChat.query( (ChatModel_.idReceiver.equals(idReceiver!) & (ChatModel_.idSender.equals(idUser!)))).build();
     // List<ChatModel> listSemua = semua.find().toList();
     // for(int i=0;i<listSemua.length;i++){
     //   print('id: ${listSemua[i].id}');
     //   print('text: ${listSemua[i].text}');
     // }
-
+    _removeNotifByRoomId();
 
     //update others chat read when open chat
     int checkChatsRead(){
@@ -257,6 +263,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose(){
     timer?.cancel();
+    _stateController.changeFromRoomId(0);
     super.dispose();
   }
 
@@ -373,7 +380,19 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void chatOnSwipe(ChatModel chat) {
+  void _removeNotifByRoomId() {
+    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.roomId.equals(roomId!)).build();
+
+    if (query.find().isNotEmpty) {
+      List<GroupNotifModel> groupNotifs = query.find().toList();
+
+      for (var i = 0; i < groupNotifs.length; i++) {
+        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].notifId!);
+      }
+    }
+  }
+
+  void _chatOnSwipe(ChatModel chat) {
     print(chat.text);
   }
 
@@ -584,7 +603,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               itemScrollController.jumpTo(
                                 index: indexFocus,
-                                alignment: 0.4,
+                                alignment: chats.length > 14 ? 0.4 : 0,
                               );
                             });
                           }
@@ -640,7 +659,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                               var content = chats[index].idSender == idUser ?
                                 SwipeTo(
-                                  onRightSwipe: () => chatOnSwipe(chats[index]),
+                                  onRightSwipe: () => _chatOnSwipe(chats[index]),
                                   child: chats[index].tipe == 'text' ?
                                     //    text
                                     MyMessageCardPersonal(
@@ -674,7 +693,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     )
                                 ) : chats[index].idSender == idReceiver ?
                                 SwipeTo(
-                                  onLeftSwipe: () => chatOnSwipe(chats[index]),
+                                  onLeftSwipe: () => _chatOnSwipe(chats[index]),
                                   child: chats[index].tipe == 'text' ?
                                     FriendMessageCardPersonal(
                                       chats[index].text,
@@ -803,6 +822,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         keyboardType: TextInputType.multiline,
                                         controller: inputTextController,
                                         focusNode: _focusNode,
+                                        textCapitalization: TextCapitalization.sentences,
                                         onChanged: (text) {
                                           if (!_isWriting){
                                             _isWriting = true;
