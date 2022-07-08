@@ -10,14 +10,14 @@ import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
-class SignedPage extends StatefulWidget {
-  const SignedPage({Key? key}) : super(key: key);
+class CanceledPage extends StatefulWidget {
+  const CanceledPage({Key? key}) : super(key: key);
 
   @override
-  _SignedPageState createState() => _SignedPageState();
+  _CanceledPageState createState() => _CanceledPageState();
 }
 
-class _SignedPageState extends State<SignedPage> {
+class _CanceledPageState extends State<CanceledPage> {
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _SignedPageState extends State<SignedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Signed'.toUpperCase(),
+        title: Text('Canceled'.toUpperCase(),
           style: const TextStyle(
               fontSize: 17
           ),
@@ -47,14 +47,14 @@ class _SignedPageState extends State<SignedPage> {
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
                     child : const Text(
-                      'No signed yet.',
+                      'No canceled yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                     )
                 );
               }
               else{
-                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglBuat, flags: Order.descending);
+                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('canceled'))..order(SuratModel_.tglBuat, flags: Order.descending);
                 var query = querySigned.build();
                 List<SuratModel> listSurat = query.find().toList();
                 if(listSurat.isEmpty){
@@ -62,7 +62,7 @@ class _SignedPageState extends State<SignedPage> {
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
                       child :const Text(
-                        'No signed yet.',
+                        'No canceled yet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
                       )
@@ -158,38 +158,38 @@ class _SignedPageState extends State<SignedPage> {
                                           ],
                                         ),
                                       ),
-                                      Positioned(
-                                        right: 5,
-                                        top: 10,
-                                        child: Padding(
-                                            padding: const EdgeInsets.only(left: 20),
-                                            child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 5,),
-                                                Text(
-                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            :
-                                            Text(
-                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 11
-                                              ),
-                                            )
-                                        ),
-                                      ),
+                                      // Positioned(
+                                      //   right: 5,
+                                      //   top: 10,
+                                      //   child: Padding(
+                                      //       padding: const EdgeInsets.only(left: 20),
+                                      //       child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
+                                      //       Column(
+                                      //         children: [
+                                      //           Text(
+                                      //             DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                      //             style: const TextStyle(
+                                      //                 fontSize: 11
+                                      //             ),
+                                      //           ),
+                                      //           const SizedBox(height: 5,),
+                                      //           Text(
+                                      //             DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                      //             style: const TextStyle(
+                                      //                 fontSize: 11
+                                      //             ),
+                                      //           ),
+                                      //         ],
+                                      //       )
+                                      //           :
+                                      //       Text(
+                                      //         DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                      //         style: const TextStyle(
+                                      //             fontSize: 11
+                                      //         ),
+                                      //       )
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),
@@ -208,7 +208,7 @@ class _SignedPageState extends State<SignedPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getSuratKirim';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getRejected';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -223,7 +223,7 @@ class _SignedPageState extends State<SignedPage> {
     if(response.statusCode == 200){
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
-      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
+      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('canceled')).build();
       List<SuratModel> suratList = query.find().toList();
       for(var surat in suratList){
         mains.objectbox.boxSurat.remove(surat.id);
@@ -233,23 +233,22 @@ class _SignedPageState extends State<SignedPage> {
         if(suratMap['count']>0){
           for(int i = 0; i < suratMap['data'].length; i++) {
             var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('sent')).build();
+            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('canceled')).build();
             if(query.find().isNotEmpty) {
               final surat = SuratModel(
                 id: query.find().first.id,
+                isMeterai: dataSurat['isMeterai'],
                 idSurat: dataSurat['surat_id'],
                 perihal: dataSurat['perihal'],
                 namaSurat: dataSurat['perihal'],
                 nomorSurat: dataSurat['nomor'],
                 tglSelesai: dataSurat['tgl_selesai'],
-                tipeSurat: dataSurat['tipe_surat'],
                 url: dataSurat['isi_surat'],
-                kategori: 'sent',
-                tglBuat: dataSurat['tgl_buat'],
+                tipeSurat: dataSurat['tipe_surat'],
+                kategori: 'canceled',
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
-                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -259,19 +258,18 @@ class _SignedPageState extends State<SignedPage> {
             }
             else{
               final surat = SuratModel(
+                isMeterai: dataSurat['isMeterai'],
                 idSurat: dataSurat['surat_id'],
                 perihal: dataSurat['perihal'],
                 namaSurat: dataSurat['perihal'],
                 nomorSurat: dataSurat['nomor'],
                 tglSelesai: dataSurat['tgl_selesai'],
-                tipeSurat: dataSurat['tipe_surat'],
                 url: dataSurat['isi_surat'],
-                kategori: 'sent',
-                tglBuat: dataSurat['tgl_buat'],
+                tipeSurat: dataSurat['tipe_surat'],
+                kategori: 'canceled',
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
-                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);

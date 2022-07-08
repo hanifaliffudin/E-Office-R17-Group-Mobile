@@ -107,6 +107,7 @@ class _DocumentPageState extends State<DocumentPage> {
                             'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
                             placeholder: (progress) => Center(child: Text('$progress %')),
                             errorWidget: (error) => Center(child: Text(error.toString())),
+                            whenDone: (done) {readSurat(surat!.idSurat!);} ,
                           )
                         :
                           const PDF(
@@ -820,7 +821,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                 onPressed: () {
                                   Navigator.pop(context);
 
-                                  getOtp(surat!.idSurat!);
+                                  getOtpBulk(surat!.idSurat!);
 
                                   showDialog<String>(
                                     context: context,
@@ -1082,7 +1083,7 @@ class _DocumentPageState extends State<DocumentPage> {
       length: 6,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
-        signing(idSurat, pin);
+        // signingBulk(pin, , idSurat);
         },
     );
   }
@@ -1153,7 +1154,6 @@ class _DocumentPageState extends State<DocumentPage> {
         }
       else{
         EasyLoading.showError(approveMap['message'].toString());
-        print(approveMap['code']);
       }
     }
     else{
@@ -1173,9 +1173,6 @@ class _DocumentPageState extends State<DocumentPage> {
         'catatan': catatan,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -1216,7 +1213,6 @@ class _DocumentPageState extends State<DocumentPage> {
       }
       else{
         EasyLoading.showError(returnMap['message']);
-        print(returnMap['code']);
       }
     }
     else{
@@ -1236,9 +1232,6 @@ class _DocumentPageState extends State<DocumentPage> {
         'catatan': catatan,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -1275,8 +1268,6 @@ class _DocumentPageState extends State<DocumentPage> {
         }
       else{
         EasyLoading.showError(rejectMap['message']);
-        print(rejectMap['code']);
-        print(rejectMap['message']);
       }
     }
     else{
@@ -1296,9 +1287,6 @@ class _DocumentPageState extends State<DocumentPage> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -1306,15 +1294,14 @@ class _DocumentPageState extends State<DocumentPage> {
     if(response.statusCode == 200){
       Map<String, dynamic> approveMap = jsonDecode(response.body);
 
-      if(approveMap['code'] == 0){}
+      if(approveMap['code'] == 0){
+      }
       else{
-        print(approveMap['code']);
-        print(approveMap['message']);
+        EasyLoading.showError(approveMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
-      print(response.statusCode);
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
@@ -1346,9 +1333,6 @@ class _DocumentPageState extends State<DocumentPage> {
           OpenFile.open(await contentFile);
       }
       else{
-        print(downloadMap['code']);
-        print(downloadMap['message']);
-        print(response.statusCode);
         EasyLoading.showError(downloadMap['message']);
       }
     }
@@ -1358,37 +1342,32 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> getOtp(String idSurat) async {
+  Future<http.Response> getOtpBulk(String idSurat) async {
     EasyLoading.showToast('Sending OTP');
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtp';
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
 
     Map<String, dynamic> data = {
       'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId,
-        'surat_id': idSurat,
+        'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
+        'surat': [{"id": idSurat}],
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
     );
+
     if(response.statusCode == 200){
       Map<String, dynamic> otpMap = jsonDecode(response.body);
 
       if(otpMap['code'] == 0){
-          EasyLoading.show(status: 'loading...');
-          signing(idSurat, otpMap['otp']);
-        }
+        EasyLoading.show(status: 'loading...');
+        signingBulk(otpMap['otp'], otpMap['bulkId'], idSurat);
+      }
       else{
         EasyLoading.showError(otpMap['message']);
-        print(otpMap['code']);
-        print(otpMap['message']);
-        print(response.statusCode);
       }
     }
     else{
@@ -1397,20 +1376,18 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> signing(String idSurat, String token) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/signing';
+  Future<http.Response> signingBulk(String otp, String bulkId, String idSurat) async {
+
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/bulkSigning';
 
     Map<String, dynamic> data = {
       'payload': {
         'users_id': mains.objectbox.boxUser.get(1)!.userId,
-        'surat_id': idSurat,
-        "token": token,
+        'bulk_id': bulkId,
+        "token": otp,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -1420,39 +1397,36 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> signingMap = jsonDecode(response.body);
 
       if(signingMap['code'] == 0){
-          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
-          if(query.find().isNotEmpty) {
-            final surat = SuratModel(
-              id: query.find().first.id,
-              idSurat: query.find().first.idSurat,
-              namaSurat: query.find().first.namaSurat,
-              nomorSurat: query.find().first.nomorSurat,
-              editor: query.find().first.editor,
-              perihal: query.find().first.perihal,
-              status: query.find().first.status,
-              tglSelesai: query.find().first.tglSelesai,
-              url: signingMap['data'],
-              kategori: 'signed',
-              tglBuat: query.find().first.tglBuat,
-              tipeSurat: query.find().first.tipeSurat,
-              approver: query.find().first.approver,
-              penerima: query.find().first.penerima,
-            );
+        var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
+        if(query.find().isNotEmpty) {
+          final surat = SuratModel(
+            id: query.find().first.id,
+            idSurat: query.find().first.idSurat,
+            namaSurat: query.find().first.namaSurat,
+            nomorSurat: query.find().first.nomorSurat,
+            editor: query.find().first.editor,
+            perihal: query.find().first.perihal,
+            status: query.find().first.status,
+            tglSelesai: query.find().first.tglSelesai,
+            url: signingMap['data'],
+            kategori: 'signed',
+            tglBuat: query.find().first.tglBuat,
+            tipeSurat: query.find().first.tipeSurat,
+            approver: query.find().first.approver,
+            penerima: query.find().first.penerima,
+          );
 
-            mains.objectbox.boxSurat.put(surat);
-            EasyLoading.showSuccess('Berhasil Signing!');
-            setState(() {});
-            Navigator.pop(context);
-            Navigator.pop(context);
-            Navigator.push(
-              context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
-            );
-          }
+          mains.objectbox.boxSurat.put(surat);
+          EasyLoading.showSuccess('Berhasil Signing!');
+          Navigator.pop(context);
+          Navigator.pop(context);
+          setState(() {});
+          // Navigator.push(
+          //   context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
+          // );
         }
+      }
       else{
-        // print(signingMap['code']);
-        print(signingMap['message']);
-        // print(response.statusCode);
         EasyLoading.showError(signingMap['message']);
       }
     }
@@ -1461,6 +1435,7 @@ class _DocumentPageState extends State<DocumentPage> {
     }
     return response;
   }
+
 
 }
 
