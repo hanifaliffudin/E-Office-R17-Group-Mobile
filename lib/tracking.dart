@@ -67,8 +67,8 @@ class _TrackingPageState extends State<TrackingPage> {
                     )
                 );
               } else {
-                DateTime now = new DateTime.now();
-                DateTime date = new DateTime(now.year, now.month, now.day);
+                DateTime now = DateTime.now();
+                DateTime date = DateTime(now.year, now.month, now.day);
 
                 return Container(
                   padding: const EdgeInsets.all(20),
@@ -80,68 +80,72 @@ class _TrackingPageState extends State<TrackingPage> {
                       Column(
                       children: [
                         Card(
-                          margin: EdgeInsets.symmetric(vertical: 5),
+                          margin: const EdgeInsets.symmetric(vertical: 5),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        margin: EdgeInsets.only(right: 10.0),
-                                        child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                Row(
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 10.0),
+                                      child: Image(
+                                        image: listSurat[index].isMeterai == 0 ?
+                                        const AssetImage('assets/images/pdf.png')
+                                            :
+                                        const AssetImage('assets/images/pdf-emeterai.png'),
+                                        width: 50,
                                       ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                                maxWidth: 200
-                                            ),
-                                            child: Text(listSurat[index].namaSurat!,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: TextStyle(fontWeight: FontWeight.bold),),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 200
                                           ),
-                                          SizedBox(height: 5,),
-                                          date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
-                                          Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
-                                              :
-                                          Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
-                                          SizedBox(height: 5,),
-                                          Text(listSurat[index].status!),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                          child: Text(listSurat[index].namaSurat!,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(fontWeight: FontWeight.bold),),
+                                        ),
+                                        const SizedBox(height: 5,),
+                                        date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                        Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                            :
+                                        Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                        const SizedBox(height: 5,),
+                                        Text(listSurat[index].status!),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                Container(
+                                SizedBox(
                                   height: 50,
                                   width: 30,
 
                                   child:
                                   listSurat[index].status == "APPROVE" ?
-                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                  const Image(image: AssetImage("assets/icons/approve.png"))
                                       :
                                   listSurat[index].status == "RETURN" ?
-                                  Image(image: AssetImage("assets/icons/return.png"))
+                                  const Image(image: AssetImage("assets/icons/return.png"))
                                       :
                                   listSurat[index].status == "REJECT" ?
-                                  Image(image: AssetImage("assets/icons/reject.png"))
+                                  const Image(image: AssetImage("assets/icons/reject.png"))
                                       :
                                   listSurat[index].status == "READ" ?
-                                  Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                  const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
                                       :
                                   listSurat[index].status == "SUBMIT" ?
-                                  Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                  const Icon(Icons.upload_file_rounded, color: Colors.black,)
                                       :
                                   listSurat[index].status == "APPROVED" ?
-                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                  const Image(image: AssetImage("assets/icons/approve.png"))
                                       :
                                   listSurat[index].status == "SIGNED" ?
-                                  Image(image: AssetImage("assets/icons/approve.png"))
+                                  const Image(image: AssetImage("assets/icons/approve.png"))
                                       :
                                   Container()
                                   ,
@@ -173,9 +177,6 @@ class _TrackingPageState extends State<TrackingPage> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -202,7 +203,7 @@ class _TrackingPageState extends State<TrackingPage> {
                 tglBuat: dataSurat['tgl_buat'],
                 kategori: 'tracking',
                 status: dataSurat['stat'],
-
+                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -216,6 +217,7 @@ class _TrackingPageState extends State<TrackingPage> {
                 tglBuat: dataSurat['tgl_buat'],
                 kategori: 'tracking',
                 status: dataSurat['stat'],
+                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -228,7 +230,7 @@ class _TrackingPageState extends State<TrackingPage> {
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }

@@ -17,7 +17,7 @@ class SuratModel {
   String? approver;
   String? penerima;
   bool isSelected = false;
-
+  int? isMeterai = 0;
 
   SuratModel(
       {
@@ -36,5 +36,6 @@ class SuratModel {
         this.approver,
         this.penerima,
         this.isSelected = false,
+        this.isMeterai = 0,
       });
 }

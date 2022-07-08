@@ -46,36 +46,30 @@ class _NeedSignState extends State<NeedSign> {
         ),
         centerTitle: true,
         actions: [
-          Theme(
-            data: Theme.of(context).copyWith(
-              dividerColor: Colors.white,
-              textTheme: const TextTheme().apply(bodyColor: Colors.white),
-            ),
-            child: PopupMenuButton<int>(
-              icon: const Icon(Icons.more_vert),
-              color: Colors.white,
-              onSelected: (item) => onSelected(context, item),
-              itemBuilder: (context) => [
-                const PopupMenuItem<int>(
-                  value: 0,
-                  child: Text('Select All',
-                    style: TextStyle(
-                        fontSize: 15
-                    ),
+          PopupMenuButton<int>(
+            icon: const Icon(Icons.more_vert),
+            color: Colors.white,
+            onSelected: (item) => onSelected(context, item),
+            itemBuilder: (context) => [
+              const PopupMenuItem<int>(
+                value: 0,
+                child: Text('Select All',
+                  style: TextStyle(
+                      fontSize: 15
                   ),
-                  textStyle: TextStyle(color: Colors.black,fontSize: 17),
                 ),
-                const PopupMenuItem<int>(
-                  value: 1,
-                  child: Text('Cancel',
-                    style: TextStyle(
-                        fontSize: 15
-                    ),
+                textStyle: TextStyle(color: Colors.black,fontSize: 17),
+              ),
+              const PopupMenuItem<int>(
+                value: 1,
+                child: Text('Cancel',
+                  style: TextStyle(
+                      fontSize: 15
                   ),
-                  textStyle: TextStyle(color: Colors.black,fontSize: 17),
                 ),
-              ],
-            ),
+                textStyle: TextStyle(color: Colors.black,fontSize: 17),
+              ),
+            ],
           ),
         ],
       ),
@@ -143,6 +137,7 @@ class _NeedSignState extends State<NeedSign> {
                                     approver: query.find().first.approver,
                                     penerima: query.find().first.penerima,
                                     isSelected: !listSurat[index].isSelected,
+                                    isMeterai: query.find().first.isMeterai,
                                   );
 
                                   mains.objectbox.boxSurat.put(surat);
@@ -178,6 +173,8 @@ class _NeedSignState extends State<NeedSign> {
                                   approver: query.find().first.approver,
                                   penerima: query.find().first.penerima,
                                   isSelected: !listSurat[index].isSelected,
+                                  isMeterai: query.find().first.isMeterai,
+
                                 );
 
                                 mains.objectbox.boxSurat.put(surat);
@@ -199,12 +196,18 @@ class _NeedSignState extends State<NeedSign> {
                                 padding: const EdgeInsets.all(10),
                                 child: Stack(
                                   children: [
-                                    const Positioned(
+                                    Positioned(
                                       left: 0,
                                       top: 5,
                                       child: CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                        backgroundColor: Colors.transparent,
+                                        child: Image(
+                                          image: listSurat[index].isMeterai == 0 ?
+                                          const AssetImage('assets/images/pdf.png')
+                                          :
+                                          const AssetImage('assets/images/pdf-emeterai.png'),
+                                          width: 50,
+                                        ),
                                         radius: 25,
                                       ),
                                     ),
@@ -292,6 +295,8 @@ class _NeedSignState extends State<NeedSign> {
                                                     approver: query.find().first.approver,
                                                     penerima: query.find().first.penerima,
                                                     isSelected: !listSurat[index].isSelected,
+                                                    isMeterai: query.find().first.isMeterai,
+
                                                   );
 
                                                   mains.objectbox.boxSurat.put(surat);
@@ -564,6 +569,7 @@ class _NeedSignState extends State<NeedSign> {
               tglBuat: query.find().first.tglBuat,
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
+              isMeterai: dataSurat['isMeterai'],
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -584,6 +590,7 @@ class _NeedSignState extends State<NeedSign> {
               tglBuat: dataSurat['tgl_buat'],
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
+              isMeterai: dataSurat['isMeterai'],
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -679,14 +686,12 @@ class _NeedSignState extends State<NeedSign> {
             // );
             //
             // mains.objectbox.boxSurat.put(surat);
-            EasyLoading.showSuccess('Berhasil Signing!');
-            Navigator.pop(context);
-            setState(() {});
-            // Navigator.push(
-            //   context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
-            // );
           }
         }
+        EasyLoading.showSuccess('Berhasil Signing!');
+        Navigator.pop(context);
+        Navigator.pop(context);
+        setState(() {});
       }
       else{
         EasyLoading.showError(signingMap['message']);

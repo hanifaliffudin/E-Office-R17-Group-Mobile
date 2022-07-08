@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
+import 'package:militarymessenger/Canceled.dart';
 import 'package:militarymessenger/NeedReview.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
@@ -32,10 +33,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    getBadgeInbox();
-    getBadgeSign();
-    getBadgeNeedApprove();
-    getBadgeMeterai();
+    getAllBadge();
     getRecent();
     super.initState();
   }
@@ -57,43 +55,48 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                         MaterialPageRoute(builder: (context) => const InboxPage()),
                       );
                     },
-                    child: Column(
-                      children: [
-                        Badge(
-                          position: BadgePosition.bottomEnd(end: 0, bottom: -6),
-                          showBadge:mains.objectbox.boxBadge.get(1) != null ?
-                          mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true
-                              :
-                          false,
-                          badgeContent: Text(
-                            mains.objectbox.boxBadge.get(1) != null ?
-                            mains.objectbox.boxBadge.get(1)!.badgeInbox.toString()
-                                :
-                            '',
-                            style: const TextStyle(
-                              color: Colors.white,
+                    child: StreamBuilder<List<BadgeModel>>(
+                      stream: homes.listControllerBadge.stream,
+                      builder: (context, snapshot) {
+                        return Column(
+                          children: [
+                            Badge(
+                              position: BadgePosition.bottomEnd(end: 0, bottom: -6),
+                              showBadge:mains.objectbox.boxBadge.get(1) != null ?
+                              mains.objectbox.boxBadge.get(1)!.badgeInbox == 0 ? false : true
+                                  :
+                              false,
+                              badgeContent: Text(
+                                mains.objectbox.boxBadge.get(1) != null ?
+                                mains.objectbox.boxBadge.get(1)!.badgeInbox.toString()
+                                    :
+                                '',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              badgeColor: const Color(0xFFE2574C),
+                              child: const CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Color(0xFF5584AC),
+                                child: CircleAvatar(
+                                  backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
+                                  backgroundColor: Color(0xFF5584AC),
+                                  radius: 20,
+                                ),
+                              ),
                             ),
-                          ),
-                          badgeColor: const Color(0xFFE2574C),
-                          child: const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Color(0xFF5584AC),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
-                              backgroundColor: Color(0xFF5584AC),
-                              radius: 20,
-                            ),
-                          ),
-                        ),
-                        const Text(
-                          'Inbox',
-                          style: TextStyle(
-                            height: 2,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
+                            const Text(
+                              'Inbox',
+                              style: TextStyle(
+                                height: 2,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          ],
+                        );
+                      }
                     ),
                   ),
                   InkWell(
@@ -224,9 +227,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                   ),
                   InkWell(
                     onTap: () {
-                      // Navigator.push(context,
-                      //   MaterialPageRoute(builder: (context) => const NeedReview()),
-                      // );
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => const CanceledPage()),
+                      );
                     },
                     child: Column(
                       children: [
@@ -379,7 +382,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                       'returned'
                                           :
                                       listSurat[index].status == "REJECT" ?
-                                      'rejected'
+                                      'canceled'
                                           :
                                       listSurat[index].status == "READ" ?
                                       'inbox'
@@ -397,7 +400,8 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
 
                                       var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals(kategori)).build();
                                       if(query.find().isNotEmpty) {
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
+                                        print(listSurat[index].url);
+                                        // Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
                                       }
                                     },
                                     child: Card(
@@ -411,7 +415,13 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                               children: [
                                                 Container(
                                                   margin: const EdgeInsets.only(right: 10.0),
-                                                  child: const Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                                  child: Image(
+                                                    image: listSurat[index].isMeterai == 0 ?
+                                                    const AssetImage('assets/images/pdf.png')
+                                                        :
+                                                    const AssetImage('assets/images/pdf-emeterai.png'),
+                                                    width: 50,
+                                                  ),
                                                 ),
                                                 Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,25 +452,28 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
 
                                               child:
                                               listSurat[index].status == "APPROVE" ?
-                                              const Image(image: AssetImage("assets/icons/approve.png"))
+                                              const Image(image: AssetImage("assets/icons/approved.png"))
                                                   :
                                               listSurat[index].status == "RETURN" ?
-                                              const Image(image: AssetImage("assets/icons/return.png"))
+                                              const Image(image: AssetImage("assets/icons/returned.png"))
                                                   :
                                               listSurat[index].status == "REJECT" ?
-                                              const Image(image: AssetImage("assets/icons/reject.png"))
+                                              const Image(image: AssetImage("assets/icons/rejected.png"))
                                                   :
                                               listSurat[index].status == "READ" ?
-                                              const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                              const Image(image: AssetImage("assets/icons/read.png"))
                                                   :
                                               listSurat[index].status == "SUBMIT" ?
-                                              const Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                              const Image(image: AssetImage("assets/icons/submit.png"))
                                                   :
                                               listSurat[index].status == "APPROVED" ?
-                                              const Image(image: AssetImage("assets/icons/approve.png"))
+                                              const Image(image: AssetImage("assets/icons/approved.png"))
                                                   :
-                                              listSurat[index].status == "SIGNED" ?
-                                              const Image(image: AssetImage("assets/icons/approve.png"))
+                                              listSurat[index].status == "SIGNED" && listSurat[index].isMeterai == 1 ?
+                                              const Image(image: AssetImage("assets/icons/signed-meterai.png"))
+                                                  :
+                                              listSurat[index].status == "SIGNED" && listSurat[index].isMeterai == 0 ?
+                                              const Image(image: AssetImage("assets/icons/signed.png"))
                                                   :
                                               Container()
                                               ,
@@ -485,6 +498,12 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
         ),
       ),
     );
+  }
+
+  void getAllBadge(){
+    getBadgeInbox();
+    getBadgeSign();
+    getBadgeNeedApprove();
   }
 
   Future<http.Response> getBadgeInbox() async {
@@ -645,59 +664,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
     return response;
   }
 
-  Future<http.Response> getBadgeMeterai() async {
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeMeterai';
-
-    Map<String, dynamic> data = {
-
-      'payload': {
-        'id_user': mains.objectbox.boxUser.get(1)!.userId,
-      }
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
-    if(response.statusCode == 200){
-      // print("${response.body}");
-      Map<String, dynamic> suratMap = jsonDecode(response.body);
-
-      if(suratMap['message'] == 'success' ){
-          var query = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
-          if(query.find().isNotEmpty) {
-            var badge = BadgeModel(
-              id: 1,
-              badgeInbox: query.find().first.badgeInbox,
-              badgeNeedSign: query.find().first.badgeNeedSign,
-              badgeNeedApprove: query.find().first.badgeNeedApprove,
-              badgeMeterai: suratMap['data']
-            );
-
-            mains.objectbox.boxBadge.put(badge);
-            setState(() {});
-          }else{
-            var badge = BadgeModel(
-              badgeNeedApprove: suratMap['data'],
-            );
-
-            mains.objectbox.boxBadge.put(badge);
-            setState(() {});
-          }
-      }
-      else{
-        EasyLoading.showError(suratMap['message']);
-      }
-    }
-    else{
-      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
-    }
-    return response;
-  }
-
   Future<http.Response> getRecent() async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/recent';
@@ -738,6 +704,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
               status: dataSurat['action'],
               tglBuat: dataSurat['created_at'],
               kategori: 'history',
+              isMeterai: dataSurat['isMeterai'],
             );
 
             mains.objectbox.boxSurat.put(surat);

@@ -93,12 +93,18 @@ class _NeedReviewState extends State<NeedReview> {
                                   padding: const EdgeInsets.all(10),
                                   child: Stack(
                                     children: [
-                                      const Positioned(
+                                      Positioned(
                                         left: 0,
                                         top: 5,
                                         child: CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                          backgroundColor: Colors.transparent,
+                                          child: Image(
+                                            image: listSurat[index].isMeterai == 0 ?
+                                            const AssetImage('assets/images/pdf.png')
+                                                :
+                                            const AssetImage('assets/images/pdf-emeterai.png'),
+                                            width: 50,
+                                          ),
                                           radius: 25,
                                         ),
                                       ),
@@ -235,6 +241,7 @@ class _NeedReviewState extends State<NeedReview> {
                 tipeSurat: dataSurat['tipe_surat'],
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
+                isMeterai: dataSurat['isMeterai'],
               );
 
 
@@ -242,7 +249,6 @@ class _NeedReviewState extends State<NeedReview> {
               setState(() {
 
               });
-              // mains.objectbox.boxSurat.remove(query.find().first.id);
 
             }
             else{
@@ -257,6 +263,7 @@ class _NeedReviewState extends State<NeedReview> {
                 editor: dataSurat['editor'],
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
+                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -268,7 +275,7 @@ class _NeedReviewState extends State<NeedReview> {
         }
       }
       else{
-        EasyLoading.showError(suratMap['message']);
+        // EasyLoading.showError(suratMap['message']);
       }
     }
     else{
