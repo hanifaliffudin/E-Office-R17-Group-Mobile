@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/instance_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 // import 'package:location/location.dart';
@@ -26,16 +27,20 @@ import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/SettingsPage.dart';
 import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/document.dart';
+import 'package:militarymessenger/functions/permission_dialog_function.dart';
 import 'package:militarymessenger/main.dart';
 import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
+import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
 import 'package:militarymessenger/settings/chat.dart';
 import 'package:militarymessenger/settings/notification.dart';
+import 'package:militarymessenger/utils/sp_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -74,7 +79,7 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with TickerProviderStateMixin {
+class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindingObserver {
   TabController? _tabController;
   int _selectedTab = 1;
   String apiKey = apiKeyCore;
@@ -84,8 +89,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   String? photo;
   Uint8List? bytes;
   var contactList, contactData, contactName;
+  late StreamSubscription<LocationData> locationSubscription;
   Location location = Location();
-  bool pushToAttendance = true;
+  final StateController _stateController = Get.put(StateController());
+  bool grouping = true;
 
   Future<void> setupInteractedMessage() async {
     // Get any messages which caused the application to open from
@@ -107,32 +114,79 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       print('A new onMessageOpenedApp event was published!');
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       if (message.data['type'] == 'logout') {
         _openDialogAutoLogout(context);
       }
       RemoteNotification notification = message.notification!;
-      flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-            android: AndroidNotificationDetails(
+      bool run = true;
+      
+      if (message.data.containsKey('room_id')) {
+        if (_stateController.fromRoomId.value == int.parse(message.data['room_id'])) {
+          run = false;
+        }
+      }
+
+      if (run) {
+        List<ActiveNotification>? activeNotifications = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.getActiveNotifications();
+
+        AndroidNotificationDetails notificationDetails = AndroidNotificationDetails(
           message.data['id'],
           message.notification!.title!,
           // style: AndroidNotificationStyle.BigText,
           icon: "@mipmap/ic_launcher",
+          groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+          importance: Importance.defaultImportance, 
+          priority: Priority.defaultPriority,
           styleInformation: BigTextStyleInformation(
-              message.data[
-                  'msg_data'], //  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
-              htmlFormatBigText: true,
-              contentTitle: message.notification!.title!,
-              htmlFormatContentTitle: true,
-              summaryText: 'Messenger',
-              htmlFormatSummaryText: true),
-        )),
-        payload: jsonEncode(message.data),
-      );
+            message.data['msg_data'], //  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
+            htmlFormatBigText: true,
+            contentTitle: message.notification!.title!,
+            htmlFormatContentTitle: true,
+            summaryText: 'Messenger',
+            htmlFormatSummaryText: true,
+          ),
+        );
+        // AndroidNotificationDetails groupNotificationDetails = AndroidNotificationDetails(
+        //   message.data['id'],
+        //   message.notification!.title!,
+        //   icon: "@mipmap/ic_launcher",
+        //   groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+        //   setAsGroupSummary: true,
+        //   styleInformation: BigTextStyleInformation(
+        //     message.data['msg_data'],
+        //   ),
+        // );
+
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(android: notificationDetails),
+          payload: jsonEncode(message.data),
+        );
+        // flutterLocalNotificationsPlugin.show(
+        //   0, 
+        //   '', 
+        //   '', 
+        //   NotificationDetails(android: groupNotificationDetails),
+        // );
+
+        if (message.data.containsKey('room_id')) {
+          var groupNotif = GroupNotifModel(
+            roomId: int.parse(message.data['room_id']),
+            notifId: notification.hashCode,
+          );
+
+          mains.objectbox.boxGroupNotif.put(groupNotif);
+        }
+
+        // setState(() {
+        //   grouping = false;
+        // });
+      }
     });
 
     var android = const AndroidInitializationSettings('mipmap/ic_launcher');
@@ -289,6 +343,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           }
         } else if (dataPayload['type'] == 'logout') {
           _openDialogAutoLogout(context);
+        } else if (dataPayload['type'] == 'attendance') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Attendance()),
+          );
         }
       },
     );
@@ -441,6 +500,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       }
     } else if (message.data['type'] == 'logout') {
       _openDialogAutoLogout(context);
+    } else if (message.data['type'] == 'attendance') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const Attendance()),
+      );
     }
   }
 
@@ -470,96 +534,110 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return 12742 * asin(sqrt(a));
   }
 
-  void _locationAttendance(LocationData locationData) {
-    DateTime now = DateTime.now();
+  void _locationAttendance(LocationData locationData) async {
+    try {
+      Map<String, dynamic> data = {
+        'api_key': apiKey,
+      };
+      String url = 'https://chat.dev.r17.co.id/get_datetime.php';
+      var response = await http.post(Uri.parse(url),
+        body: jsonEncode(data),
+      );
+      Map<String, dynamic> datetimeMap = jsonDecode(response.body);
+      DateTime now = DateTime.parse(datetimeMap['data']);
+      // DateTime now = DateTime.now();
 
-    if (locationData != null) {
-      double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
-      // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
-      if (distanceOnMeter <= 50 && now.hour >= 7) {
-        var query = mains.objectbox.boxAttendance
-            .query(AttendanceModel_.date
-                .equals(DateFormat('dd MM yyyy').format(now)))
-            .build();
+      if (locationData != null) {
+        double? distanceOnMeter = calculateDistance(locationData.latitude, locationData.longitude, -6.230103, 106.810062) * 1000;
+        DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
 
-        if (query.find().isNotEmpty) {
-          var attendance = query.find().first;
-
-          if (attendance.status == 0) {
-            // print('time call check in');
-            attendance.date = DateFormat('dd MM yyyy').format(now);
-            // attendance.checkInAt =
-            //     DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
-            attendance.checkInAt = attendance.checkInAt;
-            attendance.checkOutAt = attendance.checkOutAt;
-            attendance.latitude = locationData.latitude;
-            attendance.longitude = locationData.longitude;
-            attendance.status = 1;
-            attendance.server = false;
-            saveAttendance(attendance);
-          }
-        } else {
-          // print('first time call check in');
-          var attendance = AttendanceModel(
-            date: DateFormat('dd MM yyyy').format(now),
-            checkInAt: DateFormat('yyyy-MM-dd HH:mm:ss').format(now),
-            latitude: locationData.latitude,
-            longitude: locationData.longitude,
-            status: 1,
-            server: false,
-          );
-          saveAttendance(attendance);
-        }
-      } else if (distanceOnMeter > 50) {
-        if (now.hour >= 7) {
+        // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
+        if (distanceOnMeter <= 50 && now.hour >= 7) {
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date
-                      .equals(DateFormat('dd MM yyyy').format(now)) &
-                  AttendanceModel_.status.equals(1))
+                  .equals(DateFormat('dd MM yyyy').format(now)))
               .build();
 
           if (query.find().isNotEmpty) {
             var attendance = query.find().first;
 
-            attendance.id = attendance.id;
-            attendance.date = attendance.date;
-            attendance.checkInAt = attendance.checkInAt;
-            attendance.checkOutAt =
-                DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-            attendance.latitude = attendance.latitude;
-            attendance.longitude = attendance.longitude;
-            attendance.status = 0;
-            attendance.server = false;
-            saveAttendance(attendance);
+            if (attendance.status == 0) {
+              // print('time call check in');
+              attendance.date = DateFormat('dd MM yyyy').format(now);
+              // attendance.checkInAt =
+              //     DateFormat('yyyy-MM-dd HH:mm:ss').format(now).toString();
+              attendance.checkInAt = attendance.checkInAt;
+              attendance.checkOutAt = attendance.checkOutAt;
+              attendance.latitude = locationData.latitude;
+              attendance.longitude = locationData.longitude;
+              attendance.status = 1;
+              attendance.server = false;
+              saveAttendance(attendance, true);
+            }
+          } else {
+            // print('first time call check in');
+            var attendance = AttendanceModel(
+              date: DateFormat('dd MM yyyy').format(now),
+              checkInAt: DateFormat('yyyy-MM-dd HH:mm:ss').format(now),
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              status: 1,
+              server: false,
+            );
+            saveAttendance(attendance, true);
           }
-        } else {
-          DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
-          var query = mains.objectbox.boxAttendance
+        } else if (distanceOnMeter > 50) {
+          if (now.hour >= 7) {
+            var query = mains.objectbox.boxAttendance
+                .query(AttendanceModel_.date
+                        .equals(DateFormat('dd MM yyyy').format(now)) &
+                    AttendanceModel_.status.equals(1))
+                .build();
+
+            if (query.find().isNotEmpty) {
+              var attendance = query.find().first;
+
+              attendance.id = attendance.id;
+              attendance.date = attendance.date;
+              attendance.checkInAt = attendance.checkInAt;
+              attendance.checkOutAt =
+                  DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+              attendance.latitude = attendance.latitude;
+              attendance.longitude = attendance.longitude;
+              attendance.status = 0;
+              attendance.server = false;
+              saveAttendance(attendance, true);
+            }
+          } else {
+            var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy')
                       .format(dateYesterday)) &
                   AttendanceModel_.status.equals(1))
               .build();
 
-          if (query.find().isNotEmpty) {
-            var attendance = query.find().first;
-            String yesterdayMax = dateYesterday.toString() + ' 23:59:59';
+            if (query.find().isNotEmpty) {
+              var attendance = query.find().first;
+              String yesterdayMax = dateYesterday.toString() + ' 23:59:59';
 
-            if (attendance.checkOutAt != yesterdayMax) {
-              attendance.id = attendance.id;
-              attendance.date = attendance.date;
-              attendance.checkInAt = attendance.checkInAt;
-              attendance.checkOutAt =
-                  DateTime.parse('${dateYesterday.toString()} 23:59:59')
-                      .toString();
-              attendance.latitude = attendance.latitude;
-              attendance.longitude = attendance.longitude;
-              attendance.status = 0;
-              attendance.server = false;
-              saveAttendance(attendance);
+              if (attendance.checkOutAt != yesterdayMax) {
+                attendance.id = attendance.id;
+                attendance.date = attendance.date;
+                attendance.checkInAt = attendance.checkInAt;
+                attendance.checkOutAt =
+                    DateTime.parse('${dateYesterday.toString()} 23:59:59')
+                        .toString();
+                attendance.latitude = attendance.latitude;
+                attendance.longitude = attendance.longitude;
+                attendance.status = 0;
+                attendance.server = false;
+                saveAttendance(attendance, false);
+              }
             }
           }
         }
       }
+    } catch (e) {
+      
     }
   }
 
@@ -589,36 +667,68 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       if (_permissionGranted == PermissionStatus.granted) {
         location.enableBackgroundMode(enable: true);
         location.changeSettings(accuracy: LocationAccuracy.high);
-        location.onLocationChanged.listen((locationData) async {
-          try {
-            final result = await InternetAddress.lookup('google.com');
+        locationSubscription = location.onLocationChanged.listen((locationData) async {
+          print(await SpUtil.instance.getBoolValue('locationPermission'));
+          // if (await SpUtil.instance.getBoolValue('locationPermission')) {
+            try {
+              final result = await InternetAddress.lookup('google.com');
 
-            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              _locationAttendance(locationData);
+              if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                _locationAttendance(locationData);
+              }
+            } catch (e) {
+              // print(e.toString());
             }
-          } catch (e) {
-            // print(e.toString());
-          }
+          // }
         });
       }
     }
   }
 
   Future<bool> _getAllData() async {
-    // get all messages
-    List<ChatModel> listChat = mains.objectbox.boxChat.getAll();
-    if (listChat.isEmpty) {
-      EasyLoading.show(status: 'Downloading all messages...');
-      await getAllMessages();
+    bool messageGo = false;
+    bool attendanceGo = false;
+
+    if (await SpUtil.instance.containsKey('messagesDownloaded')) {
+      if (!await SpUtil.instance.getBoolValue('messagesDownloaded')) {
+        messageGo = true;
+      }
+    } else {
+      messageGo = true;
     }
 
-    List<AttendanceModel> attendances = mains.objectbox.boxAttendance.getAll();
-    if (attendances.isEmpty) {
+    if (await SpUtil.instance.containsKey('attendancesDownloaded')) {
+      if (!await SpUtil.instance.getBoolValue('attendancesDownloaded')) {
+        attendanceGo = true;
+      }
+    } else {
+      attendanceGo = true;
+    }
+
+    if (messageGo) {
+      EasyLoading.show(status: 'Downloading all messages...');
+      await getAllMessages();
+      await SpUtil.instance.setBoolValue('messagesDownloaded', true);
+    }
+
+    if (attendanceGo) {
       EasyLoading.show(status: 'Downloading all attendances...');
       await _getAllAttendances();
+      await SpUtil.instance.setBoolValue('attendancesDownloaded', true);
     }
 
     return true;
+  }
+  
+  void _locationPermissionListener() {
+    _stateController.locationPermission
+      .listen((p0) {
+        if (p0 == true) {
+          _locationService();
+        } else {
+          locationSubscription.cancel();
+        }
+      });
   }
 
   String? version;
@@ -626,14 +736,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    flutterLocalNotificationsPlugin.cancelAll();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (await checkFcmToken() == true) {
         await _getAllData();
-        _locationService();
+        _accessLocationPermission();
+        _locationPermissionListener();
       }
     });
 
-    _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
+    _tabController = TabController(initialIndex: _selectedTab,length: 4,vsync: this);
     _tabController?.addListener(() => tabListener());
 
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
@@ -1112,6 +1225,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   @override
   void dispose() {
     _tabController!.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -1121,6 +1235,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     setState(() {
       _selectedTab = _tabController!.index;
     });
+  }
+
+  void _accessLocationPermission() async {
+    bool showDialogAP = false;
+
+    if (await SpUtil.instance.containsKey('locationPermission')) {
+      if (await SpUtil.instance.getBoolValue('locationPermission')) {
+        _stateController.changeLocationPermission(await SpUtil.instance.getBoolValue('locationPermission'));
+      }
+    } else {
+      showDialogAP = true;
+    }
+
+    if (showDialogAP) {
+      locationPermissionDialog(
+        context, 
+        () async {
+          Navigator.of(context).pop();
+          await SpUtil.instance.setBoolValue('locationPermission', false);
+        }, 
+        () async {
+          Navigator.of(context).pop();
+          await SpUtil.instance.setBoolValue('locationPermission', true);
+          _stateController.changeLocationPermission(true);
+        }
+      );
+    }
   }
 
   void searchOnTap() {
@@ -1185,19 +1326,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         ),
       ],
       onTap: (Flushbar<dynamic> flushbar) {
-        if (error == false && pushToAttendance == true) {
-          setState(() {
-            pushToAttendance = false;
-          });
-
+        if (error == false && _stateController.inAttendance.value == false) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const Attendance()),
-          ).then((value) {
-            setState(() {
-              pushToAttendance = true;
-            });
-          });
+          );
         }
 
         flushbar.dismiss(true);
@@ -1205,19 +1338,38 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     ).show(context);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        flutterLocalNotificationsPlugin.cancelAll();
+        // print("app in resumed");
+        break;
+      case AppLifecycleState.inactive:
+        // print("app in inactive");
+        break;
+      case AppLifecycleState.paused:
+        // print("app in paused");
+        break;
+      case AppLifecycleState.detached:
+        // print("app in detached");
+        break;
+    }
+  }
+
   File? image;
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: Colors.white,
-            indicatorWeight: 4,
+            indicatorWeight: 5,
             labelStyle:
                 const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             tabs: const [
@@ -1234,10 +1386,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 text: 'History',
               ),
             ],
-            onTap: (int index) {
-              
-            },
-            
           ),
           title: const Text(
             'eOffice',
@@ -1293,18 +1441,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   ],
                 ),
                 onTap: () {
-                  setState(() {
-                    pushToAttendance = false;
-                  });
-
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const Attendance()),
-                  ).then((_) {
-                    setState(() {
-                      pushToAttendance = true;
-                    });
-                  });
+                  );
                 },
               ),
               ListTile(
@@ -1512,7 +1652,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
-  void saveAttendance(AttendanceModel attendance) async {
+  void saveAttendance(AttendanceModel attendance, bool showNotif) async {
     var id = mains.objectbox.boxAttendance.put(attendance);
     var attendanceNew = mains.objectbox.boxAttendance.get(id)!;
     String url = 'https://chat.dev.r17.co.id/save_attendance.php';

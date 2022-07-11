@@ -19,6 +19,7 @@ import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
 import 'models/ContactModel.dart';
 import 'models/ConversationModel.dart';
+import 'models/GroupNotifModel.dart';
 import 'models/NewsModel.dart';
 import 'models/NoteModel.dart';
 import 'models/SuratModel.dart';
@@ -651,6 +652,30 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(13, 6077117816353556383),
+      name: 'GroupNotifModel',
+      lastPropertyId: const IdUid(3, 5656664121130420701),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 4672031682674208110),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 7456693257277162964),
+            name: 'roomId',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 5656664121130420701),
+            name: 'notifId',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -674,7 +699,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(12, 5002030077723218516),
+      lastEntityId: const IdUid(13, 6077117816353556383),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -1335,6 +1360,35 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGet(buffer, rootOffset, 18, false));
 
           return object;
+        }),
+    GroupNotifModel: EntityDefinition<GroupNotifModel>(
+        model: _entities[11],
+        toOneRelations: (GroupNotifModel object) => [],
+        toManyRelations: (GroupNotifModel object) => {},
+        getId: (GroupNotifModel object) => object.id,
+        setId: (GroupNotifModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (GroupNotifModel object, fb.Builder fbb) {
+          fbb.startTable(4);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.roomId);
+          fbb.addInt64(2, object.notifId);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = GroupNotifModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              roomId: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 6),
+              notifId: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 8));
+
+          return object;
         })
   };
 
@@ -1786,4 +1840,19 @@ class AttendanceHistoryModel_ {
   /// see [AttendanceHistoryModel.server]
   static final server =
       QueryBooleanProperty<AttendanceHistoryModel>(_entities[10].properties[6]);
+}
+
+/// [GroupNotifModel] entity fields to define ObjectBox queries.
+class GroupNotifModel_ {
+  /// see [GroupNotifModel.id]
+  static final id =
+      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[0]);
+
+  /// see [GroupNotifModel.roomId]
+  static final roomId =
+      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[1]);
+
+  /// see [GroupNotifModel.notifId]
+  static final notifId =
+      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[2]);
 }
