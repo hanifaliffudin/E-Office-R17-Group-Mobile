@@ -173,48 +173,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   ),),
                                                 onPressed: () {
                                                   _openDialog(context);
-                                                  // showDialog<String>(
-                                                  //   context: context,
-                                                  //   builder: (BuildContext context) => AlertDialog(
-                                                  //     content: const Text('Are you sure to remove photo?'),
-                                                  //     actions: <Widget>[
-                                                  //       TextButton(
-                                                  //         onPressed: () => Navigator.pop(context, 'Cancel'),
-                                                  //         child: const Text('Cancel',
-                                                  //           style: TextStyle(color: Color(0xFF2481CF), fontSize: 17),),
-                                                  //       ),
-                                                  //       TextButton(
-                                                  //         onPressed: () {
-                                                  //           Navigator.pop(context);
-                                                  //           setState(() {
-                                                  //             image = null;
-                                                  //             var query = mains.objectbox.boxUser.query(UserModel_.email.equals(email!)).build();
-                                                  //             if(query.find().isNotEmpty) {
-                                                  //               var user = UserModel(
-                                                  //                 id: 1,
-                                                  //                 email: email,
-                                                  //                 userId: query.find().first.userId,
-                                                  //                 userName: query.find().first.userName,
-                                                  //                 phone: query.find().first.phone,
-                                                  //                 photo: '',
-                                                  //               );
-                                                  //
-                                                  //               mains.objectbox.boxUser.put(user);
-                                                  //             }
-                                                  //             setPhoto("null");
-                                                  //           });
-                                                  //         },
-                                                  //         child: const Text('Yes',
-                                                  //           style: TextStyle(color: Color(0xFF2481CF), fontSize: 17),),
-                                                  //       ),
-                                                  //     ],
-                                                  //   ),
-                                                  // );
                                                 },
                                               )
-                                                  : SizedBox(),
+                                                  : const SizedBox(),
                                               CupertinoActionSheetAction(
-                                                child: Text('Take a photo',
+                                                child: const Text('Take a photo',
                                                   style: TextStyle(
                                                       color: Color(0xFF2481CF)
                                                   ),),

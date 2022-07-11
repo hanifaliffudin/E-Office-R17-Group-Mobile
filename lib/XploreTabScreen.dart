@@ -53,12 +53,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const InboxPage()),
-                      );
+                      ).then((value) => getAllBadge());
                     },
-                    child: StreamBuilder<List<BadgeModel>>(
-                      stream: homes.listControllerBadge.stream,
-                      builder: (context, snapshot) {
-                        return Column(
+                    child: Column(
                           children: [
                             Badge(
                               position: BadgePosition.bottomEnd(end: 0, bottom: -6),
@@ -77,13 +74,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                               ),
                               badgeColor: const Color(0xFFE2574C),
                               child: const CircleAvatar(
-                                radius: 30,
+                                backgroundImage: AssetImage('assets/icons/inbox.png'),
                                 backgroundColor: Color(0xFF5584AC),
-                                child: CircleAvatar(
-                                  backgroundImage: AssetImage('assets/icons/inbox_icon2.png'),
-                                  backgroundColor: Color(0xFF5584AC),
-                                  radius: 20,
-                                ),
+                                radius: 30,
                               ),
                             ),
                             const Text(
@@ -95,15 +88,13 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                               ),
                             )
                           ],
-                        );
-                      }
-                    ),
+                        )
                   ),
                   InkWell(
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const NeedSign()),
-                      );
+                      ).then((value) => getAllBadge());
                     },
                     child: Column(
                       children: [
@@ -124,13 +115,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                           badgeColor: const Color(0xFFE2574C),
                           child: const CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/need-sign.png'),
                             backgroundColor: Color(0xFF9EADBD),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/draft_icon2.png'),
-                              backgroundColor: Color(0xFF9EADBD),
-                              radius: 20,
-                            ),
+                            radius: 30,
                           ),
                         ),
                         const Text(
@@ -148,7 +135,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const NeedReview()),
-                      );
+                      ).then((value) => getAllBadge());
                     },
                     child: Column(
                       children: [
@@ -169,13 +156,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                           badgeColor: const Color(0xFFE2574C),
                           child: const CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/need-review.png'),
                             backgroundColor: Color(0xFF3B8880),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
-                              backgroundColor: Color(0xFF3B8880),
-                              radius: 20,
-                            ),
+                            radius: 30,
                           ),
                         ),
                         const Text(
@@ -206,13 +189,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     child: Column(
                       children: const [
                         CircleAvatar(
-                          radius: 30,
+                          backgroundImage: AssetImage('assets/icons/signed-icon.png'),
                           backgroundColor: Color(0xFFE49D23),
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
-                            backgroundColor: Color(0xFFE49D23),
-                            radius: 20,
-                          ),
+                          radius: 30,
                         ),
                         Text(
                           'Signed',
@@ -243,13 +222,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                           badgeColor: const Color(0xFFE2574C),
                           child: const CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/canceled.png'),
                             backgroundColor: Color(0xFFF54040),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/approved_icon2.png'),
-                              backgroundColor: Color(0xFFF54040),
-                              radius: 20,
-                            ),
+                            radius: 30,
                           ),
                         ),
                         const Text(
@@ -281,13 +256,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                           ),
                           badgeColor: const Color(0xFFE2574C),
                           child: const CircleAvatar(
-                            radius: 30,
+                            backgroundImage: AssetImage('assets/icons/tracking.png'),
                             backgroundColor: Color(0xFFF5C840),
-                            child: CircleAvatar(
-                              backgroundImage: AssetImage('assets/icons/sent_icon2.png'),
-                              backgroundColor: Color(0xFFF5C840),
-                              radius: 20,
-                            ),
+                            radius: 30,
                           ),
                         ),
                         const Text(
@@ -374,35 +345,7 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                                 itemBuilder:(BuildContext context,index){
                                   return InkWell(
                                     onTap: () {
-                                      String kategori =
-                                      listSurat[index].status == "APPROVE" ?
-                                      'approved'
-                                          :
-                                      listSurat[index].status == "RETURN" ?
-                                      'returned'
-                                          :
-                                      listSurat[index].status == "REJECT" ?
-                                      'canceled'
-                                          :
-                                      listSurat[index].status == "READ" ?
-                                      'inbox'
-                                          :
-                                      listSurat[index].status == "SUBMIT" ?
-                                      'sent'
-                                          :
-                                      listSurat[index].status == "APPROVED" ?
-                                      'approved'
-                                          :
-                                      listSurat[index].status == "SIGNED" ?
-                                      'signed'
-                                          :
-                                      '';
-
-                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals(kategori)).build();
-                                      if(query.find().isNotEmpty) {
-                                        print(listSurat[index].url);
-                                        // Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
-                                      }
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),);
                                     },
                                     child: Card(
                                       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -705,6 +648,10 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
               tglBuat: dataSurat['created_at'],
               kategori: 'history',
               isMeterai: dataSurat['isMeterai'],
+              url: dataSurat['isi_surat'],
+              approver: jsonEncode(dataSurat['approv']),
+              penerima: jsonEncode(dataSurat['penerima']),
+              editor: dataSurat['editor'],
             );
 
             mains.objectbox.boxSurat.put(surat);
