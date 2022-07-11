@@ -28,6 +28,7 @@ import 'package:militarymessenger/AboutPage.dart';
 import 'package:militarymessenger/contact.dart';
 import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/document.dart';
+import 'package:militarymessenger/functions/permission_dialog_function.dart';
 import 'package:militarymessenger/main.dart';
 import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
@@ -86,6 +87,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
   String? photo;
   Uint8List? bytes;
   var contactList, contactData, contactName;
+  late StreamSubscription<LocationData> locationSubscription;
   Location location = Location();
   final StateController _stateController = Get.put(StateController());
   bool grouping = true;
@@ -110,7 +112,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
       print('A new onMessageOpenedApp event was published!');
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       if (message.data['type'] == 'logout') {
         _openDialogAutoLogout(context);
       }
@@ -124,39 +126,60 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
       }
 
       if (run) {
+        List<ActiveNotification>? activeNotifications = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.getActiveNotifications();
+
+        AndroidNotificationDetails notificationDetails = AndroidNotificationDetails(
+          message.data['id'],
+          message.notification!.title!,
+          // style: AndroidNotificationStyle.BigText,
+          icon: "@mipmap/ic_launcher",
+          groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+          importance: Importance.defaultImportance, 
+          priority: Priority.defaultPriority,
+          styleInformation: BigTextStyleInformation(
+            message.data['msg_data'], //  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
+            htmlFormatBigText: true,
+            contentTitle: message.notification!.title!,
+            htmlFormatContentTitle: true,
+            summaryText: 'Messenger',
+            htmlFormatSummaryText: true,
+          ),
+        );
+        // AndroidNotificationDetails groupNotificationDetails = AndroidNotificationDetails(
+        //   message.data['id'],
+        //   message.notification!.title!,
+        //   icon: "@mipmap/ic_launcher",
+        //   groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+        //   setAsGroupSummary: true,
+        //   styleInformation: BigTextStyleInformation(
+        //     message.data['msg_data'],
+        //   ),
+        // );
+
         flutterLocalNotificationsPlugin.show(
           notification.hashCode,
           notification.title,
           notification.body,
-          NotificationDetails(
-              android: AndroidNotificationDetails(
-            message.data['id'],
-            message.notification!.title!,
-            // style: AndroidNotificationStyle.BigText,
-            icon: "@mipmap/ic_launcher",
-            groupKey: message.data.containsKey('room_id') ? message.data['room_id'] : '',
-            // setAsGroupSummary: message.data.containsKey('room_id'),
-            // setAsGroupSummary: grouping,
-            styleInformation: BigTextStyleInformation(
-                message.data[
-                    'msg_data'], //  'Locations: <b>${locations.replaceAll("\$", " to ")}</b><br>Vehicle: <b>$vehicle</b><br>Trip Type: <b>$tripType</b><br>Pick-Up Date: <b>$pickUpDate</b><br>Pick-Up Time: <b>$pickUpTime</b>',
-                htmlFormatBigText: true,
-                contentTitle: message.notification!.title!,
-                htmlFormatContentTitle: true,
-                summaryText: 'Messenger',
-                htmlFormatSummaryText: true),
-          )),
+          NotificationDetails(android: notificationDetails),
           payload: jsonEncode(message.data),
         );
+        // flutterLocalNotificationsPlugin.show(
+        //   0, 
+        //   '', 
+        //   '', 
+        //   NotificationDetails(android: groupNotificationDetails),
+        // );
 
-        // if (message.data.containsKey('room_id')) {
-        //   var groupNotif = GroupNotifModel(
-        //     roomId: int.parse(message.data['room_id']),
-        //     notifId: notification.hashCode,
-        //   );
+        if (message.data.containsKey('room_id')) {
+          var groupNotif = GroupNotifModel(
+            roomId: int.parse(message.data['room_id']),
+            notifId: notification.hashCode,
+          );
 
-        //   mains.objectbox.boxGroupNotif.put(groupNotif);
-        // }
+          mains.objectbox.boxGroupNotif.put(groupNotif);
+        }
 
         // setState(() {
         //   grouping = false;
@@ -642,16 +665,19 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
       if (_permissionGranted == PermissionStatus.granted) {
         location.enableBackgroundMode(enable: true);
         location.changeSettings(accuracy: LocationAccuracy.high);
-        location.onLocationChanged.listen((locationData) async {
-          try {
-            final result = await InternetAddress.lookup('google.com');
+        locationSubscription = location.onLocationChanged.listen((locationData) async {
+          print(await SpUtil.instance.getBoolValue('locationPermission'));
+          // if (await SpUtil.instance.getBoolValue('locationPermission')) {
+            try {
+              final result = await InternetAddress.lookup('google.com');
 
-            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              _locationAttendance(locationData);
+              if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                _locationAttendance(locationData);
+              }
+            } catch (e) {
+              // print(e.toString());
             }
-          } catch (e) {
-            // print(e.toString());
-          }
+          // }
         });
       }
     }
@@ -691,20 +717,34 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
     return true;
   }
+  
+  void _locationPermissionListener() {
+    _stateController.locationPermission
+      .listen((p0) {
+        if (p0 == true) {
+          _locationService();
+        } else {
+          locationSubscription.cancel();
+        }
+      });
+  }
 
   String? version;
   String? buildNumber;
 
   @override
   void initState() {
+    flutterLocalNotificationsPlugin.cancelAll();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (await checkFcmToken() == true) {
         await _getAllData();
-        _locationService();
+        _accessLocationPermission();
+        _locationPermissionListener();
       }
     });
 
-    _tabController =  new TabController(initialIndex: _selectedTab,length: 4,vsync: this);
+    _tabController = TabController(initialIndex: _selectedTab,length: 4,vsync: this);
     _tabController?.addListener(() => tabListener());
 
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
@@ -731,8 +771,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     }
 
     setupInteractedMessage();
-
-    WidgetsBinding.instance.addObserver(this);
   }
 
   void connect() {
@@ -1197,6 +1235,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     });
   }
 
+  void _accessLocationPermission() async {
+    bool showDialogAP = false;
+
+    if (await SpUtil.instance.containsKey('locationPermission')) {
+      if (await SpUtil.instance.getBoolValue('locationPermission')) {
+        _stateController.changeLocationPermission(await SpUtil.instance.getBoolValue('locationPermission'));
+      }
+    } else {
+      showDialogAP = true;
+    }
+
+    if (showDialogAP) {
+      locationPermissionDialog(
+        context, 
+        () async {
+          Navigator.of(context).pop();
+          await SpUtil.instance.setBoolValue('locationPermission', false);
+        }, 
+        () async {
+          Navigator.of(context).pop();
+          await SpUtil.instance.setBoolValue('locationPermission', true);
+          _stateController.changeLocationPermission(true);
+        }
+      );
+    }
+  }
+
   void searchOnTap() {
     Navigator.push(
       context,
@@ -1276,16 +1341,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     switch (state) {
       case AppLifecycleState.resumed:
         flutterLocalNotificationsPlugin.cancelAll();
-        print("app in resumed");
+        // print("app in resumed");
         break;
       case AppLifecycleState.inactive:
-        print("app in inactive");
+        // print("app in inactive");
         break;
       case AppLifecycleState.paused:
-        print("app in paused");
+        // print("app in paused");
         break;
       case AppLifecycleState.detached:
-        print("app in detached");
+        // print("app in detached");
         break;
     }
   }
@@ -1652,7 +1717,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           mains.objectbox.boxAttendance.put(attendanceNew);
           mains.objectbox.boxAttendanceHistory.put(attendanceHistory);
 
-          showAttendanceNotif(false, type, 'Attendance', 'Check $type at: ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(attendanceHistory.datetime!))}');
+          showAttendanceNotif(false, type, 'Attendance', 'Check $type at: ${DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.parse(attendanceHistory.datetime!))}');
         } else {
           mains.objectbox.boxAttendance.remove(attendanceNew.id);
 

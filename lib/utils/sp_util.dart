@@ -1,5 +1,9 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+// locationPermission
+// messagesDownloaded
+// attendancesDownloaded
+
 class SpUtil {
   SpUtil._privateConstructor();
 

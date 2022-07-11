@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
       darkTheme: MyThemes.darkTheme,
       home: objectbox.boxUser.isEmpty() ? Login() : Home(),
       builder: EasyLoading.init(),
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
