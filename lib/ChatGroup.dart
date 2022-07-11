@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:get/instance_manager.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +20,7 @@ import 'package:militarymessenger/cards/group_friend_message_card.dart';
 import 'package:militarymessenger/cards/group_my_message_card.dart';
 import 'package:militarymessenger/cards/system_message.dart';
 import 'package:militarymessenger/contact.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/functions/index_function.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ContactGroupModel.dart';
@@ -50,6 +52,7 @@ class _ChatGroupState extends State<ChatGroup> {
   var contactList,contactData,contactName;
   List<ContactGroupModel> contactGroup = [];
   StreamController<List<ContactGroupModel>>? StreamControllerContactGroup;
+  final StateController _stateController = Get.put(StateController());
 
   ConversationModel? conversation;
   int? roomId;
@@ -68,6 +71,7 @@ class _ChatGroupState extends State<ChatGroup> {
     idUser = mains.objectbox.boxUser.get(1)?.userId;
 
     StreamControllerContactGroup = StreamController<List<ContactGroupModel>>();
+    _stateController.changeFromRoomId(roomId!);
 
     getDataUser();
     nameList = [];
@@ -154,6 +158,12 @@ class _ChatGroupState extends State<ChatGroup> {
       }
     });
 
+  }
+
+  @override
+  void dispose() {
+    _stateController.changeFromRoomId(0);
+    super.dispose();
   }
 
   bool firstTime = true;

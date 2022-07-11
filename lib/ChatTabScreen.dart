@@ -747,7 +747,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                       ),
                                                     ),
                                                     Column(
-                                                      // crossAxisAlignment: CrossAxisAlignment.end,
+                                                      crossAxisAlignment: CrossAxisAlignment.end,
                                                       children: <Widget>[
                                                         Text(
                                                           DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!)),
@@ -755,31 +755,62 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                               color: conversationList[index].messageCout! > 0
                                                                   ? const Color(0xFF25D366)
                                                                   : Colors.grey,
-                                                              fontSize: 11),
+                                                              fontSize: 12),
                                                         ),
                                                         conversationList[index].messageCout! > 0
                                                             ?
-                                                        Transform(
-                                                            transform: Matrix4.identity()..scale(0.8),
-                                                            child: Chip(
-                                                              backgroundColor: const Color(0xFF25D366),
-                                                              label: Text(
-                                                                '${conversationList[index].messageCout}',
-                                                                style: const TextStyle(color: Colors.white , fontSize: 12),
+                                                        SizedBox(
+                                                          height: 45.0,
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Container(
+                                                                padding: const EdgeInsets.symmetric(
+                                                                  horizontal: 6.0,
+                                                                  vertical: 2.5,
+                                                                ),
+                                                                decoration: BoxDecoration(
+                                                                  // border: Border.all(width: 2),
+                                                                  // shape: BoxShape.circle,
+                                                                  // You can use like this way or like the below line
+                                                                  borderRadius: BorderRadius.circular(30.0),
+                                                                  color: Color(0xFF25D366),
+                                                                ),
+                                                                child: Text(
+                                                                  '${conversationList[index].messageCout}',
+                                                                  style: const TextStyle(
+                                                                    color: Colors.white, 
+                                                                    fontSize: 13,
+                                                                  ),
+                                                                ),
                                                               ),
-                                                            )
+                                                            ],
+                                                          ),
                                                         )
+                                                        // Transform(
+                                                        //     transform: new Matrix4.identity()..scale(0.8),
+                                                        //     child: Chip(
+                                                        //       backgroundColor: Color(0xFF25D366),
+                                                        //       label: Text(
+                                                        //         '${conversationList[index].messageCout}',
+                                                        //         style: TextStyle(color: Colors.white , fontSize: 12),
+                                                        //       ),
+                                                        //     )
+                                                        // )
                                                             :
-                                                        Transform(
-                                                            transform: Matrix4.identity()..scale(0.8),
-                                                            child: Chip(
-                                                              backgroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
-                                                              label: const Text(
-                                                                '',
-                                                                style: TextStyle(color: Colors.white, fontSize: 12),
-                                                              ),
-                                                            )
-                                                        )
+                                                        const SizedBox(
+                                                          height: 45.0,
+                                                        ),
+                                                        // Transform(
+                                                        //     transform: new Matrix4.identity()..scale(0.8),
+                                                        //     child: Chip(
+                                                        //       backgroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
+                                                        //       label: Text(
+                                                        //         '',
+                                                        //         style: TextStyle(color: Colors.white, fontSize: 12),
+                                                        //       ),
+                                                        //     )
+                                                        // )
                                                       ],
                                                     )
 
