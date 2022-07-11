@@ -55,8 +55,10 @@ class _InboxPageState extends State<InboxPage> {
             );
           }
           else{
-            var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox')).build();
-            List<SuratModel> listSurat = queryInbox.find().toList();
+            var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('inbox'))..order(SuratModel_.tglSelesai, flags: Order.descending);
+            var query = queryInbox.build();
+
+            List<SuratModel> listSurat = query.find().toList();
             if(listSurat.isEmpty){
               return Container(
                   margin: const EdgeInsets.only(top: 15.0),
@@ -72,13 +74,15 @@ class _InboxPageState extends State<InboxPage> {
               return Container(
                 padding: const EdgeInsets.all(20),
                 child: ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
                   scrollDirection: Axis.vertical,
                   shrinkWrap: true,
                   itemCount: listSurat.length,
                   itemBuilder:(BuildContext context,index)=>
                       InkWell(
                         onTap: (){
-                          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.status.equals('1')).build();
+                          var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.status.equals('1')).build();
+
                           if(query.find().isNotEmpty) {
                             final surat = SuratModel(
                               id: query.find().first.id,
@@ -127,12 +131,18 @@ class _InboxPageState extends State<InboxPage> {
                               padding: const EdgeInsets.all(10),
                               child: Stack(
                                 children: [
-                                  const Positioned(
+                                  Positioned(
                                     left: 0,
                                     top: 5,
                                     child: CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                      backgroundColor: Colors.transparent,
+                                      child: Image(
+                                        image: listSurat[index].isMeterai == 0 ?
+                                        const AssetImage('assets/images/pdf.png')
+                                            :
+                                        const AssetImage('assets/images/pdf-emeterai.png'),
+                                        width: 50,
+                                      ),
                                       radius: 25,
                                     ),
                                   ),
@@ -276,13 +286,13 @@ class _InboxPageState extends State<InboxPage> {
                 tglBuat: dataSurat['tgl_buat'],
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
+                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);
               setState(() {
 
               });
-              // mains.objectbox.boxSurat.remove(query.find().first.id);
             }
             else{
               final surat = SuratModel(
@@ -299,6 +309,7 @@ class _InboxPageState extends State<InboxPage> {
                 tglBuat: dataSurat['tgl_buat'],
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
+                isMeterai: dataSurat['isMeterai'],
               );
 
               mains.objectbox.boxSurat.put(surat);

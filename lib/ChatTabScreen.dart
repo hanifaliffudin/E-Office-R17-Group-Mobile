@@ -33,7 +33,7 @@ int? idUser;
 
 class ChatTabScreen extends StatefulWidget {
 
-  ChatTabScreen();
+  const ChatTabScreen({Key? key}) : super(key: key);
 
   @override
   State<ChatTabScreen> createState() => _ChatTabScreenState();
@@ -124,7 +124,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
               return
                 Container(
                     margin: const EdgeInsets.only(top: 15.0),
-                    child :Text(
+                    child :const Text(
                       'No chats yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -155,13 +155,13 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                     child: Container(
                         height: 50,
                         width: 10000,
-                        padding: EdgeInsets.only(left: 25, right: 5),
-                        margin: EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(left: 25, right: 5),
+                        margin: const EdgeInsets.only(top: 10),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('${convSelected.length} selected',
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.grey
                               ),
                             ),
@@ -171,11 +171,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                 //Icon delete chat
                                 InkWell(
                                   onTap: () {
-                                    if(convSelected.length>0){
+                                    if(convSelected.isNotEmpty){
                                       // _openDialog(context);
                                     }
                                   },
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.delete,
                                     color: Colors.grey,
                                   ),
@@ -185,15 +185,15 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                 Theme(
                                   data: Theme.of(context).copyWith(
                                     dividerColor: Colors.white,
-                                    iconTheme: IconThemeData(color: Colors.grey),
-                                    textTheme: TextTheme().apply(bodyColor: Colors.white),
+                                    iconTheme: const IconThemeData(color: Colors.grey),
+                                    textTheme: const TextTheme().apply(bodyColor: Colors.white),
                                   ),
                                   child: PopupMenuButton<int>(
-                                    icon: Icon(Icons.more_vert),
+                                    icon: const Icon(Icons.more_vert),
                                     color: Colors.white,
                                     onSelected: (item) => onSelected(context, item),
                                     itemBuilder: (context) => [
-                                      PopupMenuItem<int>(
+                                      const PopupMenuItem<int>(
                                         value: 0,
                                         child: Text('Select All',
                                           style: TextStyle(
@@ -202,7 +202,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                         ),
                                         textStyle: TextStyle(color: Colors.black,fontSize: 17),
                                       ),
-                                      PopupMenuItem<int>(
+                                      const PopupMenuItem<int>(
                                         value: 1,
                                         child: Text('Cancel',
                                           style: TextStyle(
@@ -280,7 +280,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                   },
                                   child: Card(
                                     child: Container(
-                                      padding: EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(5),
                                       child: Column(
                                         children: <Widget>[
                                           Row(
@@ -288,8 +288,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                               Visibility(
                                                 visible: isVisible,
                                                 child: Checkbox(
-                                                  activeColor: Color(0xFF2481CF),
-                                                  shape: CircleBorder(
+                                                  activeColor: const Color(0xFF2481CF),
+                                                  shape: const CircleBorder(
                                                       side: BorderSide(
                                                           color: Colors.grey
                                                       )
@@ -333,7 +333,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                   leading: ClipOval(
                                                       child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==''
                                                           ?
-                                                      CircleAvatar(
+                                                      const CircleAvatar(
                                                         radius: 25,
                                                         backgroundColor: Color(0xffdde1ea),
                                                         child:  Icon(
@@ -342,7 +342,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         ),
                                                       )
                                                           : conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
-                                                      CircleAvatar(
+                                                      const CircleAvatar(
                                                           radius: 25,
                                                           backgroundColor: Color(0xffdde1ea),
                                                           child:  Icon(
@@ -351,7 +351,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           )
                                                       )
                                                           : conversationList[index].photoProfile=="" ?
-                                                      CircleAvatar(
+                                                      const CircleAvatar(
                                                         radius: 25,
                                                         backgroundColor: Color(0xffdde1ea),
                                                         child:  Icon(
@@ -378,11 +378,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                               conversationList[index].fullName!,
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
-                                                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                                                             ),
                                                             conversationList[index].message != null ?
                                                             ConstrainedBox(
-                                                              constraints: BoxConstraints(
+                                                              constraints: const BoxConstraints(
                                                                   maxWidth: 220
                                                               ),
                                                               child: conversationList[index].statusReceiver=='' ?
@@ -390,16 +390,16 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                                 conversationList[index].message!,
                                                                 overflow: TextOverflow.ellipsis,
                                                                 maxLines: 1,
-                                                                style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+                                                                style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
                                                               ):Text(
                                                                 conversationList[index].statusReceiver,
                                                                 overflow: TextOverflow.ellipsis,
                                                                 maxLines: 1,
-                                                                style: TextStyle(color: Color(0xFF25D366), fontSize: 14),
+                                                                style: const TextStyle(color: Color(0xFF25D366), fontSize: 14),
                                                               )
                                                               ,
                                                             ) :
-                                                            Text(
+                                                            const Text(
                                                               "",
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
@@ -415,28 +415,28 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                             DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!)),
                                                             style: TextStyle(
                                                                 color: conversationList[index].messageCout! > 0
-                                                                    ? Color(0xFF25D366)
+                                                                    ? const Color(0xFF25D366)
                                                                     : Colors.grey,
                                                                 fontSize: 11),
                                                           ),
                                                           conversationList[index].messageCout! > 0
                                                               ?
                                                           Transform(
-                                                              transform: new Matrix4.identity()..scale(0.8),
+                                                              transform: Matrix4.identity()..scale(0.8),
                                                               child: Chip(
-                                                                backgroundColor: Color(0xFF25D366),
+                                                                backgroundColor: const Color(0xFF25D366),
                                                                 label: Text(
                                                                   '${conversationList[index].messageCout}',
-                                                                  style: TextStyle(color: Colors.white , fontSize: 12),
+                                                                  style: const TextStyle(color: Colors.white , fontSize: 12),
                                                                 ),
                                                               )
                                                           )
                                                               :
                                                           Transform(
-                                                              transform: new Matrix4.identity()..scale(0.8),
+                                                              transform: Matrix4.identity()..scale(0.8),
                                                               child: Chip(
                                                                 backgroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
-                                                                label: Text(
+                                                                label: const Text(
                                                                   '',
                                                                   style: TextStyle(color: Colors.white, fontSize: 12),
                                                                 ),
@@ -473,7 +473,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             return
               Container(
                   margin: const EdgeInsets.only(top: 15.0),
-                  child :Text(
+                  child :const Text(
                     'No chats yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -525,12 +525,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                   child: Container(
                       height: 50,
                       width: 10000,
-                      padding: EdgeInsets.only(left: 25, right: 5),
-                      margin: EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.only(left: 25, right: 5),
+                      margin: const EdgeInsets.only(top: 10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('1 selected',
+                          const Text('1 selected',
                             style: TextStyle(
                                 color: Colors.grey
                             ),
@@ -541,7 +541,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                 onTap: () {
                                   _openDialog;
                                 },
-                                child: Icon(
+                                child: const Icon(
                                   Icons.delete,
                                   color: Colors.grey,
                                 ),
@@ -549,15 +549,15 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                               Theme(
                                 data: Theme.of(context).copyWith(
                                   dividerColor: Colors.white,
-                                  iconTheme: IconThemeData(color: Colors.grey),
-                                  textTheme: TextTheme().apply(bodyColor: Colors.white),
+                                  iconTheme: const IconThemeData(color: Colors.grey),
+                                  textTheme: const TextTheme().apply(bodyColor: Colors.white),
                                 ),
                                 child: PopupMenuButton<int>(
-                                  icon: Icon(Icons.more_vert),
+                                  icon: const Icon(Icons.more_vert),
                                   color: Colors.white,
                                   onSelected: (item) => onSelected(context, item),
                                   itemBuilder: (context) => [
-                                    PopupMenuItem<int>(
+                                    const PopupMenuItem<int>(
                                       value: 0,
                                       child: Text('Select All',
                                         style: TextStyle(
@@ -566,7 +566,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                       ),
                                       textStyle: TextStyle(color: Colors.black,fontSize: 17),
                                     ),
-                                    PopupMenuItem<int>(
+                                    const PopupMenuItem<int>(
                                       value: 1,
                                       child: Text('Cancel',
                                         style: TextStyle(
@@ -623,7 +623,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                 },
                                 child: Card(
                                   child: Container(
-                                    padding: EdgeInsets.all(5),
+                                    padding: const EdgeInsets.all(5),
                                     child: Column(
                                       children: <Widget>[
                                         Row(
@@ -633,8 +633,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                             Visibility(
                                               visible: isVisible,
                                               child: Checkbox(
-                                                activeColor: Color(0xFF2481CF),
-                                                shape: CircleBorder(
+                                                activeColor: const Color(0xFF2481CF),
+                                                shape: const CircleBorder(
                                                     side: BorderSide(
                                                         color: Colors.grey
                                                     )
@@ -653,7 +653,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                 leading: ClipOval(
                                                     child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==null
                                                         ?
-                                                    CircleAvatar(
+                                                    const CircleAvatar(
                                                       radius: 25,
                                                       backgroundColor: Color(0xffdde1ea),
                                                       child:  Icon(
@@ -663,7 +663,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                     )
                                                         :
                                                     conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
-                                                    CircleAvatar(
+                                                    const CircleAvatar(
                                                         radius: 25,
                                                         backgroundColor: Color(0xffdde1ea),
                                                         child:  Icon(
@@ -672,12 +672,23 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         )
                                                     )
                                                         :
-                                                    conversationList[index].photoProfile=="" ?
-                                                    CircleAvatar(
+                                                    conversationList[index].idReceiver != null && conversationList[index].photoProfile==''
+                                                        ?
+                                                    const CircleAvatar(
                                                       radius: 25,
                                                       backgroundColor: Color(0xffdde1ea),
                                                       child:  Icon(
                                                         Icons.person,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    )
+                                                        :
+                                                    conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile=="" ?
+                                                    const CircleAvatar(
+                                                      radius: 25,
+                                                      backgroundColor: Color(0xffdde1ea),
+                                                      child:  Icon(
+                                                        Icons.people_rounded,
                                                         color: Colors.grey,
                                                       ),
                                                     )
@@ -703,11 +714,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                             conversationList[index].fullName!,
                                                             overflow: TextOverflow.ellipsis,
                                                             maxLines: 1,
-                                                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                                                           ),
                                                           conversationList[index].message != null ?
                                                           ConstrainedBox(
-                                                            constraints: BoxConstraints(
+                                                            constraints: const BoxConstraints(
                                                                 maxWidth: 220
                                                             ),
                                                             child: conversationList[index].statusReceiver=='' ?
@@ -715,18 +726,18 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                               conversationList[index].message!,
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
-                                                              style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+                                                              style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
                                                             )
                                                                 :
                                                             Text(
                                                               conversationList[index].statusReceiver,
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
-                                                              style: TextStyle(color: Color(0xFF25D366), fontSize: 14, height: 1.5),
+                                                              style: const TextStyle(color: Color(0xFF25D366), fontSize: 14, height: 1.5),
                                                             )
                                                             ,
                                                           ) :
-                                                          Text(
+                                                          const Text(
                                                             "",
                                                             overflow: TextOverflow.ellipsis,
                                                             maxLines: 1,
@@ -742,7 +753,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!)),
                                                           style: TextStyle(
                                                               color: conversationList[index].messageCout! > 0
-                                                                  ? Color(0xFF25D366)
+                                                                  ? const Color(0xFF25D366)
                                                                   : Colors.grey,
                                                               fontSize: 12),
                                                         ),
@@ -787,7 +798,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                         //     )
                                                         // )
                                                             :
-                                                        Container(
+                                                        const SizedBox(
                                                           height: 45.0,
                                                         ),
                                                         // Transform(
@@ -864,13 +875,13 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     }
   }
 
-  Future<http.Response> getMessages(String id_rooms) async {
+  Future<http.Response> getMessages(String idRooms) async {
 
     String url ='https://chat.dev.r17.co.id/get_message.php';
 
     Map<String, dynamic> data = {
       'api_key': apiKey,
-      'id_rooms': id_rooms,
+      'id_rooms': idRooms,
     };
 
     //encode Map to JSON
@@ -903,13 +914,13 @@ void _openDialog(ctx) {
   showCupertinoDialog(
       context: ctx,
       builder: (_) => CupertinoAlertDialog(
-        title: Text("Delete Chat"),
-        content: Text("Messages will be removed from this device only."),
+        title: const Text("Delete Chat"),
+        content: const Text("Messages will be removed from this device only."),
         actions: [
           // Close the dialog
           // You can use the CupertinoDialogAction widget instead
           CupertinoButton(
-              child: Text('Cancel',
+              child: const Text('Cancel',
                 style: TextStyle(
                     color: Color(0xFF2481CF)
                 ),
@@ -918,7 +929,7 @@ void _openDialog(ctx) {
                 Navigator.of(ctx).pop();
               }),
           CupertinoButton(
-            child: Text('Delete',
+            child: const Text('Delete',
               style: TextStyle(
                   color: Colors.red
               ),

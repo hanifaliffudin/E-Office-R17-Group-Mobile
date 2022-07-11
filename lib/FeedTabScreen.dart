@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
-import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/post.dart';
 import 'objectbox.g.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +13,7 @@ import 'Home.dart' as homes;
 
 class FeedTabScreen extends StatefulWidget {
 
-  FeedTabScreen();
+  const FeedTabScreen({Key? key}) : super(key: key);
 
   @override
   State<FeedTabScreen> createState() => _FeedTabScreenState();
@@ -34,7 +34,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
     return Scaffold(
       body: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
             child: StreamBuilder<List<NewsModel>>(
               stream: homes.listControllerNews.stream,
               builder: (context, snapshot) {
@@ -42,7 +42,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                   return Container(
                       margin: const EdgeInsets.only(top: 15.0),
                       width: MediaQuery.of(context).size.width,
-                      child :Text(
+                      child :const Text(
                         'No news yet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -64,7 +64,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                       itemCount: listNews.length,
                       itemBuilder:(BuildContext context,index)=>
                          Container(
-                          margin: EdgeInsets.only(bottom: 10),
+                          margin: const EdgeInsets.only(bottom: 10),
                           child: Card(
                             child: Padding(
                               padding: const EdgeInsets.all(10),
@@ -73,20 +73,20 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      CircleAvatar(
+                                      const CircleAvatar(
                                         backgroundColor: Color(0xffF2F1F6),
                                         child: Icon(
                                           Icons.person,
                                           color: Colors.grey,
                                         ),
                                       ),
-                                      SizedBox(width: 10,),
+                                      const SizedBox(width: 10,),
                                       Column(
                                         mainAxisAlignment: MainAxisAlignment.start,
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(listNews[index].nameUploader.toString(),
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14
                                             ),
@@ -97,16 +97,16 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                               Container()
                                                   :
                                               Text(DateFormat('dd MMM yyyy').format(DateTime.parse(listNews[index].created_at!)).toString(),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.grey,
                                                     fontWeight: FontWeight.w400,
                                                     fontSize: 13,
                                                     height: 2
                                                 ),
                                               ),
-                                              SizedBox(width: 7,),
+                                              const SizedBox(width: 7,),
                                               Text(DateFormat.Hm().format(DateTime.parse(listNews[index].created_at!)).toString(),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.grey,
                                                     fontWeight: FontWeight.w400,
                                                     fontSize: 13,
@@ -119,7 +119,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                       )
                                     ],
                                   ),
-                                  SizedBox(height: 10,),
+                                  const SizedBox(height: 10,),
                                   InkWell(
                                     onTap: (){
                                       Navigator.push(context,
@@ -148,11 +148,11 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                             ),
                                           ],
                                         ),
-                                        SizedBox(height: 10,),
-                                        Container(
+                                        const SizedBox(height: 10,),
+                                        SizedBox(
                                           height: 100,
                                           child: Html(
-                                            data: ("${listNews[index].text!}"),
+                                            data: (listNews[index].text!),
                                             customRender: {
                                               "table": (context, child){
                                                 return Container();
@@ -163,7 +163,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 10,),
+                                  const SizedBox(height: 10,),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Row(
@@ -172,14 +172,14 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                         Row(
                                           children: [
                                             Icon(Icons.thumb_up_outlined,
-                                              color: listNews[index].status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                              color: listNews[index].status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                               size: 15,
                                             ),
-                                            SizedBox(width: 5,),
+                                            const SizedBox(width: 5,),
                                             Text(
                                               listNews[index].count_like.toString(),
                                               style: TextStyle(
-                                                  color: listNews[index].status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                                  color: listNews[index].status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w400
                                               ),
@@ -190,7 +190,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                           "0 Comments"
                                           :
                                           "${jsonDecode(listNews[index].comments!).length.toString()} Comments",
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w400,
                                               fontSize: 10,
                                               color: Color(0xFF94A3B8)
@@ -201,7 +201,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                   ),
                                   Container(
                                     height: 1,
-                                    margin: EdgeInsets.only(top: 10),
+                                    margin: const EdgeInsets.only(top: 10),
                                     color: Colors.grey.withOpacity(.2),
                                   ),
                                   Row(
@@ -212,12 +212,12 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                           like(listNews[index].idNews!);
                                         } ,
                                         icon: Icon(Icons.thumb_up_outlined,
-                                          color: listNews[index].status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                          color: listNews[index].status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                           size: 15,
                                         ),
                                         label: Text("Like",
                                           style: TextStyle(
-                                              color: listNews[index].status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                              color: listNews[index].status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                               fontSize: 14
                                           ),
                                         ),
@@ -228,11 +228,11 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                             MaterialPageRoute(builder: (context) => PostPage(listNews[index])),
                                           );
                                         },
-                                        icon: Icon(Icons.chat_bubble_outline_rounded,
+                                        icon: const Icon(Icons.chat_bubble_outline_rounded,
                                           color: Color(0xFF94A3B8),
                                           size: 15,
                                         ),
-                                        label: Text("Comment",
+                                        label: const Text("Comment",
                                           style: TextStyle(
                                               color: Color(0xFF94A3B8),
                                               fontSize: 14
@@ -260,14 +260,6 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
   Future<http.Response> getNews() async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/getNews/';
-
-    Map<String, dynamic> data = {
-      // 'api_key': this.apiKey,
-      // 'email': mains.objectbox.boxUser.get(1)?.email,
-    };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.get(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -345,25 +337,22 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
           }
       }
       else{
-        print(newsMap['code']);
-        print(newsMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(newsMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
-      print(response.statusCode);
+      EasyLoading.showError('${response.statusCode}, "Gagal terhubung ke server!"');
     }
     return response;
   }
 
-  Future<http.Response> like(int id_news) async {
+  Future<http.Response> like(int idNews) async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_news': id_news,
+        'id_news': idNews,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
@@ -380,7 +369,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
 
       if(likeMap['code'] != 95){
         if(likeMap['code'] == 1){
-          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(idNews)).build();
           if(query.find().isNotEmpty) {
             final news = NewsModel(
               id: query.find().first.id,
@@ -403,7 +392,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
           }
         }
         else{
-          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(idNews)).build();
           if(query.find().isNotEmpty) {
             final news = NewsModel(
               id: query.find().first.id,
@@ -427,14 +416,11 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
         }
       }
       else{
-        print(likeMap['code']);
-        print(likeMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(likeMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
-      print(response.statusCode);
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }

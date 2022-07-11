@@ -18,6 +18,7 @@ import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
 import 'package:militarymessenger/ChatSearchScreen.dart';
 import 'package:militarymessenger/ChatTabScreen.dart';
+import 'package:militarymessenger/Drive.dart';
 import 'package:militarymessenger/FeedTabScreen.dart';
 import 'package:militarymessenger/Login.dart';
 import 'package:militarymessenger/XploreTabScreen.dart';
@@ -63,6 +64,7 @@ StreamController<List<SuratModel>> listControllerSurat = BehaviorSubject();
 StreamController<List<NewsModel>> listControllerNews = BehaviorSubject();
 StreamController<List<BadgeModel>> listControllerBadge = BehaviorSubject();
 StreamController<List<AttendanceModel>> listControlerAttendance = BehaviorSubject();
+StreamController<List<BadgeModel>> listControlerBadge = BehaviorSubject();
 
 String apiKeyCore =
     '1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
@@ -1378,7 +1380,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
                 text: 'Chat',
               ),
               Tab(
-                text: 'E-Office',
+                text: 'eOffice',
               ),
               Tab(
                 text: 'History',
