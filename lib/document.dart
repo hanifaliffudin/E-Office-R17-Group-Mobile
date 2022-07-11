@@ -107,7 +107,11 @@ class _DocumentPageState extends State<DocumentPage> {
                             'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
                             placeholder: (progress) => Center(child: Text('$progress %')),
                             errorWidget: (error) => Center(child: Text(error.toString())),
-                            whenDone: (done) {readSurat(surat!.idSurat!);} ,
+                            whenDone: (done) {
+                                if(surat!.status == '1'){
+                                  readSurat(surat!.idSurat!);
+                                }
+                              },
                           )
                         :
                           const PDF(
@@ -1295,6 +1299,7 @@ class _DocumentPageState extends State<DocumentPage> {
       Map<String, dynamic> approveMap = jsonDecode(response.body);
 
       if(approveMap['code'] == 0){
+        print('read sukses');
       }
       else{
         EasyLoading.showError(approveMap['message']);
