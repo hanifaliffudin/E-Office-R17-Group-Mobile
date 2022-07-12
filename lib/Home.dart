@@ -2502,8 +2502,8 @@ void _openDialogLogout(ctx) {
                   _deleteAppDir();
                   _deleteCacheDir();
 
-                  await SpUtil.instance.setBoolValue('messagesDownloaded', false);
-                  await SpUtil.instance.setBoolValue('attendancesDownloaded', false);
+                  await SpUtil.instance.removeValue('messagesDownloaded');
+                  await SpUtil.instance.removeValue('attendancesDownloaded');
                   mains.objectbox.boxConversation.removeAll();
                   mains.objectbox.boxChat.removeAll();
                   mains.objectbox.boxContact.removeAll();
