@@ -40,6 +40,7 @@ import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/profile.dart';
 import 'package:militarymessenger/settings/chat.dart';
 import 'package:militarymessenger/settings/notification.dart';
+import 'package:militarymessenger/location_accuracy_page.dart';
 import 'package:militarymessenger/utils/sp_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -137,7 +138,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           message.notification!.title!,
           // style: AndroidNotificationStyle.BigText,
           icon: "@mipmap/ic_launcher",
-          groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+          // groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+          groupKey: 'r17eoffice',
           importance: Importance.defaultImportance, 
           priority: Priority.defaultPriority,
           styleInformation: BigTextStyleInformation(
@@ -149,16 +151,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
             htmlFormatSummaryText: true,
           ),
         );
-        // AndroidNotificationDetails groupNotificationDetails = AndroidNotificationDetails(
-        //   message.data['id'],
-        //   message.notification!.title!,
-        //   icon: "@mipmap/ic_launcher",
-        //   groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
-        //   setAsGroupSummary: true,
-        //   styleInformation: BigTextStyleInformation(
-        //     message.data['msg_data'],
-        //   ),
-        // );
+        AndroidNotificationDetails groupNotificationDetails = AndroidNotificationDetails(
+          message.data['id'],
+          message.notification!.title!,
+          icon: "@mipmap/ic_launcher",
+          // groupKey: message.data.containsKey('room_id') ? message.data['room_id'].toString() : '',
+          groupKey: 'r17eoffice',
+          setAsGroupSummary: true,
+          styleInformation: BigTextStyleInformation(
+            message.data['msg_data'],
+            htmlFormatBigText: true,
+            contentTitle: message.notification!.title!,
+            htmlFormatContentTitle: true,
+            summaryText: 'Messenger',
+            htmlFormatSummaryText: true,
+          ),
+        );
 
         flutterLocalNotificationsPlugin.show(
           notification.hashCode,
@@ -167,12 +175,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           NotificationDetails(android: notificationDetails),
           payload: jsonEncode(message.data),
         );
-        // flutterLocalNotificationsPlugin.show(
-        //   0, 
-        //   '', 
-        //   '', 
-        //   NotificationDetails(android: groupNotificationDetails),
-        // );
+        flutterLocalNotificationsPlugin.show(
+          0, 
+          '', 
+          '', 
+          NotificationDetails(android: groupNotificationDetails),
+        );
 
         if (message.data.containsKey('room_id')) {
           var groupNotif = GroupNotifModel(
@@ -552,7 +560,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
 
         // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
-        if (distanceOnMeter <= 50 && now.hour >= 7) {
+        if (distanceOnMeter <= 70 && now.hour >= 7) {
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date
                   .equals(DateFormat('dd MM yyyy').format(now)))
@@ -572,6 +580,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               attendance.longitude = locationData.longitude;
               attendance.status = 1;
               attendance.server = false;
+
               saveAttendance(attendance, true);
             }
           } else {
@@ -584,9 +593,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               status: 1,
               server: false,
             );
+
             saveAttendance(attendance, true);
           }
-        } else if (distanceOnMeter > 50) {
+        } else if (distanceOnMeter > 100) {
           if (now.hour >= 7) {
             var query = mains.objectbox.boxAttendance
                 .query(AttendanceModel_.date
@@ -596,7 +606,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
             if (query.find().isNotEmpty) {
               var attendance = query.find().first;
-
               attendance.id = attendance.id;
               attendance.date = attendance.date;
               attendance.checkInAt = attendance.checkInAt;
@@ -606,6 +615,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               attendance.longitude = attendance.longitude;
               attendance.status = 0;
               attendance.server = false;
+
               saveAttendance(attendance, true);
             }
           } else {
@@ -630,6 +640,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
                 attendance.longitude = attendance.longitude;
                 attendance.status = 0;
                 attendance.server = false;
+
                 saveAttendance(attendance, false);
               }
             }
@@ -668,8 +679,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         location.enableBackgroundMode(enable: true);
         location.changeSettings(accuracy: LocationAccuracy.high);
         locationSubscription = location.onLocationChanged.listen((locationData) async {
-          print(await SpUtil.instance.getBoolValue('locationPermission'));
-          // if (await SpUtil.instance.getBoolValue('locationPermission')) {
+          _stateController.changeLocationAccuracy(locationData.accuracy!);
+
+          if (locationData.accuracy! < 20) {
             try {
               final result = await InternetAddress.lookup('google.com');
 
@@ -679,7 +691,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
             } catch (e) {
               // print(e.toString());
             }
-          // }
+          }
         });
       }
     }
@@ -736,6 +748,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
   @override
   void initState() {
+    
     flutterLocalNotificationsPlugin.cancelAll();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -1570,6 +1583,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
                   );
                 },
               ),
+              // ListTile(
+              //   title: Row(
+              //     children: [
+              //       Icon(
+              //         Icons.pin_drop_outlined,
+              //         color: Theme.of(context)
+              //             .inputDecorationTheme
+              //             .labelStyle
+              //             ?.color,
+              //         size: 20,
+              //       ),
+              //       const SizedBox(
+              //         width: 10,
+              //       ),
+              //       const Text(
+              //         'Location Accuracy',
+              //         style: TextStyle(
+              //           fontSize: 14,
+              //           fontWeight: FontWeight.normal,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => const LocationAccuracyPage()),
+              //     );
+              //   },
+              // ),
               ListTile(
                 title: Row(
                   children: [
@@ -2454,20 +2498,29 @@ void _openDialogLogout(ctx) {
                   'Yes',
                   style: TextStyle(color: Colors.red),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   _deleteAppDir();
                   _deleteCacheDir();
 
+                  await SpUtil.instance.setBoolValue('messagesDownloaded', false);
+                  await SpUtil.instance.setBoolValue('attendancesDownloaded', false);
                   mains.objectbox.boxConversation.removeAll();
                   mains.objectbox.boxChat.removeAll();
                   mains.objectbox.boxContact.removeAll();
-                  mains.objectbox.boxUser.removeAll();
                   mains.objectbox.boxAttendance.removeAll();
                   mains.objectbox.boxAttendanceHistory.removeAll();
                   mains.objectbox.boxSurat.removeAll();
                   mains.objectbox.boxBadge.removeAll();
                   mains.objectbox.boxNews.removeAll();
                   mains.objectbox.boxUserPreference.removeAll();
+                  mains.objectbox.boxGroupNotif.removeAll();
+                  mains.objectbox.boxUser.removeAll();
+
+                  // Navigator.pop(ctx);
+                  // Navigator.pushReplacement(
+                  //   ctx, 
+                  //   MaterialPageRoute(builder: (context) => Login()),
+                  // );
 
                   Navigator.pushAndRemoveUntil(
                     ctx,
