@@ -20,15 +20,15 @@ import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
 
-class XploreTabScreen extends StatefulWidget {
-  const XploreTabScreen({Key? key}) : super(key: key);
+class EOfficeTabScreen extends StatefulWidget {
+  const EOfficeTabScreen({Key? key}) : super(key: key);
 
 
   @override
-  State<XploreTabScreen> createState() => _XploreTabScreenState();
+  State<EOfficeTabScreen> createState() => _EOfficeTabScreenState();
 }
 
-class _XploreTabScreenState extends State<XploreTabScreen> {
+class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
 
   @override
   void initState() {
@@ -53,7 +53,10 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const InboxPage()),
-                      ).then((value) => getAllBadge());
+                      ).then((value) {
+                          getAllBadge();
+                          getRecent();
+                      });
                     },
                     child: Column(
                           children: [
@@ -94,7 +97,10 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const NeedSign()),
-                      ).then((value) => getAllBadge());
+                      ).then((value) {
+                          getAllBadge();
+                          getRecent();
+                      });
                     },
                     child: Column(
                       children: [
@@ -135,7 +141,10 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
                     onTap: () {
                       Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const NeedReview()),
-                      ).then((value) => getAllBadge());
+                      ).then((value) {
+                          getAllBadge();
+                          getRecent();
+                      });
                     },
                     child: Column(
                       children: [
@@ -514,9 +523,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -617,9 +623,6 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -655,9 +658,9 @@ class _XploreTabScreenState extends State<XploreTabScreen> {
             );
 
             mains.objectbox.boxSurat.put(surat);
-            setState(() {});
           }
         }
+        setState(() {});
       }
       else{
         EasyLoading.showError(suratMap['message']);

@@ -73,377 +73,396 @@ class _NeedSignState extends State<NeedSign> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: StreamBuilder<List<SuratModel>>(
-          stream: homes.listControllerSurat.stream,
-          builder: (context, snapshot) {
-            if(mains.objectbox.boxSurat.isEmpty()){
-              return Container(
-                  margin: const EdgeInsets.only(top: 15.0),
-                  width: MediaQuery.of(context).size.width,
-                  child :const Text(
-                    'No need sign yet.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
-                  )
-              );
-            }
-            else{
-              var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
-              List<SuratModel> listSurat = queryInbox.find().toList();
-              if(listSurat.isEmpty){
-                return Container(
-                    margin: const EdgeInsets.only(top: 15.0),
-                    width: MediaQuery.of(context).size.width,
-                    child :const Text(
-                      'No need sign yet.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
-                    )
-                );
-              }
-              else{
-                DateTime now = DateTime.now();
-                DateTime date = DateTime(now.year, now.month, now.day);
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: StreamBuilder<List<SuratModel>>(
+                stream: homes.listControllerSurat.stream,
+                builder: (context, snapshot) {
+                  if(mains.objectbox.boxSurat.isEmpty()){
+                    return Container(
+                        margin: const EdgeInsets.only(top: 15.0),
+                        width: MediaQuery.of(context).size.width,
+                        child :const Text(
+                          'No need sign yet.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                        )
+                    );
+                  }
+                  else{
+                    var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
+                    List<SuratModel> listSurat = queryInbox.find().toList();
+                    if(listSurat.isEmpty){
+                      return Container(
+                          margin: const EdgeInsets.only(top: 15.0),
+                          width: MediaQuery.of(context).size.width,
+                          child :const Text(
+                            'No need sign yet.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                          )
+                      );
+                    }
+                    else{
+                      DateTime now = DateTime.now();
+                      DateTime date = DateTime(now.year, now.month, now.day);
 
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          itemCount: listSurat.length,
-                          itemBuilder:(BuildContext context,index)=>
-                          GestureDetector(
-                            onTap: (){
-                              if(suratSelected.isNotEmpty){
-                                var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                                if(query.find().isNotEmpty) {
-                                  final surat = SuratModel(
-                                    id: query.find().first.id,
-                                    idSurat: query.find().first.idSurat,
-                                    namaSurat: query.find().first.namaSurat,
-                                    nomorSurat: query.find().first.nomorSurat,
-                                    editor: query.find().first.editor,
-                                    perihal: query.find().first.perihal,
-                                    status: query.find().first.status,
-                                    tglSelesai: query.find().first.tglSelesai,
-                                    kategori: query.find().first.kategori,
-                                    url: query.find().first.url,
-                                    tipeSurat: query.find().first.tipeSurat,
-                                    tglBuat: query.find().first.tglBuat,
-                                    approver: query.find().first.approver,
-                                    penerima: query.find().first.penerima,
-                                    isSelected: !listSurat[index].isSelected,
-                                    isMeterai: query.find().first.isMeterai,
-                                  );
+                      return Container(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: listSurat.length,
+                                itemBuilder:(BuildContext context,index)=>
+                                GestureDetector(
+                                  onTap: (){
+                                    if(suratSelected.isNotEmpty){
+                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                      if(query.find().isNotEmpty) {
+                                        final surat = SuratModel(
+                                          id: query.find().first.id,
+                                          idSurat: query.find().first.idSurat,
+                                          namaSurat: query.find().first.namaSurat,
+                                          nomorSurat: query.find().first.nomorSurat,
+                                          editor: query.find().first.editor,
+                                          perihal: query.find().first.perihal,
+                                          status: query.find().first.status,
+                                          tglSelesai: query.find().first.tglSelesai,
+                                          kategori: query.find().first.kategori,
+                                          url: query.find().first.url,
+                                          tipeSurat: query.find().first.tipeSurat,
+                                          tglBuat: query.find().first.tglBuat,
+                                          approver: query.find().first.approver,
+                                          penerima: query.find().first.penerima,
+                                          isSelected: !listSurat[index].isSelected,
+                                          isMeterai: query.find().first.isMeterai,
+                                        );
 
-                                  mains.objectbox.boxSurat.put(surat);
-                                  setState(() {});
-                                  if(listSurat[index].isSelected==false){
-                                    suratSelected.add(listSurat[index]);
-                                  }else{
-                                    suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
-                                  }
-                                }
-                              }else{
-                                Navigator.push(
-                                  context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
-                                );
-                              }
-                            },
-                            onLongPress: (){
-                              var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                              if(query.find().isNotEmpty) {
-                                final surat = SuratModel(
-                                  id: query.find().first.id,
-                                  idSurat: query.find().first.idSurat,
-                                  namaSurat: query.find().first.namaSurat,
-                                  nomorSurat: query.find().first.nomorSurat,
-                                  editor: query.find().first.editor,
-                                  perihal: query.find().first.perihal,
-                                  status: query.find().first.status,
-                                  tglSelesai: query.find().first.tglSelesai,
-                                  kategori: query.find().first.kategori,
-                                  url: query.find().first.url,
-                                  tipeSurat: query.find().first.tipeSurat,
-                                  tglBuat: query.find().first.tglBuat,
-                                  approver: query.find().first.approver,
-                                  penerima: query.find().first.penerima,
-                                  isSelected: !listSurat[index].isSelected,
-                                  isMeterai: query.find().first.isMeterai,
+                                        mains.objectbox.boxSurat.put(surat);
+                                        setState(() {});
+                                        if(listSurat[index].isSelected==false){
+                                          suratSelected.add(listSurat[index]);
+                                        }else{
+                                          suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                        }
+                                      }
+                                    }else{
+                                      Navigator.push(
+                                        context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
+                                      ).then((value) => getNeedSign());
+                                    }
+                                  },
+                                  onLongPress: (){
+                                    var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                    if(query.find().isNotEmpty) {
+                                      final surat = SuratModel(
+                                        id: query.find().first.id,
+                                        idSurat: query.find().first.idSurat,
+                                        namaSurat: query.find().first.namaSurat,
+                                        nomorSurat: query.find().first.nomorSurat,
+                                        editor: query.find().first.editor,
+                                        perihal: query.find().first.perihal,
+                                        status: query.find().first.status,
+                                        tglSelesai: query.find().first.tglSelesai,
+                                        kategori: query.find().first.kategori,
+                                        url: query.find().first.url,
+                                        tipeSurat: query.find().first.tipeSurat,
+                                        tglBuat: query.find().first.tglBuat,
+                                        approver: query.find().first.approver,
+                                        penerima: query.find().first.penerima,
+                                        isSelected: !listSurat[index].isSelected,
+                                        isMeterai: query.find().first.isMeterai,
 
-                                );
+                                      );
 
-                                mains.objectbox.boxSurat.put(surat);
-                                setState(() {});
-                                if(listSurat[index].isSelected==false){
-                                  suratSelected.add(listSurat[index]);
-                                }else{
-                                  suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
-                                }
-                              }
-                            },
-                            child: Container(
-                            margin: const EdgeInsets.only(bottom: 5),
-                            height: 95,
-                            width: 500,
-                            child: Card(
-                              margin: const EdgeInsets.symmetric(vertical: 3),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      left: 0,
-                                      top: 5,
-                                      child: CircleAvatar(
-                                        backgroundColor: Colors.transparent,
-                                        child: Image(
-                                          image: listSurat[index].isMeterai == 0 ?
-                                          const AssetImage('assets/images/pdf.png')
-                                          :
-                                          const AssetImage('assets/images/pdf-emeterai.png'),
-                                          width: 50,
-                                        ),
-                                        radius: 25,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      left: 65,
-                                      top: 5,
-                                      bottom: 5,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                      mains.objectbox.boxSurat.put(surat);
+                                      setState(() {});
+                                      if(listSurat[index].isSelected==false){
+                                        suratSelected.add(listSurat[index]);
+                                      }else{
+                                        suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                  margin: const EdgeInsets.only(bottom: 5),
+                                  height: 95,
+                                  width: 500,
+                                  child: Card(
+                                    margin: const EdgeInsets.symmetric(vertical: 3),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Stack(
                                         children: [
-                                          ConstrainedBox(
-                                            constraints: const BoxConstraints(
-                                                maxWidth: 250
-                                            ),
-                                            child: Text(
-                                              listSurat[index].namaSurat!,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
+                                          Positioned(
+                                            left: 0,
+                                            top: 5,
+                                            child: CircleAvatar(
+                                              backgroundColor: Colors.transparent,
+                                              child: Image(
+                                                image: listSurat[index].isMeterai == 0 ?
+                                                const AssetImage('assets/images/pdf.png')
+                                                :
+                                                const AssetImage('assets/images/pdf-emeterai.png'),
+                                                width: 50,
                                               ),
+                                              radius: 25,
                                             ),
                                           ),
-                                          Text(
-                                            listSurat[index].nomorSurat!,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5,
+                                          Positioned(
+                                            left: 65,
+                                            top: 5,
+                                            bottom: 5,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                ConstrainedBox(
+                                                  constraints: const BoxConstraints(
+                                                      maxWidth: 250
+                                                  ),
+                                                  child: Text(
+                                                    listSurat[index].namaSurat!,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  listSurat[index].editor!,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.normal,
+                                                    height: 1.5,
+                                                    // color: Color(0xFF171717),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  listSurat[index].nomorSurat!,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w400,
+                                                    height: 1.5,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
-                                          Text(
-                                            DateFormat('dd MMM yyyy  H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5,
+                                          suratSelected.isEmpty ?
+                                          Positioned(
+                                            right: 5,
+                                            top: 10,
+                                            child: Padding(
+                                                padding: const EdgeInsets.only(left: 20),
+                                                child: Text(
+                                                  listSurat[index].tglSelesai == null ?
+                                                  ""
+                                                      :
+                                                  date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
+                                                  DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                                      :
+                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                                  ,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                  textAlign: TextAlign.right,
+                                                )
                                             ),
                                           )
-                                          :
-                                          Text(
-                                            DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5,
-                                            ),
-                                          ),
+                                              :
+                                          Positioned(
+                                            right: 5,
+                                            top: 10,
+                                            child: Padding(
+                                                padding: const EdgeInsets.only(left: 20),
+                                                child: Checkbox(
+                                                    value: listSurat[index].isSelected,
+                                                    onChanged: (bool? value) {
+                                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                                      if(query.find().isNotEmpty) {
+                                                        final surat = SuratModel(
+                                                          id: query.find().first.id,
+                                                          idSurat: query.find().first.idSurat,
+                                                          namaSurat: query.find().first.namaSurat,
+                                                          nomorSurat: query.find().first.nomorSurat,
+                                                          editor: query.find().first.editor,
+                                                          perihal: query.find().first.perihal,
+                                                          status: query.find().first.status,
+                                                          tglSelesai: query.find().first.tglSelesai,
+                                                          kategori: query.find().first.kategori,
+                                                          url: query.find().first.url,
+                                                          tipeSurat: query.find().first.tipeSurat,
+                                                          tglBuat: query.find().first.tglBuat,
+                                                          approver: query.find().first.approver,
+                                                          penerima: query.find().first.penerima,
+                                                          isSelected: !listSurat[index].isSelected,
+                                                          isMeterai: query.find().first.isMeterai,
 
+                                                        );
+
+                                                        mains.objectbox.boxSurat.put(surat);
+                                                        setState(() {});
+                                                        if(listSurat[index].isSelected==false){
+                                                          suratSelected.add(listSurat[index]);
+                                                        }else{
+                                                          suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                                        }
+                                                      }
+                                                    }
+                                                )
+                                            ),
+                                          )
                                         ],
                                       ),
                                     ),
-                                    suratSelected.isNotEmpty ?
-                                    Positioned(
-                                      right: 5,
-                                      top: 10,
-                                      child: Padding(
-                                          padding: const EdgeInsets.only(left: 20),
-                                          child: Checkbox(
-                                              value: listSurat[index].isSelected,
-                                              onChanged: (bool? value) {
-                                                var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                                                if(query.find().isNotEmpty) {
-                                                  final surat = SuratModel(
-                                                    id: query.find().first.id,
-                                                    idSurat: query.find().first.idSurat,
-                                                    namaSurat: query.find().first.namaSurat,
-                                                    nomorSurat: query.find().first.nomorSurat,
-                                                    editor: query.find().first.editor,
-                                                    perihal: query.find().first.perihal,
-                                                    status: query.find().first.status,
-                                                    tglSelesai: query.find().first.tglSelesai,
-                                                    kategori: query.find().first.kategori,
-                                                    url: query.find().first.url,
-                                                    tipeSurat: query.find().first.tipeSurat,
-                                                    tglBuat: query.find().first.tglBuat,
-                                                    approver: query.find().first.approver,
-                                                    penerima: query.find().first.penerima,
-                                                    isSelected: !listSurat[index].isSelected,
-                                                    isMeterai: query.find().first.isMeterai,
+                                  ),
+                              ),
+                                ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  }
 
-                                                  );
+                }
+              ),
+            ),
+          ),
+          suratSelected.isNotEmpty ?
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: ElevatedButton.icon(
+              onPressed: (){
+                List listMapSurat = [];
 
-                                                  mains.objectbox.boxSurat.put(surat);
-                                                  setState(() {});
-                                                  if(listSurat[index].isSelected==false){
-                                                    suratSelected.add(listSurat[index]);
-                                                  }else{
-                                                    suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
-                                                  }
-                                                }
-                                              }
-                                          )
-                                      ),
-                                    )
-                                    :
-                                    const SizedBox(),
-                                  ],
+                for(var surat in suratSelected){
+                  Map mapSurat = { 'id': '${surat.idSurat}' };
+                  listMapSurat.add(mapSurat);
+                }
+
+                showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 10,),
+                        const Text('Are you sure to sign all the selected documents?',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const SizedBox(height: 20,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                      color: const Color(0xFF029FE6)
+                                  )
+                              ),
+                              child: TextButton(
+                                onPressed: () => Navigator.pop(context, 'Cancel'),
+                                child: const Text('Cancel',
+                                  style: TextStyle(
+                                      color: Color(0xFF029FE6)
+                                  ),
                                 ),
                               ),
                             ),
-                        ),
-                          ),
-                      ),
-                      suratSelected.isNotEmpty ?
-                      ElevatedButton.icon(
-                        onPressed: (){
-                            List listMapSurat = [];
+                            Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                  color: const Color(0xFF029FE6),
+                                  borderRadius: BorderRadius.circular(6)
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
 
-                            for(var surat in suratSelected){
-                              Map mapSurat = { 'id': '${surat.idSurat}' };
-                              listMapSurat.add(mapSurat);
-                            }
+                                  getOtpBulk(listMapSurat);
 
-                            showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                content: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: 10,),
-                                    const Text('Are you sure to sign all the selected documents?',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    const SizedBox(height: 20,),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          width: 100,
-                                          decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(
-                                                  color: const Color(0xFF029FE6)
-                                              )
-                                          ),
-                                          child: TextButton(
-                                            onPressed: () => Navigator.pop(context, 'Cancel'),
-                                            child: const Text('Cancel',
-                                              style: TextStyle(
-                                                  color: Color(0xFF029FE6)
-                                              ),
+                                  showDialog<String>(
+                                    context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      insetPadding: const EdgeInsets.symmetric(horizontal: 7),
+                                      content: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('OTP',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 24
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          width: 100,
-                                          decoration: BoxDecoration(
-                                              color: const Color(0xFF029FE6),
-                                              borderRadius: BorderRadius.circular(6)
+                                          const SizedBox(height: 20,),
+                                          Scrollbar(
+                                            child: buildPinPut(listMapSurat),
                                           ),
-                                          child: TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-
-                                              getOtpBulk(listMapSurat);
-
-                                              showDialog<String>(
-                                                context: context,
-                                                builder: (BuildContext context) => AlertDialog(
-                                                  insetPadding: const EdgeInsets.symmetric(horizontal: 7),
-                                                  content: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      const Text('OTP',
-                                                        style: TextStyle(
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 24
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 20,),
-                                                      Scrollbar(
-                                                        child: buildPinPut(listMapSurat),
-                                                      ),
-                                                      const SizedBox(height: 20,),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            child: const Text('Confirm',
-                                              style: TextStyle(
-                                                  color: Colors.white
-                                              ),),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
+                                          const SizedBox(height: 20,),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Confirm',
+                                  style: TextStyle(
+                                      color: Colors.white
+                                  ),),
                               ),
-                            );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(MediaQuery.of(context).size.width, 40) ,
-                          primary: const Color(0xFF1FA463),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(
-                            Icons.check,
-                            size: 13,
-                            color: Colors.white
-                        ),
-                        label: const Text("Sign Selected Document",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16
-                          ),),
-                      )
-                          :
-                      const SizedBox()
-                    ],
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 );
-              }
-            }
-
-          }
-        ),
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(MediaQuery.of(context).size.width, 50) ,
+                primary: const Color(0xFF1FA463),
+                elevation: 0,
+              ),
+              icon: const Icon(
+                  Icons.check,
+                  size: 13,
+                  color: Colors.white
+              ),
+              label: const Text("Sign Selected Document",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16
+                ),),
+            ),
+          )
+              :
+          const SizedBox()
+        ],
       ),
     );
   }
@@ -573,7 +592,6 @@ class _NeedSignState extends State<NeedSign> {
             );
 
             mains.objectbox.boxSurat.put(surat);
-            setState(() {});
           }
           else{
             final surat = SuratModel(
@@ -594,9 +612,9 @@ class _NeedSignState extends State<NeedSign> {
             );
 
             mains.objectbox.boxSurat.put(surat);
-            setState(() {});
           }
         }
+        setState(() {});
       }
 
 
@@ -668,28 +686,9 @@ class _NeedSignState extends State<NeedSign> {
           var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat['id'])).build();
           if(query.find().isNotEmpty) {
             mains.objectbox.boxSurat.remove(query.find().first.id);
-            // final surat = SuratModel(
-            //   id: query.find().first.id,
-            //   idSurat: query.find().first.idSurat,
-            //   namaSurat: query.find().first.namaSurat,
-            //   nomorSurat: query.find().first.nomorSurat,
-            //   editor: query.find().first.editor,
-            //   perihal: query.find().first.perihal,
-            //   status: query.find().first.status,
-            //   tglSelesai: query.find().first.tglSelesai,
-            //   url: signingMap['data'],
-            //   kategori: 'signed',
-            //   tglBuat: query.find().first.tglBuat,
-            //   tipeSurat: query.find().first.tipeSurat,
-            //   approver: query.find().first.approver,
-            //   penerima: query.find().first.penerima,
-            // );
-            //
-            // mains.objectbox.boxSurat.put(surat);
           }
         }
         EasyLoading.showSuccess('Berhasil Signing!');
-        Navigator.pop(context);
         Navigator.pop(context);
         setState(() {});
       }

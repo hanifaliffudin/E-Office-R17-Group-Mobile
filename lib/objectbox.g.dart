@@ -546,11 +546,6 @@ final _entities = <ModelEntity>[
             id: const IdUid(4, 3380206623835819827),
             name: 'badgeNeedApprove',
             type: 6,
-            flags: 0),
-        ModelProperty(
-            id: const IdUid(6, 4177655746767577483),
-            name: 'badgeMeterai',
-            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -712,7 +707,8 @@ ModelDefinition getObjectBoxModel() {
         3568183607304925893,
         8107107720145537335,
         4949612167761542987,
-        638927138085380728
+        638927138085380728,
+        4177655746767577483
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1236,7 +1232,6 @@ ModelDefinition getObjectBoxModel() {
           fbb.addInt64(1, object.badgeInbox);
           fbb.addInt64(2, object.badgeNeedSign);
           fbb.addInt64(3, object.badgeNeedApprove);
-          fbb.addInt64(5, object.badgeMeterai);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1251,9 +1246,7 @@ ModelDefinition getObjectBoxModel() {
               badgeNeedSign:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
               badgeNeedApprove:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
-              badgeMeterai:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 14, 0));
+                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0));
 
           return object;
         }),
@@ -1766,10 +1759,6 @@ class BadgeModel_ {
   /// see [BadgeModel.badgeNeedApprove]
   static final badgeNeedApprove =
       QueryIntegerProperty<BadgeModel>(_entities[8].properties[3]);
-
-  /// see [BadgeModel.badgeMeterai]
-  static final badgeMeterai =
-      QueryIntegerProperty<BadgeModel>(_entities[8].properties[4]);
 }
 
 /// [AttendanceModel] entity fields to define ObjectBox queries.
