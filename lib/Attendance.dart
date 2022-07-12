@@ -36,7 +36,7 @@ class _AttendanceState extends State<Attendance> {
     super.dispose();
   }
 
-  void _activeOnChange(bool value) async {
+  void _locationPermissionOnChange(bool value) async {
     if (value) {
       locationPermissionDialog(
         context, 
@@ -52,8 +52,8 @@ class _AttendanceState extends State<Attendance> {
         }
       );
     } else {
-      await SpUtil.instance.setBoolValue('locationPermission', false);
-      _stateController.locationPermission(false);
+      // await SpUtil.instance.setBoolValue('locationPermission', false);
+      // _stateController.locationPermission(false);
     }
   }
 
@@ -74,8 +74,9 @@ class _AttendanceState extends State<Attendance> {
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
             child: Obx(() => Switch(
+              activeColor: Colors.blue,
               value: _stateController.locationPermission.value, 
-              onChanged: (bool value) => _activeOnChange(value),
+              onChanged: (bool value) => _locationPermissionOnChange(value),
             )),
           ),
         ],
