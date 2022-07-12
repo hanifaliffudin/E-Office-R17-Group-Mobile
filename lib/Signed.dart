@@ -133,12 +133,12 @@ class _SignedPageState extends State<SignedPage> {
                                               ),
                                             ),
                                             Text(
-                                              mains.objectbox.boxUser.get(1)!.userName!,
+                                              listSurat[index].editor!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
                                               ),
                                             ),
@@ -163,30 +163,20 @@ class _SignedPageState extends State<SignedPage> {
                                         top: 10,
                                         child: Padding(
                                             padding: const EdgeInsets.only(left: 20),
-                                            child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 5,),
-                                                Text(
-                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            :
-                                            Text(
-                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                            child: Text(
+                                              listSurat[index].tglBuat == null ?
+                                              ""
+                                                  :
+                                              date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
+                                              DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                                  :
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                              ,
                                               style: const TextStyle(
-                                                  fontSize: 11
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.normal,
                                               ),
+                                              textAlign: TextAlign.right,
                                             )
                                         ),
                                       ),

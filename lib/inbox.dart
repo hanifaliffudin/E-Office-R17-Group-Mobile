@@ -71,6 +71,9 @@ class _InboxPageState extends State<InboxPage> {
               );
             }
             else{
+              DateTime now = DateTime.now();
+              DateTime date = DateTime(now.year, now.month, now.day);
+
               return Container(
                 padding: const EdgeInsets.all(20),
                 child: ListView.builder(
@@ -81,45 +84,9 @@ class _InboxPageState extends State<InboxPage> {
                   itemBuilder:(BuildContext context,index)=>
                       InkWell(
                         onTap: (){
-                          var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.status.equals('1')).build();
-
-                          if(query.find().isNotEmpty) {
-                            final surat = SuratModel(
-                              id: query.find().first.id,
-                              idSurat: query.find().first.idSurat,
-                              namaSurat: query.find().first.namaSurat,
-                              nomorSurat: query.find().first.nomorSurat,
-                              editor: query.find().first.editor,
-                              perihal: query.find().first.perihal,
-                              status: "2",
-                              tglSelesai: query.find().first.tglSelesai,
-                              kategori: query.find().first.kategori,
-                              url: query.find().first.url,
-                              tipeSurat: query.find().first.tipeSurat,
-                              tglBuat: query.find().first.tglBuat,
-                            );
-
-                            mains.objectbox.boxSurat.put(surat);
-
-                            var queryBadge = mains.objectbox.boxBadge.query(BadgeModel_.id.equals(1)).build();
-                            if(queryBadge.find().isNotEmpty) {
-                              var badge = BadgeModel(
-                                id: 1,
-                                badgeInbox: queryBadge.find().first.badgeInbox-1,
-                                badgeNeedSign: queryBadge.find().first.badgeNeedSign,
-                              );
-
-                              mains.objectbox.boxBadge.put(badge);
-                            }
-                            setState(() {});
-                          }
-
                           Navigator.push(
-                            context, MaterialPageRoute(builder: (context) {
-                            return DocumentPage(listSurat[index]);
-                          }
-                          ),
-                          );
+                            context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
+                          ).then((value) => getDataSurat());
                         },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 5),
@@ -213,7 +180,11 @@ class _InboxPageState extends State<InboxPage> {
                                           listSurat[index].tglSelesai == null ?
                                           ""
                                               :
-                                          DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString(),
+                                          date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
+                                          DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                              :
+                                          DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                          ,
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: mains.objectbox.boxSurat.get(listSurat[index].id)!.status == "1" ?
@@ -221,6 +192,7 @@ class _InboxPageState extends State<InboxPage> {
                                                 :
                                             FontWeight.normal,
                                           ),
+                                          textAlign: TextAlign.right,
                                         )
                                     ),
                                   ),
@@ -290,9 +262,6 @@ class _InboxPageState extends State<InboxPage> {
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
             }
             else{
               final surat = SuratModel(
@@ -313,11 +282,9 @@ class _InboxPageState extends State<InboxPage> {
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
             }
           }
+          setState(() {});
         }
       }
       else{

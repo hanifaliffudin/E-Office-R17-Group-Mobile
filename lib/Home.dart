@@ -21,7 +21,7 @@ import 'package:militarymessenger/ChatTabScreen.dart';
 import 'package:militarymessenger/Drive.dart';
 import 'package:militarymessenger/FeedTabScreen.dart';
 import 'package:militarymessenger/Login.dart';
-import 'package:militarymessenger/XploreTabScreen.dart';
+import 'package:militarymessenger/EOfficeTabScreen.dart';
 import 'package:militarymessenger/History.dart';
 import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/SettingsPage.dart';
@@ -1604,7 +1604,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           children: [
             FeedTabScreen(),
             ChatTabScreen(),
-            const XploreTabScreen(),
+            const EOfficeTabScreen(),
             History(),
           ],
           controller: _tabController,

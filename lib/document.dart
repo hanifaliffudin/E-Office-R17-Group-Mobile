@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:militarymessenger/Signed.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:open_file/open_file.dart';
@@ -322,7 +323,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                           cardApprover[index].status! == 'Approved' ?
                                           const Color(0xFFECFDF5)
                                           :
-                                          cardApprover[index].status! == 'Rejected' ?
+                                          cardApprover[index].status! == 'Canceled' ?
                                           const Color(0xFFFFEBEA)
                                           :
                                           cardApprover[index].status! == 'Returned' ?
@@ -338,7 +339,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                               cardApprover[index].status! == 'Approved' ?
                                               const Color(0xFF1FA463)
                                                   :
-                                              cardApprover[index].status! == 'Rejected' ?
+                                              cardApprover[index].status! == 'Canceled' ?
                                               const Color(0xFFDC2626)
                                                   :
                                               cardApprover[index].status! == 'Returned' ?
@@ -876,7 +877,7 @@ class _DocumentPageState extends State<DocumentPage> {
               ),
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'APPROVE') ?
             Container(
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 1,
@@ -911,7 +912,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'RETURN') ?
             Container(
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 1,
@@ -946,7 +947,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'REJECT') ?
             Container(
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 1,
@@ -1022,13 +1023,13 @@ class _DocumentPageState extends State<DocumentPage> {
             mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "needApprove"?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'APPROVE') ?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'RETURN') ?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'REJECT') ?
             Container()
                 :
             ElevatedButton.icon(
@@ -1148,6 +1149,8 @@ class _DocumentPageState extends State<DocumentPage> {
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -1204,6 +1207,8 @@ class _DocumentPageState extends State<DocumentPage> {
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -1257,16 +1262,18 @@ class _DocumentPageState extends State<DocumentPage> {
               status: query.find().first.status,
               tglSelesai: query.find().first.tglSelesai,
               url: query.find().first.url,
-              kategori: 'rejected',
+              kategori: 'canceled',
               tglBuat: query.find().first.tglBuat,
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
             );
 
             mains.objectbox.boxSurat.put(surat);
             setState(() {});
-            EasyLoading.showSuccess('Berhasil reject!');
+            EasyLoading.showSuccess('Berhasil cancel!');
             Navigator.pop(context);
           }
         }
@@ -1296,13 +1303,12 @@ class _DocumentPageState extends State<DocumentPage> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      Map<String, dynamic> approveMap = jsonDecode(response.body);
+      Map<String, dynamic> readMap = jsonDecode(response.body);
 
-      if(approveMap['code'] == 0){
-        print('read sukses');
+      if(readMap['code'] == 0){
       }
       else{
-        EasyLoading.showError(approveMap['message']);
+        EasyLoading.showError(readMap['message']);
       }
     }
     else{
@@ -1404,32 +1410,11 @@ class _DocumentPageState extends State<DocumentPage> {
       if(signingMap['code'] == 0){
         var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
         if(query.find().isNotEmpty) {
-          final surat = SuratModel(
-            id: query.find().first.id,
-            idSurat: query.find().first.idSurat,
-            namaSurat: query.find().first.namaSurat,
-            nomorSurat: query.find().first.nomorSurat,
-            editor: query.find().first.editor,
-            perihal: query.find().first.perihal,
-            status: query.find().first.status,
-            tglSelesai: query.find().first.tglSelesai,
-            url: signingMap['data'],
-            kategori: 'signed',
-            tglBuat: query.find().first.tglBuat,
-            tipeSurat: query.find().first.tipeSurat,
-            approver: query.find().first.approver,
-            penerima: query.find().first.penerima,
-          );
-
-          mains.objectbox.boxSurat.put(surat);
-          EasyLoading.showSuccess('Berhasil Signing!');
-          Navigator.pop(context);
-          Navigator.pop(context);
-          setState(() {});
-          // Navigator.push(
-          //   context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
-          // );
+          mains.objectbox.boxSurat.remove(query.find().first.id);
         }
+        EasyLoading.showSuccess('Berhasil Signing!');
+        Navigator.pop(context);
+        setState(() {});
       }
       else{
         EasyLoading.showError(signingMap['message']);
