@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
+import 'package:militarymessenger/functions/index_function.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'objectbox.g.dart';
@@ -588,14 +589,31 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                   child: Container(
                     // padding: EdgeInsets.all(10),
                     padding: const EdgeInsets.only(
-                      top: 10.0,
                       right: 10.0,
                       left: 10.0,
                     ),
                     child: ListView.builder(
                         itemCount: conversationList.length,
                         itemBuilder:(BuildContext context,index) {
-                            // print('id: ${conversationList[index].photoProfile} ${conversationList[index].idReceiver} ${conversationList[index].idReceiversGroup} $index');
+                          // print('id: ${conversationList[index].photoProfile} ${conversationList[index].idReceiver} ${conversationList[index].idReceiversGroup} $index');
+                          DateTime now = DateTime.now();
+                          DateTime date2 = DateTime.parse(conversationList[index].date!);
+                          String desc = "";
+
+                          if (IndexFunction.daysBetween(date2, now) < 7) {
+                            bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(conversationList[index].date!));
+
+                            if (isToday) {
+                              desc = DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!));
+                            } else if (IndexFunction.daysBetween(date2, now) == 1) {
+                              desc = "Yesterday";
+                            } else {
+                              desc = DateFormat('EEEE').format(DateTime.parse(conversationList[index].date!));
+                            }
+                          } else {
+                            desc = DateFormat('dd-MM-yyyy').format(DateTime.parse(conversationList[index].date!));
+                          }
+
                             return InkWell(
                                 onTap: (){
                                   if (isVisible == true) {
@@ -621,206 +639,194 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                     isVisible = !isVisible;
                                   });
                                 },
-                                child: Card(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Column(
-                                      children: <Widget>[
-                                        Row(
-                                          children: [
-
-                                            //Checklist delete
-                                            Visibility(
-                                              visible: isVisible,
-                                              child: Checkbox(
-                                                activeColor: const Color(0xFF2481CF),
-                                                shape: const CircleBorder(
-                                                    side: BorderSide(
-                                                        color: Colors.grey
-                                                    )
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: index == 0 ? 10.0 : 5.0),
+                                  child: Card(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Row(
+                                            children: [
+                                              //Checklist delete
+                                              Visibility(
+                                                visible: isVisible,
+                                                child: Checkbox(
+                                                  activeColor: const Color(0xFF2481CF),
+                                                  shape: const CircleBorder(
+                                                      side: BorderSide(
+                                                          color: Colors.grey
+                                                      )
+                                                  ),
+                                                  checkColor: Colors.white,
+                                                  value: isChecked,
+                                                  onChanged: (bool? value) {
+                                                    setState(() {
+                                                      isChecked = value!;
+                                                    });
+                                                  },
                                                 ),
-                                                checkColor: Colors.white,
-                                                value: isChecked,
-                                                onChanged: (bool? value) {
-                                                  setState(() {
-                                                    isChecked = value!;
-                                                  });
-                                                },
                                               ),
-                                            ),
-                                            Expanded(
-                                              child: ListTile(
-                                                leading: ClipOval(
-                                                    child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==null
-                                                        ?
-                                                    const CircleAvatar(
-                                                      radius: 25,
-                                                      backgroundColor: Color(0xffdde1ea),
-                                                      child:  Icon(
-                                                        Icons.person,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    )
-                                                        :
-                                                    conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
-                                                    const CircleAvatar(
-                                                        radius: 25,
-                                                        backgroundColor: Color(0xffdde1ea),
-                                                        child:  Icon(
-                                                          Icons.people_rounded,
-                                                          color: Colors.grey,
-                                                        )
-                                                    )
-                                                        :
-                                                    conversationList[index].idReceiver != null && conversationList[index].photoProfile==''
-                                                        ?
-                                                    const CircleAvatar(
-                                                      radius: 25,
-                                                      backgroundColor: Color(0xffdde1ea),
-                                                      child:  Icon(
-                                                        Icons.person,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    )
-                                                        :
-                                                    conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile=="" ?
-                                                    const CircleAvatar(
-                                                      radius: 25,
-                                                      backgroundColor: Color(0xffdde1ea),
-                                                      child:  Icon(
-                                                        Icons.people_rounded,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    )
-                                                        :
-                                                    CircleAvatar(
-                                                      // backgroundImage: _getPhoto(conversationList[index]),
-                                                      backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
-                                                      backgroundColor: Colors.transparent,
-                                                      radius: 25,
-                                                      // child: Image(
-                                                      //   image: _tempConv[index]!,
-                                                      // ),
-                                                    )
-                                                ),
-                                                title: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: <Widget>[
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: <Widget>[
-                                                          Text(
-                                                            conversationList[index].fullName!,
-                                                            overflow: TextOverflow.ellipsis,
-                                                            maxLines: 1,
-                                                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(bottom: 1.0),
+                                                  child: ListTile(
+                                                    leading: ClipOval(
+                                                        child:  conversationList[index].idReceiver != null && conversationList[index].photoProfile==null
+                                                            ?
+                                                        const CircleAvatar(
+                                                          radius: 25,
+                                                          backgroundColor: Color(0xffdde1ea),
+                                                          child:  Icon(
+                                                            Icons.person,
+                                                            color: Colors.grey,
                                                           ),
-                                                          conversationList[index].message != null ?
-                                                          ConstrainedBox(
-                                                            constraints: const BoxConstraints(
-                                                                maxWidth: 220
+                                                        )
+                                                            :
+                                                        conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile==null ?
+                                                        const CircleAvatar(
+                                                            radius: 25,
+                                                            backgroundColor: Color(0xffdde1ea),
+                                                            child:  Icon(
+                                                              Icons.people_rounded,
+                                                              color: Colors.grey,
+                                                            )
+                                                        )
+                                                            :
+                                                        conversationList[index].idReceiver != null && conversationList[index].photoProfile==''
+                                                            ?
+                                                        const CircleAvatar(
+                                                          radius: 25,
+                                                          backgroundColor: Color(0xffdde1ea),
+                                                          child:  Icon(
+                                                            Icons.person,
+                                                            color: Colors.grey,
+                                                          ),
+                                                        )
+                                                            :
+                                                        conversationList[index].idReceiversGroup != null && conversationList[index].photoProfile=="" ?
+                                                        const CircleAvatar(
+                                                          radius: 25,
+                                                          backgroundColor: Color(0xffdde1ea),
+                                                          child:  Icon(
+                                                            Icons.people_rounded,
+                                                            color: Colors.grey,
+                                                          ),
+                                                        )
+                                                            :
+                                                        CircleAvatar(
+                                                          // backgroundImage: _getPhoto(conversationList[index]),
+                                                          backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                          backgroundColor: Colors.transparent,
+                                                          radius: 25,
+                                                          // child: Image(
+                                                          //   image: _tempConv[index]!,
+                                                          // ),
+                                                        )
+                                                    ),
+                                                    title: Padding(
+                                                      padding: const EdgeInsets.only(bottom: 12.0),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: <Widget>[
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: <Widget>[
+                                                                Container(
+                                                                  alignment: Alignment.centerRight,
+                                                                  child: Text(
+                                                                    desc,
+                                                                    style: TextStyle(
+                                                                      color: conversationList[index].messageCout! > 0
+                                                                          ? const Color(0xFF25D366)
+                                                                          : Colors.grey,
+                                                                      fontSize: 12),
+                                                                  ),
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: Column(
+                                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          Text(
+                                                                            conversationList[index].fullName!,
+                                                                            overflow: TextOverflow.ellipsis,
+                                                                            maxLines: 1,
+                                                                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                                          ),
+                                                                          Padding(
+                                                                            padding: const EdgeInsets.only(right: 6.0),
+                                                                            child: conversationList[index].message != null ?
+                                                                            conversationList[index].statusReceiver=='' ?
+                                                                            Text(
+                                                                              conversationList[index].message!,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              maxLines: 1,
+                                                                              style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+                                                                            )
+                                                                                :
+                                                                            Text(
+                                                                              conversationList[index].statusReceiver,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              maxLines: 1,
+                                                                              style: const TextStyle(color: Color(0xFF25D366), fontSize: 14, height: 1.5),
+                                                                            ) :
+                                                                            const Text(
+                                                                              "",
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              maxLines: 1,
+                                                                              style: TextStyle(color: Colors.grey),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      )
+                                                                    ),
+                                                                    conversationList[index].messageCout! > 0
+                                                                        ?
+                                                                    Column(
+                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                      children: [
+                                                                        Container(
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal: 6.0,
+                                                                            vertical: 2.5,
+                                                                          ),
+                                                                          decoration: BoxDecoration(
+                                                                            // border: Border.all(width: 2),
+                                                                            // shape: BoxShape.circle,
+                                                                            // You can use like this way or like the below line
+                                                                            borderRadius: BorderRadius.circular(30.0),
+                                                                            color: Color(0xFF25D366),
+                                                                          ),
+                                                                          child: Text(
+                                                                            '${conversationList[index].messageCout}',
+                                                                            style: const TextStyle(
+                                                                              color: Colors.white, 
+                                                                              fontSize: 13,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    )
+                                                                        :
+                                                                    Container(),
+                                                                  ],
+                                                                ),
+                                                              ],
                                                             ),
-                                                            child: conversationList[index].statusReceiver=='' ?
-                                                            Text(
-                                                              conversationList[index].message!,
-                                                              overflow: TextOverflow.ellipsis,
-                                                              maxLines: 1,
-                                                              style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
-                                                            )
-                                                                :
-                                                            Text(
-                                                              conversationList[index].statusReceiver,
-                                                              overflow: TextOverflow.ellipsis,
-                                                              maxLines: 1,
-                                                              style: const TextStyle(color: Color(0xFF25D366), fontSize: 14, height: 1.5),
-                                                            )
-                                                            ,
-                                                          ) :
-                                                          const Text(
-                                                            "",
-                                                            overflow: TextOverflow.ellipsis,
-                                                            maxLines: 1,
-                                                            style: TextStyle(color: Colors.grey),
                                                           ),
                                                         ],
                                                       ),
                                                     ),
-                                                    Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        Text(
-                                                          DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!)),
-                                                          style: TextStyle(
-                                                              color: conversationList[index].messageCout! > 0
-                                                                  ? const Color(0xFF25D366)
-                                                                  : Colors.grey,
-                                                              fontSize: 12),
-                                                        ),
-                                                        conversationList[index].messageCout! > 0
-                                                            ?
-                                                        SizedBox(
-                                                          height: 45.0,
-                                                          child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Container(
-                                                                padding: const EdgeInsets.symmetric(
-                                                                  horizontal: 6.0,
-                                                                  vertical: 2.5,
-                                                                ),
-                                                                decoration: BoxDecoration(
-                                                                  // border: Border.all(width: 2),
-                                                                  // shape: BoxShape.circle,
-                                                                  // You can use like this way or like the below line
-                                                                  borderRadius: BorderRadius.circular(30.0),
-                                                                  color: Color(0xFF25D366),
-                                                                ),
-                                                                child: Text(
-                                                                  '${conversationList[index].messageCout}',
-                                                                  style: const TextStyle(
-                                                                    color: Colors.white, 
-                                                                    fontSize: 13,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        )
-                                                        // Transform(
-                                                        //     transform: new Matrix4.identity()..scale(0.8),
-                                                        //     child: Chip(
-                                                        //       backgroundColor: Color(0xFF25D366),
-                                                        //       label: Text(
-                                                        //         '${conversationList[index].messageCout}',
-                                                        //         style: TextStyle(color: Colors.white , fontSize: 12),
-                                                        //       ),
-                                                        //     )
-                                                        // )
-                                                            :
-                                                        const SizedBox(
-                                                          height: 45.0,
-                                                        ),
-                                                        // Transform(
-                                                        //     transform: new Matrix4.identity()..scale(0.8),
-                                                        //     child: Chip(
-                                                        //       backgroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
-                                                        //       label: Text(
-                                                        //         '',
-                                                        //         style: TextStyle(color: Colors.white, fontSize: 12),
-                                                        //       ),
-                                                        //     )
-                                                        // )
-                                                      ],
-                                                    )
-
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 )
