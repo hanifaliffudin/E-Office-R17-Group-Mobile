@@ -391,9 +391,10 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
                                                     date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
                                                     Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
                                                         :
-                                                    Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                                    Text(DateFormat('dd MMM yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
                                                     const SizedBox(height: 5,),
-                                                    Text(listSurat[index].status!),
+                                                    // Text(listSurat[index].status!),
+                                                    Text(listSurat[index].jenisSurat!),
                                                   ],
                                                 ),
                                               ],
@@ -655,6 +656,7 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
               editor: dataSurat['editor'],
+              jenisSurat: dataSurat['jenis_surat'],
             );
 
             mains.objectbox.boxSurat.put(surat);

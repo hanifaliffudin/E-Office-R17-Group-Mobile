@@ -54,7 +54,7 @@ class _SignedPageState extends State<SignedPage> {
                 );
               }
               else{
-                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglBuat, flags: Order.descending);
+                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglSelesai, flags: Order.descending);
                 var query = querySigned.build();
                 List<SuratModel> listSurat = query.find().toList();
                 if(listSurat.isEmpty){
@@ -132,8 +132,18 @@ class _SignedPageState extends State<SignedPage> {
                                                 ),
                                               ),
                                             ),
+                                            // Text(
+                                            //   listSurat[index].editor!,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            //   maxLines: 1,
+                                            //   style: const TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.normal,
+                                            //     height: 1.5,
+                                            //   ),
+                                            // ),
                                             Text(
-                                              listSurat[index].editor!,
+                                              listSurat[index].jenisSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
@@ -164,13 +174,13 @@ class _SignedPageState extends State<SignedPage> {
                                         child: Padding(
                                             padding: const EdgeInsets.only(left: 20),
                                             child: Text(
-                                              listSurat[index].tglBuat == null ?
+                                              listSurat[index].tglSelesai == null ?
                                               ""
                                                   :
-                                              date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
-                                              DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                              date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
+                                              DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
                                                   :
-                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
                                               ,
                                               style: const TextStyle(
                                                 fontSize: 11,
@@ -240,6 +250,7 @@ class _SignedPageState extends State<SignedPage> {
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -262,6 +273,7 @@ class _SignedPageState extends State<SignedPage> {
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
