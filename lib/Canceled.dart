@@ -133,28 +133,38 @@ class _CanceledPageState extends State<CanceledPage> {
                                               ),
                                             ),
                                             Text(
-                                              mains.objectbox.boxUser.get(1)!.userName!,
+                                              listSurat[index].editor!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].nomorSurat == null ?
-                                              ""
-                                                  :
-                                              listSurat[index].nomorSurat!,
+                                              listSurat[index].jenisSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
                                               ),
-                                            )
+                                            ),
+                                            // Text(
+                                            //   listSurat[index].nomorSurat == null ?
+                                            //   ""
+                                            //       :
+                                            //   listSurat[index].nomorSurat!,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            //   maxLines: 1,
+                                            //   style: const TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w400,
+                                            //     height: 1.5,
+                                            //   ),
+                                            // )
                                           ],
                                         ),
                                       ),
@@ -249,6 +259,7 @@ class _CanceledPageState extends State<CanceledPage> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -270,6 +281,7 @@ class _CanceledPageState extends State<CanceledPage> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);

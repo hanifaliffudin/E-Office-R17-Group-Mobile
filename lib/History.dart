@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
@@ -10,6 +11,8 @@ import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
 class History extends StatefulWidget {
+  const History({Key? key}) : super(key: key);
+
   @override
   State<History> createState() => _HistoryState();
 }
@@ -17,8 +20,10 @@ class History extends StatefulWidget {
 class _HistoryState extends State<History> {
   Store? store;
 
+  @override
   void initState()  {
-    getRecent();
+    // getRecent();
+    super.initState();
   }
 
     @override
@@ -32,7 +37,7 @@ class _HistoryState extends State<History> {
               return Container(
                   margin: const EdgeInsets.only(top: 15.0),
                   width: MediaQuery.of(context).size.width,
-                  child :Text(
+                  child :const Text(
                     'No history yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -43,14 +48,14 @@ class _HistoryState extends State<History> {
               var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('history')).build();
               List<SuratModel> listSurat = queryInbox.find().toList();
 
-              DateTime now = new DateTime.now();
-              DateTime date = new DateTime(now.year, now.month, now.day);
+              DateTime now = DateTime.now();
+              DateTime date = DateTime(now.year, now.month, now.day);
 
-              if(listSurat.length==0){
+              if(listSurat.isEmpty){
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
                     width: MediaQuery.of(context).size.width,
-                    child :Text(
+                    child :const Text(
                       'No history yet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
@@ -58,7 +63,7 @@ class _HistoryState extends State<History> {
                 );
               }else{
                 return Container(
-                  padding: EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.only(top: 10),
                   child: ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
@@ -66,99 +71,72 @@ class _HistoryState extends State<History> {
                       itemCount: listSurat.length,
                       itemBuilder:(BuildContext context,index)=>
                           InkWell(
-                            onTap: () {
-                              String kategori =
-                              listSurat[index].status == "APPROVE" ?
-                              'approved'
-                                  :
-                              listSurat[index].status == "RETURN" ?
-                              'returned'
-                                  :
-                              listSurat[index].status == "REJECT" ?
-                              'rejected'
-                                  :
-                              listSurat[index].status == "READ" ?
-                              'inbox'
-                                  :
-                              listSurat[index].status == "SUBMIT" ?
-                              'sent'
-                                  :
-                              listSurat[index].status == "APPROVED" ?
-                              'approved'
-                                  :
-                              listSurat[index].status == "SIGNED" ?
-                              'signed'
-                                  :
-                              '';
-
-                              var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals(kategori)).build();
-                              if(query.find().isNotEmpty) {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(mains.objectbox.boxSurat.get(query.find().first.id))),);
-                              }
+                            onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),);
                             },
                             child: Card(
-                              margin: EdgeInsets.fromLTRB(20,10,20,0),
+                              margin: const EdgeInsets.fromLTRB(20,10,20,0),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            margin: EdgeInsets.only(right: 20.0),
-                                            child: Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
-                                          ),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              ConstrainedBox(
-                                                constraints: BoxConstraints(
-                                                    maxWidth: 200
-                                                ),
-                                                child: Text(listSurat[index].namaSurat!,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: TextStyle(fontWeight: FontWeight.bold),),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          margin: const EdgeInsets.only(right: 20.0),
+                                          child: const Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                  maxWidth: 200
                                               ),
-                                              SizedBox(height: 5,),
-                                              date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
-                                              Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
-                                              :
-                                              Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
-                                              SizedBox(height: 5,),
-                                              Text(listSurat[index].status!),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                              child: Text(listSurat[index].namaSurat!,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: const TextStyle(fontWeight: FontWeight.bold),),
+                                            ),
+                                            const SizedBox(height: 5,),
+                                            date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                            Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                            :
+                                            Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                            const SizedBox(height: 5,),
+                                            Text(listSurat[index].status!),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    Container(
+                                    SizedBox(
                                       height: 50,
                                       width: 30,
 
                                       child:
                                       listSurat[index].status == "APPROVE" ?
-                                      Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
+                                      const Image(image: AssetImage("assets/icons/approved.png"))
+                                          :
                                       listSurat[index].status == "RETURN" ?
-                                      Image(image: AssetImage("assets/icons/return.png"))
+                                      const Image(image: AssetImage("assets/icons/returned.png"))
                                           :
                                       listSurat[index].status == "REJECT" ?
-                                      Image(image: AssetImage("assets/icons/reject.png"))
+                                      const Image(image: AssetImage("assets/icons/rejected.png"))
                                           :
                                       listSurat[index].status == "READ" ?
-                                      Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                      const Image(image: AssetImage("assets/icons/read.png"))
                                           :
                                       listSurat[index].status == "SUBMIT" ?
-                                      Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                      const Image(image: AssetImage("assets/icons/submit.png"))
                                           :
                                       listSurat[index].status == "APPROVED" ?
-                                      Image(image: AssetImage("assets/icons/approve.png"))
+                                      const Image(image: AssetImage("assets/icons/approved.png"))
                                           :
-                                      listSurat[index].status == "SIGNED" ?
-                                      Image(image: AssetImage("assets/icons/approve.png"))
+                                      listSurat[index].status == "SIGNED" && listSurat[index].isMeterai == 1 ?
+                                      const Image(image: AssetImage("assets/icons/signed-meterai.png"))
+                                          :
+                                      listSurat[index].status == "SIGNED" && listSurat[index].isMeterai == 0 ?
+                                      const Image(image: AssetImage("assets/icons/signed.png"))
                                           :
                                       Container()
                                       ,
@@ -188,9 +166,6 @@ class _HistoryState extends State<History> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -205,35 +180,40 @@ class _HistoryState extends State<History> {
       }
 
       if(suratMap['code'] == 0){
-          for(int i = 0; i < suratMap['data'].length; i++) {
-            var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
-            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('history')).build();
-            if(query.find().isNotEmpty) {
-            }
-            else{
-              final surat = SuratModel(
-                idSurat: dataSurat['surat_id'],
-                namaSurat: dataSurat['perihal'],
-                perihal: dataSurat['perihal'],
-                status: dataSurat['action'],
-                tglBuat: dataSurat['created_at'],
-                kategori: 'history',
-              );
-
-              mains.objectbox.boxSurat.put(surat);
-              setState(() {});
-            }
+        for(int i = 0; i < suratMap['data'].length; i++) {
+          var dataSurat = Map<String, dynamic>.from(suratMap['data'][i]);
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(dataSurat['id'].toString()) & SuratModel_.kategori.equals('history')).build();
+          if(query.find().isNotEmpty) {
           }
+          else{
+            final surat = SuratModel(
+              idSurat: dataSurat['surat_id'],
+              namaSurat: dataSurat['perihal'],
+              perihal: dataSurat['perihal'],
+              status: dataSurat['action'],
+              tglBuat: dataSurat['created_at'],
+              kategori: 'history',
+              isMeterai: dataSurat['isMeterai'],
+              url: dataSurat['isi_surat'],
+              approver: jsonEncode(dataSurat['approv']),
+              penerima: jsonEncode(dataSurat['penerima']),
+              editor: dataSurat['editor'],
+              jenisSurat: dataSurat['jenis_surat'],
+            );
+
+            mains.objectbox.boxSurat.put(surat);
+          }
+        }
+        setState(() {});
       }
       else{
-        print(suratMap['code']);
-        print(suratMap['message']);
-        print(response.statusCode);
+        EasyLoading.showError(suratMap['message']);
       }
     }
     else{
-      print("Gagal terhubung ke server!");
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
     }
     return response;
   }
+
 }

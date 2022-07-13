@@ -73,6 +73,7 @@ class _NeedReviewState extends State<NeedReview> {
                   return Container(
                     padding: const EdgeInsets.all(20),
                     child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       itemCount: listSurat.length,
@@ -81,7 +82,7 @@ class _NeedReviewState extends State<NeedReview> {
                             onTap: (){
                               Navigator.push(
                                 context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
-                              );
+                              ).then((value) => getDataSuratNeedApprove());
                             },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 5),
@@ -130,53 +131,62 @@ class _NeedReviewState extends State<NeedReview> {
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
+                                              listSurat[index].editor!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
+                                                // color: Color(0xFF171717),
                                               ),
                                             ),
-                                            date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
                                             Text(
-                                              DateFormat('dd MMM yyyy  H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                              listSurat[index].jenisSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
-                                              ),
-                                            )
-                                            :
-                                            Text(
-                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5,
+                                                // color: Color(0xFF171717),
                                               ),
                                             ),
+                                            // Text(
+                                            //   listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            //   maxLines: 1,
+                                            //   style: const TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w400,
+                                            //     height: 1.5,
+                                            //   ),
+                                            // ),
                                           ],
                                         ),
                                       ),
-                                      // Positioned(
-                                      //   right: 5,
-                                      //   top: 10,
-                                      //   child: Padding(
-                                      //       padding: const EdgeInsets.only(left: 20),
-                                      //       child: Text(
-                                      //         '09.45',
-                                      //         style: TextStyle(
-                                      //             fontSize: 11
-                                      //         ),
-                                      //       )
-                                      //   ),
-                                      // ),
+                                      Positioned(
+                                        right: 5,
+                                        top: 10,
+                                        child: Padding(
+                                            padding: const EdgeInsets.only(left: 20),
+                                            child: Text(
+                                              listSurat[index].tglBuat == null ?
+                                              ""
+                                                  :
+                                              date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
+                                              DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                                  :
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                              ,
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                              textAlign: TextAlign.right,
+                                            )
+                                        ),
+                                      )
                                     ],
                                   ),
                                 ),
@@ -242,14 +252,11 @@ class _NeedReviewState extends State<NeedReview> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
-
             }
             else{
               final surat = SuratModel(
@@ -264,14 +271,13 @@ class _NeedReviewState extends State<NeedReview> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
             }
           }
+          setState(() {});
         }
       }
       else{

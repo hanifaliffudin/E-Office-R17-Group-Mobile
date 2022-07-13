@@ -54,7 +54,7 @@ class _SignedPageState extends State<SignedPage> {
                 );
               }
               else{
-                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglBuat, flags: Order.descending);
+                var querySigned = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent'))..order(SuratModel_.tglSelesai, flags: Order.descending);
                 var query = querySigned.build();
                 List<SuratModel> listSurat = query.find().toList();
                 if(listSurat.isEmpty){
@@ -132,13 +132,23 @@ class _SignedPageState extends State<SignedPage> {
                                                 ),
                                               ),
                                             ),
+                                            // Text(
+                                            //   listSurat[index].editor!,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            //   maxLines: 1,
+                                            //   style: const TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.normal,
+                                            //     height: 1.5,
+                                            //   ),
+                                            // ),
                                             Text(
-                                              mains.objectbox.boxUser.get(1)!.userName!,
+                                              listSurat[index].jenisSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
                                               ),
                                             ),
@@ -163,30 +173,20 @@ class _SignedPageState extends State<SignedPage> {
                                         top: 10,
                                         child: Padding(
                                             padding: const EdgeInsets.only(left: 20),
-                                            child: date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  DateFormat('dd MMM yyyy').format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 5,),
-                                                Text(
-                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 11
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            :
-                                            Text(
-                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString(),
+                                            child: Text(
+                                              listSurat[index].tglSelesai == null ?
+                                              ""
+                                                  :
+                                              date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
+                                              DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                                  :
+                                              DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                              ,
                                               style: const TextStyle(
-                                                  fontSize: 11
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.normal,
                                               ),
+                                              textAlign: TextAlign.right,
                                             )
                                         ),
                                       ),
@@ -250,6 +250,7 @@ class _SignedPageState extends State<SignedPage> {
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -272,6 +273,7 @@ class _SignedPageState extends State<SignedPage> {
                 penerima: jsonEncode(dataSurat['penerima']),
                 editor: dataSurat['editor'],
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);

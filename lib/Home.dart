@@ -21,7 +21,7 @@ import 'package:militarymessenger/ChatTabScreen.dart';
 import 'package:militarymessenger/Drive.dart';
 import 'package:militarymessenger/FeedTabScreen.dart';
 import 'package:militarymessenger/Login.dart';
-import 'package:militarymessenger/XploreTabScreen.dart';
+import 'package:militarymessenger/EOfficeTabScreen.dart';
 import 'package:militarymessenger/History.dart';
 import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/SettingsPage.dart';
@@ -117,6 +117,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      setState(() {});
+
       if (message.data['type'] == 'logout') {
         _openDialogAutoLogout(context);
       }
@@ -1058,7 +1060,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         mains.objectbox.boxConversation.put(objConversation);
 
         // Delete typing status after 2 seconds
-        // setState((){});
         Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
           ConversationModel objConversation = ConversationModel(
               id: query.find().first.id,
@@ -1072,7 +1073,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               statusReceiver: '',
               roomId: query.find().first.roomId);
           mains.objectbox.boxConversation.put(objConversation);
-          // setState((){});
         });
       }
     } else if (objMessage['type'] == "group") {
@@ -1719,7 +1719,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           children: [
             FeedTabScreen(),
             ChatTabScreen(),
-            const XploreTabScreen(),
+            const EOfficeTabScreen(),
             History(),
           ],
           controller: _tabController,

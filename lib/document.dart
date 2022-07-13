@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:militarymessenger/Signed.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:open_file/open_file.dart';
@@ -28,6 +29,9 @@ class DocumentPage extends StatefulWidget {
 class _DocumentPageState extends State<DocumentPage> {
   SuratModel? surat;
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _pinPutFocusNode = FocusNode();
+
   _DocumentPageState(this.surat);
 
   List<Approver> cardApprover = [];
@@ -44,6 +48,8 @@ class _DocumentPageState extends State<DocumentPage> {
 
   @override
   void initState() {
+    _pinPutFocusNode.requestFocus();
+
     if(surat!.approver != null){
       listApprover = jsonDecode(surat!.approver!);
       for(int i=0;i<listApprover.length;i++){
@@ -71,6 +77,7 @@ class _DocumentPageState extends State<DocumentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       // backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -322,7 +329,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                           cardApprover[index].status! == 'Approved' ?
                                           const Color(0xFFECFDF5)
                                           :
-                                          cardApprover[index].status! == 'Rejected' ?
+                                          cardApprover[index].status! == 'Canceled' ?
                                           const Color(0xFFFFEBEA)
                                           :
                                           cardApprover[index].status! == 'Returned' ?
@@ -338,7 +345,7 @@ class _DocumentPageState extends State<DocumentPage> {
                                               cardApprover[index].status! == 'Approved' ?
                                               const Color(0xFF1FA463)
                                                   :
-                                              cardApprover[index].status! == 'Rejected' ?
+                                              cardApprover[index].status! == 'Canceled' ?
                                               const Color(0xFFDC2626)
                                                   :
                                               cardApprover[index].status! == 'Returned' ?
@@ -822,34 +829,68 @@ class _DocumentPageState extends State<DocumentPage> {
                                   borderRadius: BorderRadius.circular(6)
                               ),
                               child: TextButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(context);
 
-                                  getOtpBulk(surat!.idSurat!);
+                                  if(surat!.jenisSurat == 'Internal'){
 
-                                  showDialog<String>(
-                                    context: context,
-                                    builder: (BuildContext context) => AlertDialog(
-                                      insetPadding: const EdgeInsets.symmetric(horizontal: 7),
-                                      content: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Text('OTP',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 24
+                                    getOtpBulk(surat!.idSurat!);
+
+                                    showDialog<String>(
+                                      context: context,
+                                      builder: (BuildContext context) => AlertDialog(
+                                        insetPadding: const EdgeInsets.symmetric(horizontal: 7),
+                                        content: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text('OTP',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 24
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 20,),
-                                          Scrollbar(
-                                            child: buildPinPut(surat!.idSurat!),
-                                          ),
-                                          const SizedBox(height: 20,),
-                                        ],
+                                            const SizedBox(height: 20,),
+                                            Scrollbar(
+                                              child: buildPinPut(surat!.idSurat!),
+                                            ),
+                                            const SizedBox(height: 20,),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
+                                  else if(surat!.jenisSurat == 'External'){
+
+                                    List otpData = await getOtpBulkEksternal(surat!.idSurat!);
+
+                                    EasyLoading.dismiss();
+
+                                    showDialog<String>(
+                                      context: _scaffoldKey.currentContext!,
+                                      builder: (BuildContext context) => AlertDialog(
+                                        insetPadding: const EdgeInsets.symmetric(horizontal: 7),
+                                        content: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text('OTP',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 24
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20,),
+                                            Scrollbar(
+                                              child: buildPinPutEksternal(surat!.idSurat!, otpData[0], otpData[1]),
+                                            ),
+                                            const SizedBox(height: 20,),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+
                                 },
                                 child: const Text('Confirm',
                                   style: TextStyle(
@@ -876,7 +917,7 @@ class _DocumentPageState extends State<DocumentPage> {
               ),
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'APPROVE') ?
             Container(
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 1,
@@ -911,7 +952,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'RETURN') ?
             Container(
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 1,
@@ -946,7 +987,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
             )
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'REJECT') ?
             Container(
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 1,
@@ -1022,13 +1063,13 @@ class _DocumentPageState extends State<DocumentPage> {
             mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "needApprove"?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "approved" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'APPROVE') ?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "returned" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'RETURN') ?
             Container()
                 :
-            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled"?
+            mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "canceled" || (mains.objectbox.boxSurat.get(surat!.id)!.kategori! == 'history' && mains.objectbox.boxSurat.get(surat!.id)!.status == 'REJECT') ?
             Container()
                 :
             ElevatedButton.icon(
@@ -1085,9 +1126,44 @@ class _DocumentPageState extends State<DocumentPage> {
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
+      focusNode: _pinPutFocusNode,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
         // signingBulk(pin, , idSurat);
+        },
+    );
+  }
+
+  Widget buildPinPutEksternal(String idSurat, String token, String bulkId) {
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: const TextStyle(fontSize: 20, color: Color.fromRGBO(30, 60, 87, 1), fontWeight: FontWeight.w600),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color.fromRGBO(234, 239, 243, 1)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: const Color.fromRGBO(114, 178, 238, 1)),
+      borderRadius: BorderRadius.circular(8),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration?.copyWith(
+        color: const Color.fromRGBO(234, 239, 243, 1),
+      ),
+    );
+
+    return Pinput(
+      focusedPinTheme: focusedPinTheme,
+      submittedPinTheme: submittedPinTheme,
+      length: 6,
+      focusNode: _pinPutFocusNode,
+      onCompleted: (otp) {
+        EasyLoading.show(status: 'loading...');
+        signingBulkEksternal(token, bulkId, otp, idSurat);
         },
     );
   }
@@ -1148,6 +1224,9 @@ class _DocumentPageState extends State<DocumentPage> {
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
+              jenisSurat: query.find().first.jenisSurat,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -1204,6 +1283,9 @@ class _DocumentPageState extends State<DocumentPage> {
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
+              jenisSurat: query.find().first.jenisSurat,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -1257,16 +1339,19 @@ class _DocumentPageState extends State<DocumentPage> {
               status: query.find().first.status,
               tglSelesai: query.find().first.tglSelesai,
               url: query.find().first.url,
-              kategori: 'rejected',
+              kategori: 'canceled',
               tglBuat: query.find().first.tglBuat,
               tipeSurat: query.find().first.tipeSurat,
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
+              jenisSurat: query.find().first.jenisSurat,
             );
 
             mains.objectbox.boxSurat.put(surat);
             setState(() {});
-            EasyLoading.showSuccess('Berhasil reject!');
+            EasyLoading.showSuccess('Berhasil cancel!');
             Navigator.pop(context);
           }
         }
@@ -1296,13 +1381,12 @@ class _DocumentPageState extends State<DocumentPage> {
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      Map<String, dynamic> approveMap = jsonDecode(response.body);
+      Map<String, dynamic> readMap = jsonDecode(response.body);
 
-      if(approveMap['code'] == 0){
-        print('read sukses');
+      if(readMap['code'] == 0){
       }
       else{
-        EasyLoading.showError(approveMap['message']);
+        EasyLoading.showError(readMap['message']);
       }
     }
     else{
@@ -1381,7 +1465,6 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-
   Future<http.Response> signingBulk(String otp, String bulkId, String idSurat) async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/bulkSigning';
@@ -1413,22 +1496,24 @@ class _DocumentPageState extends State<DocumentPage> {
             perihal: query.find().first.perihal,
             status: query.find().first.status,
             tglSelesai: query.find().first.tglSelesai,
-            url: signingMap['data'],
+            url: query.find().first.url,
             kategori: 'signed',
             tglBuat: query.find().first.tglBuat,
             tipeSurat: query.find().first.tipeSurat,
             approver: query.find().first.approver,
             penerima: query.find().first.penerima,
+            isSelected: query.find().first.isSelected,
+            isMeterai: query.find().first.isMeterai,
+            jenisSurat: query.find().first.jenisSurat,
           );
 
           mains.objectbox.boxSurat.put(surat);
-          EasyLoading.showSuccess('Berhasil Signing!');
+
+          EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
           Navigator.pop(context);
           Navigator.pop(context);
           setState(() {});
-          // Navigator.push(
-          //   context, MaterialPageRoute(builder: (context) => DocumentPage(surat)),
-          // );
+
         }
       }
       else{
@@ -1441,6 +1526,102 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
+  Future<List> getOtpBulkEksternal(String idSurat) async {
+    EasyLoading.show(status: 'Sending OTP');
+
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/otpSignEksternal';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
+        'surat': [{"id": idSurat}],
+      }
+    };
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+
+    if(response.statusCode == 200){
+      Map<String, dynamic> otpMap = jsonDecode(response.body);
+
+      if(otpMap['code'] == 0){
+        return [otpMap['data']['token'], otpMap['data']['dataIdBulk']];
+      }
+      else{
+        EasyLoading.showError(otpMap['message']);
+      }
+    }
+    else{
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
+    }
+    // return response;
+    return [];
+  }
+
+  Future<http.Response> signingBulkEksternal(String token, String bulkId, String otp, String idSurat) async {
+
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/signEksternalBulk';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        // 'users_id': mains.objectbox.boxUser.get(1)!.userId,
+        'dataIdBulk': bulkId,
+        'tokenCodeBulk': token,
+        'otpCodeBulk': otp,
+      }
+    };
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      Map<String, dynamic> signingMap = jsonDecode(response.body);
+
+      if(signingMap['code'] == 0){
+        var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat)).build();
+        if(query.find().isNotEmpty) {
+          final surat = SuratModel(
+            id: query.find().first.id,
+            idSurat: query.find().first.idSurat,
+            namaSurat: query.find().first.namaSurat,
+            nomorSurat: query.find().first.nomorSurat,
+            editor: query.find().first.editor,
+            perihal: query.find().first.perihal,
+            status: query.find().first.status,
+            tglSelesai: query.find().first.tglSelesai,
+            url: query.find().first.url,
+            kategori: 'signed',
+            tglBuat: query.find().first.tglBuat,
+            tipeSurat: query.find().first.tipeSurat,
+            approver: query.find().first.approver,
+            penerima: query.find().first.penerima,
+            isSelected: query.find().first.isSelected,
+            isMeterai: query.find().first.isMeterai,
+            jenisSurat: query.find().first.jenisSurat,
+          );
+
+          mains.objectbox.boxSurat.put(surat);
+
+          EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.pop(context);
+          setState(() {});
+
+        }
+      }
+      else{
+        EasyLoading.showError(signingMap['message']);
+      }
+    }
+    else{
+      EasyLoading.showError("${response.statusCode}, Gagal terhubung ke server!");
+    }
+    return response;
+  }
 
 }
 
