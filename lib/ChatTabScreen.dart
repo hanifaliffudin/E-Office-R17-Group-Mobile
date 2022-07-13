@@ -750,11 +750,14 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                                       child: Column(
                                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                                         children: [
-                                                                          Text(
-                                                                            conversationList[index].fullName!,
-                                                                            overflow: TextOverflow.ellipsis,
-                                                                            maxLines: 1,
-                                                                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                                          Padding(
+                                                                            padding: const EdgeInsets.only(right: 15.0),
+                                                                            child: Text(
+                                                                              conversationList[index].fullName!,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              maxLines: 1,
+                                                                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                                                            ),
                                                                           ),
                                                                           Padding(
                                                                             padding: const EdgeInsets.only(right: 6.0),

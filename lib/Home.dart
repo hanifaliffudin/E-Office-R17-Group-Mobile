@@ -37,6 +37,7 @@ import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
+import 'package:militarymessenger/models/savedModel.dart';
 import 'package:militarymessenger/profile.dart';
 import 'package:militarymessenger/settings/chat.dart';
 import 'package:militarymessenger/settings/notification.dart';
@@ -566,10 +567,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date
                   .equals(DateFormat('dd MM yyyy').format(now)))
-              .build();
+              .build()
+              .find();
 
-          if (query.find().isNotEmpty) {
-            var attendance = query.find().first;
+          if (query.isNotEmpty) {
+            var attendance = query.first;
 
             if (attendance.status == 0) {
               // print('time call check in');
@@ -604,10 +606,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
                 .query(AttendanceModel_.date
                         .equals(DateFormat('dd MM yyyy').format(now)) &
                     AttendanceModel_.status.equals(1))
-                .build();
+                .build()
+                .find();
 
-            if (query.find().isNotEmpty) {
-              var attendance = query.find().first;
+            if (query.isNotEmpty) {
+              var attendance = query.first;
               attendance.id = attendance.id;
               attendance.date = attendance.date;
               attendance.checkInAt = attendance.checkInAt;
@@ -625,10 +628,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               .query(AttendanceModel_.date.equals(DateFormat('dd MM yyyy')
                       .format(dateYesterday)) &
                   AttendanceModel_.status.equals(1))
-              .build();
+              .build()
+              .find();
 
-            if (query.find().isNotEmpty) {
-              var attendance = query.find().first;
+            if (query.isNotEmpty) {
+              var attendance = query.first;
               String yesterdayMax = dateYesterday.toString() + ' 23:59:59';
 
               if (attendance.checkOutAt != yesterdayMax) {
@@ -702,17 +706,23 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
   Future<bool> _getAllData() async {
     bool messageGo = false;
     bool attendanceGo = false;
+    var queryMessagesDownload = mains.objectbox.boxSaved.query(SavedModel_.type.equals('messagesDownloaded'))
+      .build()
+      .find();
+    var queryAttendancesDownload = mains.objectbox.boxSaved.query(SavedModel_.type.equals('attendancesDownloaded'))
+      .build()
+      .find();
 
-    if (await SpUtil.instance.containsKey('messagesDownloaded')) {
-      if (!await SpUtil.instance.getBoolValue('messagesDownloaded')) {
+    if (queryMessagesDownload.isNotEmpty) {
+      if (queryMessagesDownload.first.value == false) {
         messageGo = true;
       }
     } else {
       messageGo = true;
     }
 
-    if (await SpUtil.instance.containsKey('attendancesDownloaded')) {
-      if (!await SpUtil.instance.getBoolValue('attendancesDownloaded')) {
+    if (queryAttendancesDownload.isNotEmpty) {
+      if (queryAttendancesDownload.first.value == false) {
         attendanceGo = true;
       }
     } else {
@@ -722,13 +732,39 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     if (messageGo) {
       EasyLoading.show(status: 'Downloading all messages...');
       await getAllMessages();
-      await SpUtil.instance.setBoolValue('messagesDownloaded', true);
+
+      SavedModel saved = SavedModel();
+
+      if (queryMessagesDownload.isNotEmpty) {
+        saved = queryMessagesDownload.first;
+        saved.value = true;
+      } else {
+        saved = SavedModel(
+          type: 'messagesDownloaded',
+          value: true,
+        );
+      }
+
+      mains.objectbox.boxSaved.put(saved);
     }
 
     if (attendanceGo) {
       EasyLoading.show(status: 'Downloading all attendances...');
       await _getAllAttendances();
-      await SpUtil.instance.setBoolValue('attendancesDownloaded', true);
+
+      SavedModel saved = SavedModel();
+
+      if (queryAttendancesDownload.isNotEmpty) {
+        saved = queryAttendancesDownload.first;
+        saved.value = true;
+      } else {
+        saved = SavedModel(
+          type: 'attendancesDownloaded',
+          value: true,
+        );
+      }
+
+      mains.objectbox.boxSaved.put(saved);
     }
 
     return true;
@@ -773,14 +809,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
     getListContact();
     // getDataUser();
-
-    listController
-        .addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
-    listControllerConversation.addStream(
-        mains.objectbox.queryStreamConversation.map((q) => q.find()));
-    listControllerContact
-        .addStream(mains.objectbox.queryStreamContact.map((q) => q.find()));
-    listControlerAttendance.addStream(mains.objectbox.queryStreamAttendance.map((event) => event.find()));
+// print(listController.isPaused);
+    // if (
+    //   !listController.isPaused
+    //   && !listControllerConversation.isPaused
+    //   && !listControllerContact.isPaused
+    //   && !listControlerAttendance.isPaused
+    // ) {
+      listController
+          .addStream(mains.objectbox.queryStreamChat.map((q) => q.find()));
+      listControllerConversation.addStream(
+          mains.objectbox.queryStreamConversation.map((q) => q.find()));
+      listControllerContact
+          .addStream(mains.objectbox.queryStreamContact.map((q) => q.find()));
+      listControlerAttendance.addStream(mains.objectbox.queryStreamAttendance.map((event) => event.find()));
+    // }
 
     if (mains.objectbox.boxUser.isEmpty()) {
     } else {
@@ -1252,10 +1295,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
   void _accessLocationPermission() async {
     bool showDialogAP = false;
+    var queryLocationPermission = mains.objectbox.boxSaved.query(SavedModel_.type.equals('locationPermission')).build().find();
 
-    if (await SpUtil.instance.containsKey('locationPermission')) {
-      if (await SpUtil.instance.getBoolValue('locationPermission')) {
-        _stateController.changeLocationPermission(await SpUtil.instance.getBoolValue('locationPermission'));
+    if (queryLocationPermission.isNotEmpty) {
+      if (queryLocationPermission.first.value == true) {
+        _stateController.changeLocationPermission(queryLocationPermission.first.value!);
+        _locationService();
       }
     } else {
       showDialogAP = true;
@@ -1266,11 +1311,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         context, 
         () async {
           Navigator.of(context).pop();
-          await SpUtil.instance.setBoolValue('locationPermission', false);
+
+          SavedModel saved = SavedModel();
+
+          if (queryLocationPermission.isNotEmpty) {
+            saved = queryLocationPermission.first;
+            saved.value = false;
+          } else {
+            saved = SavedModel(
+              type: 'locationPermission',
+              value: false,
+            );
+          }
+
+          mains.objectbox.boxSaved.put(saved);
         }, 
         () async {
           Navigator.of(context).pop();
-          await SpUtil.instance.setBoolValue('locationPermission', true);
+
+          SavedModel saved = SavedModel();
+
+          if (queryLocationPermission.isNotEmpty) {
+            saved = queryLocationPermission.first;
+            saved.value = true;
+          } else {
+            saved = SavedModel(
+              type: 'locationPermission',
+              value: true,
+            );
+          }
+          
+          mains.objectbox.boxSaved.put(saved);
           _stateController.changeLocationPermission(true);
         }
       );
@@ -2425,29 +2496,62 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
       for (var i = 0; i < attendances.length; i++) {
         Map<String, dynamic> attendance = Map<String, dynamic>.from(jsonDecode(attendances[i]));
-        final AttendanceModel newAttendance = AttendanceModel(
-          date: attendance['date'],
-          checkInAt: attendance['check_in_at'],
-          checkOutAt: attendance['check_out_at'],
-          latitude: double.parse(attendance['latitude_in']),
-          longitude: double.parse(attendance['longitude_in']),
-          status: attendance['status'],
-          server: true,
-        );
-        mains.objectbox.boxAttendance.put(newAttendance);
+        var query = mains.objectbox.boxAttendance.query(AttendanceModel_.date.equals(attendance['date']))
+          .build()
+          .find();
+        AttendanceModel attendanceTemp = AttendanceModel();
+
+        if (query.isNotEmpty) {
+          attendanceTemp = query.first;
+          attendanceTemp.date =  attendance['date'];
+          attendanceTemp.checkInAt =  attendance['check_in_at'];
+          attendanceTemp.checkOutAt =  attendance['check_out_at'];
+          attendanceTemp.latitude =  double.parse(attendance['latitude_in']);
+          attendanceTemp.longitude =  double.parse(attendance['longitude_in']);
+          attendanceTemp.status =  attendance['status'];
+          attendanceTemp.server =  true;
+        } else {
+          attendanceTemp = AttendanceModel(
+            date: attendance['date'],
+            checkInAt: attendance['check_in_at'],
+            checkOutAt: attendance['check_out_at'],
+            latitude: double.parse(attendance['latitude_in']),
+            longitude: double.parse(attendance['longitude_in']),
+            status: attendance['status'],
+            server: true,
+          );
+        }
+
+        mains.objectbox.boxAttendance.put(attendanceTemp);
       }
 
       for (var i = 0; i < attendanceHistories.length; i++) {
         Map<String, dynamic> attendanceHistory = Map<String, dynamic>.from(jsonDecode(attendanceHistories[i]));
-        final AttendanceHistoryModel newAttendanceHistory = AttendanceHistoryModel(
-          date: attendanceHistory['date'],
-          datetime: attendanceHistory['datetime'],
-          latitude: double.parse(attendanceHistory['latitude']),
-          longitude: double.parse(attendanceHistory['longitude']),
-          status: attendanceHistory['status'],
-          server: true,
-        );
-        mains.objectbox.boxAttendanceHistory.put(newAttendanceHistory);
+        var query = mains.objectbox.boxAttendanceHistory.query(AttendanceHistoryModel_.datetime.equals(attendanceHistory['datetime']))
+          .build()
+          .find();
+        AttendanceHistoryModel attendanceHistoryTemp = AttendanceHistoryModel();
+
+        if (query.isNotEmpty) {
+          attendanceHistoryTemp = query.first;
+          attendanceHistoryTemp.date = attendanceHistory['date'];
+          attendanceHistoryTemp.datetime = attendanceHistory['datetime'];
+          attendanceHistoryTemp.latitude = double.parse(attendanceHistory['latitude']);
+          attendanceHistoryTemp.longitude = double.parse(attendanceHistory['longitude']);
+          attendanceHistoryTemp.status = attendanceHistory['status'];
+          attendanceHistoryTemp.server = true;
+        } else {
+          attendanceHistoryTemp = AttendanceHistoryModel(
+            date: attendanceHistory['date'],
+            datetime: attendanceHistory['datetime'],
+            latitude: double.parse(attendanceHistory['latitude']),
+            longitude: double.parse(attendanceHistory['longitude']),
+            status: attendanceHistory['status'],
+            server: true,
+          );
+        }
+
+        mains.objectbox.boxAttendanceHistory.put(attendanceHistoryTemp);
       }
 
       EasyLoading.showSuccess('Done!');
@@ -2502,8 +2606,10 @@ void _openDialogLogout(ctx) {
                   _deleteAppDir();
                   _deleteCacheDir();
 
-                  await SpUtil.instance.removeValue('messagesDownloaded');
-                  await SpUtil.instance.removeValue('attendancesDownloaded');
+                  // await listController.close();
+                  // await listControllerConversation.close();
+                  // await listControllerContact.close();
+                  // await listControlerAttendance.close();
                   mains.objectbox.boxConversation.removeAll();
                   mains.objectbox.boxChat.removeAll();
                   mains.objectbox.boxContact.removeAll();
@@ -2515,6 +2621,7 @@ void _openDialogLogout(ctx) {
                   mains.objectbox.boxUserPreference.removeAll();
                   mains.objectbox.boxGroupNotif.removeAll();
                   mains.objectbox.boxUser.removeAll();
+                  mains.objectbox.boxSaved.removeAll();
 
                   // Navigator.pop(ctx);
                   // Navigator.pushReplacement(
@@ -2522,11 +2629,11 @@ void _openDialogLogout(ctx) {
                   //   MaterialPageRoute(builder: (context) => Login()),
                   // );
 
-                  Navigator.pushAndRemoveUntil(
-                    ctx,
-                    MaterialPageRoute(builder: (context) => Login()),
-                    (Route<dynamic> route) => false,
-                  );
+                  // Navigator.pushAndRemoveUntil(
+                  //   ctx,
+                  //   MaterialPageRoute(builder: (context) => Login()),
+                  //   (Route<dynamic> route) => false,
+                  // );
 
                   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                   exit(0);
@@ -2570,19 +2677,22 @@ void _openDialogAutoLogout(ctx) {
                     'Ok',
                     style: TextStyle(color: Color(0xFF2481CF)),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     _deleteAppDir();
                     _deleteCacheDir();
 
                     mains.objectbox.boxConversation.removeAll();
                     mains.objectbox.boxChat.removeAll();
                     mains.objectbox.boxContact.removeAll();
-                    mains.objectbox.boxUser.removeAll();
                     mains.objectbox.boxAttendance.removeAll();
+                    mains.objectbox.boxAttendanceHistory.removeAll();
                     mains.objectbox.boxSurat.removeAll();
                     mains.objectbox.boxBadge.removeAll();
                     mains.objectbox.boxNews.removeAll();
                     mains.objectbox.boxUserPreference.removeAll();
+                    mains.objectbox.boxGroupNotif.removeAll();
+                    mains.objectbox.boxUser.removeAll();
+                    mains.objectbox.boxSaved.removeAll();
 
                     // Navigator.pushAndRemoveUntil(
                     //   ctx,

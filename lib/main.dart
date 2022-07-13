@@ -42,7 +42,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
     //   );
     //   Map<String, dynamic> datetimeMap = jsonDecode(response.body);
     //   print(datetimeMap);
-    //   print(await SpUtil.instance.containsKey('messagesDownloaded'));
     // } catch (e) {
       
     // }
