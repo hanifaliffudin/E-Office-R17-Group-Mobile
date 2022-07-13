@@ -361,7 +361,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(7, 2414097441055247438),
       name: 'SuratModel',
-      lastPropertyId: const IdUid(17, 7645744785160774135),
+      lastPropertyId: const IdUid(18, 1967750438633476688),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -443,6 +443,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(17, 7645744785160774135),
             name: 'isMeterai',
             type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(18, 1967750438633476688),
+            name: 'jenisSurat',
+            type: 9,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -1090,7 +1095,10 @@ ModelDefinition getObjectBoxModel() {
           final penerimaOffset = object.penerima == null
               ? null
               : fbb.writeString(object.penerima!);
-          fbb.startTable(18);
+          final jenisSuratOffset = object.jenisSurat == null
+              ? null
+              : fbb.writeString(object.jenisSurat!);
+          fbb.startTable(19);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, idSuratOffset);
           fbb.addOffset(2, namaSuratOffset);
@@ -1107,6 +1115,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(14, penerimaOffset);
           fbb.addBool(15, object.isSelected);
           fbb.addInt64(16, object.isMeterai);
+          fbb.addOffset(17, jenisSuratOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1138,7 +1147,8 @@ ModelDefinition getObjectBoxModel() {
               approver: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 30),
               penerima: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 32),
               isSelected: const fb.BoolReader().vTableGet(buffer, rootOffset, 34, false),
-              isMeterai: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 36));
+              isMeterai: const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 36),
+              jenisSurat: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 38));
 
           return object;
         }),
@@ -1686,6 +1696,10 @@ class SuratModel_ {
   /// see [SuratModel.isMeterai]
   static final isMeterai =
       QueryIntegerProperty<SuratModel>(_entities[6].properties[15]);
+
+  /// see [SuratModel.jenisSurat]
+  static final jenisSurat =
+      QueryStringProperty<SuratModel>(_entities[6].properties[16]);
 }
 
 /// [NewsModel] entity fields to define ObjectBox queries.

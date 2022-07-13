@@ -22,7 +22,7 @@ class _HistoryState extends State<History> {
 
   @override
   void initState()  {
-    getRecent();
+    // getRecent();
     super.initState();
   }
 
@@ -166,7 +166,6 @@ class _HistoryState extends State<History> {
       }
     };
 
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
@@ -199,12 +198,13 @@ class _HistoryState extends State<History> {
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
               editor: dataSurat['editor'],
+              jenisSurat: dataSurat['jenis_surat'],
             );
 
             mains.objectbox.boxSurat.put(surat);
-            setState(() {});
           }
         }
+        setState(() {});
       }
       else{
         EasyLoading.showError(suratMap['message']);

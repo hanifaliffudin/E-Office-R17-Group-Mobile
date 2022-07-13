@@ -137,8 +137,22 @@ class _InboxPageState extends State<InboxPage> {
                                             ),
                                           ),
                                         ),
+                                        // Text(
+                                        //   listSurat[index].editor!,
+                                        //   overflow: TextOverflow.ellipsis,
+                                        //   maxLines: 1,
+                                        //   style: TextStyle(
+                                        //     fontSize: 12,
+                                        //     fontWeight: mains.objectbox.boxSurat.get(listSurat[index].id)!.status == "1" ?
+                                        //     FontWeight.bold
+                                        //         :
+                                        //     FontWeight.normal,
+                                        //     height: 1.5,
+                                        //     // color: Color(0xFF171717),
+                                        //   ),
+                                        // ),
                                         Text(
-                                          listSurat[index].editor!,
+                                          listSurat[index].jenisSurat!,
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                           style: TextStyle(
@@ -259,6 +273,7 @@ class _InboxPageState extends State<InboxPage> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -279,6 +294,7 @@ class _InboxPageState extends State<InboxPage> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);

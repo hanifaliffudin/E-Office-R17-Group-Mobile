@@ -334,7 +334,7 @@
     },
     {
       "id": "7:2414097441055247438",
-      "lastPropertyId": "17:7645744785160774135",
+      "lastPropertyId": "18:1967750438633476688",
       "name": "SuratModel",
       "properties": [
         {
@@ -417,6 +417,11 @@
           "id": "17:7645744785160774135",
           "name": "isMeterai",
           "type": 6
+        },
+        {
+          "id": "18:1967750438633476688",
+          "name": "jenisSurat",
+          "type": 9
         }
       ],
       "relations": []

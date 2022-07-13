@@ -142,15 +142,26 @@ class _NeedReviewState extends State<NeedReview> {
                                               ),
                                             ),
                                             Text(
-                                              listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
+                                              listSurat[index].jenisSurat!,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.normal,
                                                 height: 1.5,
+                                                // color: Color(0xFF171717),
                                               ),
                                             ),
+                                            // Text(
+                                            //   listSurat[index].nomorSurat == null ? '-' : listSurat[index].nomorSurat!,
+                                            //   overflow: TextOverflow.ellipsis,
+                                            //   maxLines: 1,
+                                            //   style: const TextStyle(
+                                            //     fontSize: 12,
+                                            //     fontWeight: FontWeight.w400,
+                                            //     height: 1.5,
+                                            //   ),
+                                            // ),
                                           ],
                                         ),
                                       ),
@@ -241,6 +252,7 @@ class _NeedReviewState extends State<NeedReview> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
 
@@ -259,6 +271,7 @@ class _NeedReviewState extends State<NeedReview> {
                 approver: jsonEncode(dataSurat['approv']),
                 penerima: jsonEncode(dataSurat['penerima']),
                 isMeterai: dataSurat['isMeterai'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);

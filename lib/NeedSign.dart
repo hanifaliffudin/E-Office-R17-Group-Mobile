@@ -22,9 +22,13 @@ List<SuratModel> suratSelected = [];
 
 class _NeedSignState extends State<NeedSign> {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _pinPutFocusNode = FocusNode();
+
   @override
   void initState() {
     // TODO: implement initState
+    _pinPutFocusNode.requestFocus();
     getNeedSign();
     super.initState();
   }
@@ -38,6 +42,7 @@ class _NeedSignState extends State<NeedSign> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Need Sign'.toUpperCase(),
           style: const TextStyle(
@@ -78,23 +83,9 @@ class _NeedSignState extends State<NeedSign> {
           Expanded(
             child: SingleChildScrollView(
               child: StreamBuilder<List<SuratModel>>(
-                stream: homes.listControllerSurat.stream,
-                builder: (context, snapshot) {
-                  if(mains.objectbox.boxSurat.isEmpty()){
-                    return Container(
-                        margin: const EdgeInsets.only(top: 15.0),
-                        width: MediaQuery.of(context).size.width,
-                        child :const Text(
-                          'No need sign yet.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
-                        )
-                    );
-                  }
-                  else{
-                    var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
-                    List<SuratModel> listSurat = queryInbox.find().toList();
-                    if(listSurat.isEmpty){
+                  stream: homes.listControllerSurat.stream,
+                  builder: (context, snapshot) {
+                    if(mains.objectbox.boxSurat.isEmpty()){
                       return Container(
                           margin: const EdgeInsets.only(top: 15.0),
                           width: MediaQuery.of(context).size.width,
@@ -106,244 +97,420 @@ class _NeedSignState extends State<NeedSign> {
                       );
                     }
                     else{
-                      DateTime now = DateTime.now();
-                      DateTime date = DateTime(now.year, now.month, now.day);
+                      var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
+                      List<SuratModel> listSurat = queryInbox.find().toList();
+                      if(listSurat.isEmpty){
+                        return Container(
+                            margin: const EdgeInsets.only(top: 15.0),
+                            width: MediaQuery.of(context).size.width,
+                            child :const Text(
+                              'No need sign yet.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.normal, fontSize: 13,),
+                            )
+                        );
+                      }
+                      else{
+                        DateTime now = DateTime.now();
+                        DateTime date = DateTime(now.year, now.month, now.day);
 
-                      return Container(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              scrollDirection: Axis.vertical,
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                scrollDirection: Axis.vertical,
                                 shrinkWrap: true,
                                 itemCount: listSurat.length,
                                 itemBuilder:(BuildContext context,index)=>
-                                GestureDetector(
-                                  onTap: (){
-                                    if(suratSelected.isNotEmpty){
-                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                                      if(query.find().isNotEmpty) {
-                                        final surat = SuratModel(
-                                          id: query.find().first.id,
-                                          idSurat: query.find().first.idSurat,
-                                          namaSurat: query.find().first.namaSurat,
-                                          nomorSurat: query.find().first.nomorSurat,
-                                          editor: query.find().first.editor,
-                                          perihal: query.find().first.perihal,
-                                          status: query.find().first.status,
-                                          tglSelesai: query.find().first.tglSelesai,
-                                          kategori: query.find().first.kategori,
-                                          url: query.find().first.url,
-                                          tipeSurat: query.find().first.tipeSurat,
-                                          tglBuat: query.find().first.tglBuat,
-                                          approver: query.find().first.approver,
-                                          penerima: query.find().first.penerima,
-                                          isSelected: !listSurat[index].isSelected,
-                                          isMeterai: query.find().first.isMeterai,
-                                        );
+                                    GestureDetector(
+                                      onTap: (){
+                                        if(suratSelected.isNotEmpty){
+                                          if(suratSelected[0].jenisSurat == 'Internal' && listSurat[index].jenisSurat == 'Internal'){
+                                              var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                              if(query.find().isNotEmpty) {
+                                                final surat = SuratModel(
+                                                  id: query.find().first.id,
+                                                  idSurat: query.find().first.idSurat,
+                                                  namaSurat: query.find().first.namaSurat,
+                                                  nomorSurat: query.find().first.nomorSurat,
+                                                  editor: query.find().first.editor,
+                                                  perihal: query.find().first.perihal,
+                                                  status: query.find().first.status,
+                                                  tglSelesai: query.find().first.tglSelesai,
+                                                  kategori: query.find().first.kategori,
+                                                  url: query.find().first.url,
+                                                  tipeSurat: query.find().first.tipeSurat,
+                                                  tglBuat: query.find().first.tglBuat,
+                                                  approver: query.find().first.approver,
+                                                  penerima: query.find().first.penerima,
+                                                  isSelected: !listSurat[index].isSelected,
+                                                  isMeterai: query.find().first.isMeterai,
+                                                  jenisSurat: query.find().first.jenisSurat,
+                                                );
 
-                                        mains.objectbox.boxSurat.put(surat);
-                                        setState(() {});
-                                        if(listSurat[index].isSelected==false){
-                                          suratSelected.add(listSurat[index]);
+                                                mains.objectbox.boxSurat.put(surat);
+                                                setState(() {});
+                                                if(listSurat[index].isSelected==false){
+                                                  suratSelected.add(listSurat[index]);
+                                                }else{
+                                                  suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                                }
+                                              }
+                                          }else if(suratSelected[0].jenisSurat == 'External' && listSurat[index].jenisSurat == 'External'){
+                                            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                            if(query.find().isNotEmpty) {
+                                              final surat = SuratModel(
+                                                id: query.find().first.id,
+                                                idSurat: query.find().first.idSurat,
+                                                namaSurat: query.find().first.namaSurat,
+                                                nomorSurat: query.find().first.nomorSurat,
+                                                editor: query.find().first.editor,
+                                                perihal: query.find().first.perihal,
+                                                status: query.find().first.status,
+                                                tglSelesai: query.find().first.tglSelesai,
+                                                kategori: query.find().first.kategori,
+                                                url: query.find().first.url,
+                                                tipeSurat: query.find().first.tipeSurat,
+                                                tglBuat: query.find().first.tglBuat,
+                                                approver: query.find().first.approver,
+                                                penerima: query.find().first.penerima,
+                                                isSelected: !listSurat[index].isSelected,
+                                                isMeterai: query.find().first.isMeterai,
+                                                jenisSurat: query.find().first.jenisSurat,
+                                              );
+
+                                              mains.objectbox.boxSurat.put(surat);
+                                              setState(() {});
+                                              if(listSurat[index].isSelected==false){
+                                                suratSelected.add(listSurat[index]);
+                                              }else{
+                                                suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                              }
+                                            }
+                                          }
                                         }else{
-                                          suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                          Navigator.push(
+                                            context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
+                                          ).then((value) => getNeedSign());
                                         }
-                                      }
-                                    }else{
-                                      Navigator.push(
-                                        context, MaterialPageRoute(builder: (context) => DocumentPage(listSurat[index])),
-                                      ).then((value) => getNeedSign());
-                                    }
-                                  },
-                                  onLongPress: (){
-                                    var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                                    if(query.find().isNotEmpty) {
-                                      final surat = SuratModel(
-                                        id: query.find().first.id,
-                                        idSurat: query.find().first.idSurat,
-                                        namaSurat: query.find().first.namaSurat,
-                                        nomorSurat: query.find().first.nomorSurat,
-                                        editor: query.find().first.editor,
-                                        perihal: query.find().first.perihal,
-                                        status: query.find().first.status,
-                                        tglSelesai: query.find().first.tglSelesai,
-                                        kategori: query.find().first.kategori,
-                                        url: query.find().first.url,
-                                        tipeSurat: query.find().first.tipeSurat,
-                                        tglBuat: query.find().first.tglBuat,
-                                        approver: query.find().first.approver,
-                                        penerima: query.find().first.penerima,
-                                        isSelected: !listSurat[index].isSelected,
-                                        isMeterai: query.find().first.isMeterai,
+                                      },
+                                      onLongPress: (){
+                                        if(suratSelected.isNotEmpty){
+                                          if(suratSelected[0].jenisSurat == 'Internal' && listSurat[index].jenisSurat == 'Internal'){
+                                            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                            if(query.find().isNotEmpty) {
+                                              final surat = SuratModel(
+                                                id: query.find().first.id,
+                                                idSurat: query.find().first.idSurat,
+                                                namaSurat: query.find().first.namaSurat,
+                                                nomorSurat: query.find().first.nomorSurat,
+                                                editor: query.find().first.editor,
+                                                perihal: query.find().first.perihal,
+                                                status: query.find().first.status,
+                                                tglSelesai: query.find().first.tglSelesai,
+                                                kategori: query.find().first.kategori,
+                                                url: query.find().first.url,
+                                                tipeSurat: query.find().first.tipeSurat,
+                                                tglBuat: query.find().first.tglBuat,
+                                                approver: query.find().first.approver,
+                                                penerima: query.find().first.penerima,
+                                                isSelected: !listSurat[index].isSelected,
+                                                isMeterai: query.find().first.isMeterai,
+                                                jenisSurat: query.find().first.jenisSurat,
+                                              );
 
-                                      );
+                                              mains.objectbox.boxSurat.put(surat);
+                                              setState(() {});
+                                              if(listSurat[index].isSelected==false){
+                                                suratSelected.add(listSurat[index]);
+                                              }else{
+                                                suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                              }
+                                            }
+                                          }else if(suratSelected[0].jenisSurat == 'External' && listSurat[index].jenisSurat == 'External'){
+                                            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                            if(query.find().isNotEmpty) {
+                                              final surat = SuratModel(
+                                                id: query.find().first.id,
+                                                idSurat: query.find().first.idSurat,
+                                                namaSurat: query.find().first.namaSurat,
+                                                nomorSurat: query.find().first.nomorSurat,
+                                                editor: query.find().first.editor,
+                                                perihal: query.find().first.perihal,
+                                                status: query.find().first.status,
+                                                tglSelesai: query.find().first.tglSelesai,
+                                                kategori: query.find().first.kategori,
+                                                url: query.find().first.url,
+                                                tipeSurat: query.find().first.tipeSurat,
+                                                tglBuat: query.find().first.tglBuat,
+                                                approver: query.find().first.approver,
+                                                penerima: query.find().first.penerima,
+                                                isSelected: !listSurat[index].isSelected,
+                                                isMeterai: query.find().first.isMeterai,
+                                                jenisSurat: query.find().first.jenisSurat,
+                                              );
 
-                                      mains.objectbox.boxSurat.put(surat);
-                                      setState(() {});
-                                      if(listSurat[index].isSelected==false){
-                                        suratSelected.add(listSurat[index]);
-                                      }else{
-                                        suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
-                                      }
-                                    }
-                                  },
-                                  child: Container(
-                                  margin: const EdgeInsets.only(bottom: 5),
-                                  height: 95,
-                                  width: 500,
-                                  child: Card(
-                                    margin: const EdgeInsets.symmetric(vertical: 3),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Stack(
-                                        children: [
-                                          Positioned(
-                                            left: 0,
-                                            top: 5,
-                                            child: CircleAvatar(
-                                              backgroundColor: Colors.transparent,
-                                              child: Image(
-                                                image: listSurat[index].isMeterai == 0 ?
-                                                const AssetImage('assets/images/pdf.png')
-                                                :
-                                                const AssetImage('assets/images/pdf-emeterai.png'),
-                                                width: 50,
-                                              ),
-                                              radius: 25,
-                                            ),
-                                          ),
-                                          Positioned(
-                                            left: 65,
-                                            top: 5,
-                                            bottom: 5,
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mains.objectbox.boxSurat.put(surat);
+                                              setState(() {});
+                                              if(listSurat[index].isSelected==false){
+                                                suratSelected.add(listSurat[index]);
+                                              }else{
+                                                suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                              }
+                                            }
+                                          }
+                                        }else{
+                                          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                          if(query.find().isNotEmpty) {
+                                            final surat = SuratModel(
+                                              id: query.find().first.id,
+                                              idSurat: query.find().first.idSurat,
+                                              namaSurat: query.find().first.namaSurat,
+                                              nomorSurat: query.find().first.nomorSurat,
+                                              editor: query.find().first.editor,
+                                              perihal: query.find().first.perihal,
+                                              status: query.find().first.status,
+                                              tglSelesai: query.find().first.tglSelesai,
+                                              kategori: query.find().first.kategori,
+                                              url: query.find().first.url,
+                                              tipeSurat: query.find().first.tipeSurat,
+                                              tglBuat: query.find().first.tglBuat,
+                                              approver: query.find().first.approver,
+                                              penerima: query.find().first.penerima,
+                                              isSelected: !listSurat[index].isSelected,
+                                              isMeterai: query.find().first.isMeterai,
+                                              jenisSurat: query.find().first.jenisSurat,
+
+                                            );
+
+                                            mains.objectbox.boxSurat.put(surat);
+                                            setState(() {});
+                                            if(listSurat[index].isSelected==false){
+                                              suratSelected.add(listSurat[index]);
+                                            }else{
+                                              suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                            }
+                                          }
+                                        }
+
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(bottom: 5),
+                                        height: 95,
+                                        width: 500,
+                                        child: Card(
+                                          margin: const EdgeInsets.symmetric(vertical: 3),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Stack(
                                               children: [
-                                                ConstrainedBox(
-                                                  constraints: const BoxConstraints(
-                                                      maxWidth: 250
-                                                  ),
-                                                  child: Text(
-                                                    listSurat[index].namaSurat!,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w600,
+                                                Positioned(
+                                                  left: 0,
+                                                  top: 5,
+                                                  child: CircleAvatar(
+                                                    backgroundColor: Colors.transparent,
+                                                    child: Image(
+                                                      image: listSurat[index].isMeterai == 0 ?
+                                                      const AssetImage('assets/images/pdf.png')
+                                                          :
+                                                      const AssetImage('assets/images/pdf-emeterai.png'),
+                                                      width: 50,
                                                     ),
+                                                    radius: 25,
                                                   ),
                                                 ),
-                                                Text(
-                                                  listSurat[index].editor!,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.normal,
-                                                    height: 1.5,
-                                                    // color: Color(0xFF171717),
+                                                Positioned(
+                                                  left: 65,
+                                                  top: 5,
+                                                  bottom: 5,
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      ConstrainedBox(
+                                                        constraints: const BoxConstraints(
+                                                            maxWidth: 250
+                                                        ),
+                                                        child: Text(
+                                                          listSurat[index].namaSurat!,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                          style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      // Text(
+                                                      //   listSurat[index].editor!,
+                                                      //   overflow: TextOverflow.ellipsis,
+                                                      //   maxLines: 1,
+                                                      //   style: const TextStyle(
+                                                      //     fontSize: 12,
+                                                      //     fontWeight: FontWeight.normal,
+                                                      //     height: 1.5,
+                                                      //     // color: Color(0xFF171717),
+                                                      //   ),
+                                                      // ),
+                                                      Text(
+                                                        listSurat[index].jenisSurat == null ? "" : listSurat[index].jenisSurat!,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.normal,
+                                                          height: 1.5,
+                                                          // color: Color(0xFF171717),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        listSurat[index].nomorSurat!,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w400,
+                                                          height: 1.5,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                                Text(
-                                                  listSurat[index].nomorSurat!,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w400,
-                                                    height: 1.5,
+                                                suratSelected.isEmpty ?
+                                                // show date
+                                                Positioned(
+                                                  right: 5,
+                                                  top: 10,
+                                                  child: Padding(
+                                                      padding: const EdgeInsets.only(left: 20),
+                                                      child: Text(
+                                                        listSurat[index].tglSelesai == null ?
+                                                        ""
+                                                            :
+                                                        date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
+                                                        DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                                            :
+                                                        DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
+                                                        ,
+                                                        style: const TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight: FontWeight.normal,
+                                                        ),
+                                                        textAlign: TextAlign.right,
+                                                      )
                                                   ),
-                                                ),
+                                                )
+                                                    :
+                                                suratSelected[0].jenisSurat == 'Internal' ?
+                                                    listSurat[index].jenisSurat == 'Internal' ?
+                                                // show checkbox internal
+                                                Positioned(
+                                                  right: 5,
+                                                  top: 10,
+                                                  child: Padding(
+                                                      padding: const EdgeInsets.only(left: 20),
+                                                      child: Checkbox(
+                                                          value: listSurat[index].isSelected,
+                                                          onChanged: (bool? value) {
+                                                            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                                            if(query.find().isNotEmpty) {
+                                                              final surat = SuratModel(
+                                                                id: query.find().first.id,
+                                                                idSurat: query.find().first.idSurat,
+                                                                namaSurat: query.find().first.namaSurat,
+                                                                nomorSurat: query.find().first.nomorSurat,
+                                                                editor: query.find().first.editor,
+                                                                perihal: query.find().first.perihal,
+                                                                status: query.find().first.status,
+                                                                tglSelesai: query.find().first.tglSelesai,
+                                                                kategori: query.find().first.kategori,
+                                                                url: query.find().first.url,
+                                                                tipeSurat: query.find().first.tipeSurat,
+                                                                tglBuat: query.find().first.tglBuat,
+                                                                approver: query.find().first.approver,
+                                                                penerima: query.find().first.penerima,
+                                                                isSelected: !listSurat[index].isSelected,
+                                                                isMeterai: query.find().first.isMeterai,
+                                                                jenisSurat: query.find().first.jenisSurat,
+                                                              );
+
+                                                              mains.objectbox.boxSurat.put(surat);
+                                                              setState(() {});
+                                                              if(listSurat[index].isSelected==false){
+                                                                suratSelected.add(listSurat[index]);
+                                                              }else{
+                                                                suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                                              }
+                                                            }
+                                                          }
+                                                      )
+                                                  ),
+                                                ) : SizedBox()
+                                                    :
+                                                listSurat[index].jenisSurat == 'External' ?
+                                                // show checkbox external
+                                                Positioned(
+                                                  right: 5,
+                                                  top: 10,
+                                                  child: Padding(
+                                                      padding: const EdgeInsets.only(left: 20),
+                                                      child: Checkbox(
+                                                          value: listSurat[index].isSelected,
+                                                          onChanged: (bool? value) {
+                                                            var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
+                                                            if(query.find().isNotEmpty) {
+                                                              final surat = SuratModel(
+                                                                id: query.find().first.id,
+                                                                idSurat: query.find().first.idSurat,
+                                                                namaSurat: query.find().first.namaSurat,
+                                                                nomorSurat: query.find().first.nomorSurat,
+                                                                editor: query.find().first.editor,
+                                                                perihal: query.find().first.perihal,
+                                                                status: query.find().first.status,
+                                                                tglSelesai: query.find().first.tglSelesai,
+                                                                kategori: query.find().first.kategori,
+                                                                url: query.find().first.url,
+                                                                tipeSurat: query.find().first.tipeSurat,
+                                                                tglBuat: query.find().first.tglBuat,
+                                                                approver: query.find().first.approver,
+                                                                penerima: query.find().first.penerima,
+                                                                isSelected: !listSurat[index].isSelected,
+                                                                isMeterai: query.find().first.isMeterai,
+                                                                jenisSurat: query.find().first.jenisSurat,
+                                                              );
+
+                                                              mains.objectbox.boxSurat.put(surat);
+                                                              setState(() {});
+                                                              if(listSurat[index].isSelected==false){
+                                                                suratSelected.add(listSurat[index]);
+                                                              }else{
+                                                                suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
+                                                              }
+                                                            }
+                                                          }
+                                                      )
+                                                  ),
+                                                ) : SizedBox()
                                               ],
                                             ),
                                           ),
-                                          suratSelected.isEmpty ?
-                                          Positioned(
-                                            right: 5,
-                                            top: 10,
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(left: 20),
-                                                child: Text(
-                                                  listSurat[index].tglSelesai == null ?
-                                                  ""
-                                                      :
-                                                  date.isAfter(DateTime.parse(listSurat[index].tglSelesai!))?
-                                                  DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
-                                                      :
-                                                  DateFormat.Hm().format(DateTime.parse(listSurat[index].tglSelesai!)).toString()
-                                                  ,
-                                                  style: const TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.normal,
-                                                  ),
-                                                  textAlign: TextAlign.right,
-                                                )
-                                            ),
-                                          )
-                                              :
-                                          Positioned(
-                                            right: 5,
-                                            top: 10,
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(left: 20),
-                                                child: Checkbox(
-                                                    value: listSurat[index].isSelected,
-                                                    onChanged: (bool? value) {
-                                                      var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(listSurat[index].idSurat!) & SuratModel_.kategori.equals('needSign')).build();
-                                                      if(query.find().isNotEmpty) {
-                                                        final surat = SuratModel(
-                                                          id: query.find().first.id,
-                                                          idSurat: query.find().first.idSurat,
-                                                          namaSurat: query.find().first.namaSurat,
-                                                          nomorSurat: query.find().first.nomorSurat,
-                                                          editor: query.find().first.editor,
-                                                          perihal: query.find().first.perihal,
-                                                          status: query.find().first.status,
-                                                          tglSelesai: query.find().first.tglSelesai,
-                                                          kategori: query.find().first.kategori,
-                                                          url: query.find().first.url,
-                                                          tipeSurat: query.find().first.tipeSurat,
-                                                          tglBuat: query.find().first.tglBuat,
-                                                          approver: query.find().first.approver,
-                                                          penerima: query.find().first.penerima,
-                                                          isSelected: !listSurat[index].isSelected,
-                                                          isMeterai: query.find().first.isMeterai,
-
-                                                        );
-
-                                                        mains.objectbox.boxSurat.put(surat);
-                                                        setState(() {});
-                                                        if(listSurat[index].isSelected==false){
-                                                          suratSelected.add(listSurat[index]);
-                                                        }else{
-                                                          suratSelected.removeWhere((item) => item.idSurat == listSurat[index].idSurat);
-                                                        }
-                                                      }
-                                                    }
-                                                )
-                                            ),
-                                          )
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                  ),
                               ),
-                                ),
-                            ),
-                          ],
-                        ),
-                      );
+                            ],
+                          ),
+                        );
+                      }
                     }
-                  }
 
-                }
+                  }
               ),
             ),
           ),
-          suratSelected.isNotEmpty ?
+          suratSelected.isNotEmpty && suratSelected[0].jenisSurat == 'Internal' ?
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: ElevatedButton.icon(
@@ -363,7 +530,7 @@ class _NeedSignState extends State<NeedSign> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const SizedBox(height: 10,),
-                        const Text('Are you sure to sign all the selected documents?',
+                        const Text('Are you sure to sign all the selected internal documents?',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16
@@ -453,7 +620,127 @@ class _NeedSignState extends State<NeedSign> {
                   size: 13,
                   color: Colors.white
               ),
-              label: const Text("Sign Selected Document",
+              label: const Text("Sign Internal Selected Document",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16
+                ),),
+            ),
+          )
+              :
+          suratSelected.isNotEmpty && suratSelected[0].jenisSurat == 'External' ?
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: ElevatedButton.icon(
+              onPressed: (){
+                List listMapSurat = [];
+
+                for(var surat in suratSelected){
+                  Map mapSurat = { 'id': '${surat.idSurat}' };
+                  listMapSurat.add(mapSurat);
+                }
+
+                showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 10,),
+                        const Text('Are you sure to sign all the selected external documents?',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const SizedBox(height: 20,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                      color: const Color(0xFF029FE6)
+                                  )
+                              ),
+                              child: TextButton(
+                                onPressed: () => Navigator.pop(context, 'Cancel'),
+                                child: const Text('Cancel',
+                                  style: TextStyle(
+                                      color: Color(0xFF029FE6)
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                  color: const Color(0xFF029FE6),
+                                  borderRadius: BorderRadius.circular(6)
+                              ),
+                              child: TextButton(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+
+                                  List otpData = await getOtpBulkEksternal(listMapSurat);
+
+                                  EasyLoading.dismiss();
+
+                                  showDialog<String>(
+                                    context: _scaffoldKey.currentContext!,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      insetPadding: const EdgeInsets.symmetric(horizontal: 7),
+                                      content: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('OTP',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 24
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20,),
+                                          Scrollbar(
+                                            child: buildPinPutEksternal(listMapSurat, otpData[0], otpData[1]),
+                                          ),
+                                          const SizedBox(height: 20,),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Confirm',
+                                  style: TextStyle(
+                                      color: Colors.white
+                                  ),),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(MediaQuery.of(context).size.width, 50) ,
+                primary: const Color(0xFF1FA463),
+                elevation: 0,
+              ),
+              icon: const Icon(
+                  Icons.check,
+                  size: 13,
+                  color: Colors.white
+              ),
+              label: const Text("Sign External Selected Document",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 16
@@ -493,12 +780,48 @@ class _NeedSignState extends State<NeedSign> {
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
+      focusNode: _pinPutFocusNode,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
         // signingBulk(idSurat, pin);
       },
     );
   }
+
+  Widget buildPinPutEksternal(List listIdSurat, String token, String bulkId) {
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: const TextStyle(fontSize: 20, color: Color.fromRGBO(30, 60, 87, 1), fontWeight: FontWeight.w600),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color.fromRGBO(234, 239, 243, 1)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: const Color.fromRGBO(114, 178, 238, 1)),
+      borderRadius: BorderRadius.circular(8),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration?.copyWith(
+        color: const Color.fromRGBO(234, 239, 243, 1),
+      ),
+    );
+
+    return Pinput(
+      focusedPinTheme: focusedPinTheme,
+      submittedPinTheme: submittedPinTheme,
+      length: 6,
+      focusNode: _pinPutFocusNode,
+      onCompleted: (otp) {
+        EasyLoading.show(status: 'loading...');
+        signingBulkEksternal(token, bulkId, otp, listIdSurat);
+      },
+    );
+  }
+
 
   void onSelected(BuildContext context, int item)  {
     switch (item) {
@@ -524,6 +847,7 @@ class _NeedSignState extends State<NeedSign> {
               approver: query.find().first.approver,
               penerima: query.find().first.penerima,
               isSelected: true,
+              jenisSurat: query.find().first.jenisSurat,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -551,15 +875,11 @@ class _NeedSignState extends State<NeedSign> {
       }
     };
 
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
-
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
       body:jsonEncode(data),
     );
     if(response.statusCode == 200){
-      // print("${response.body}");
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
@@ -589,6 +909,7 @@ class _NeedSignState extends State<NeedSign> {
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
               isMeterai: dataSurat['isMeterai'],
+              jenisSurat: dataSurat['jenis_surat'],
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -609,6 +930,7 @@ class _NeedSignState extends State<NeedSign> {
               approver: jsonEncode(dataSurat['approv']),
               penerima: jsonEncode(dataSurat['penerima']),
               isMeterai: dataSurat['isMeterai'],
+              jenisSurat: dataSurat['jenis_surat'],
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -688,9 +1010,11 @@ class _NeedSignState extends State<NeedSign> {
             mains.objectbox.boxSurat.remove(query.find().first.id);
           }
         }
-        EasyLoading.showSuccess('Berhasil Signing!');
+        EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
         Navigator.pop(context);
-        setState(() {});
+        setState(() {
+          clearSelect();
+        });
       }
       else{
         EasyLoading.showError(signingMap['message']);
@@ -702,6 +1026,102 @@ class _NeedSignState extends State<NeedSign> {
     return response;
   }
 
+  Future<List> getOtpBulkEksternal(List listIdSurat) async {
+    EasyLoading.show(status: 'Sending OTP');
+
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/otpSignEksternal';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
+        'surat': listIdSurat,
+      }
+    };
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+
+    if(response.statusCode == 200){
+      Map<String, dynamic> otpMap = jsonDecode(response.body);
+
+      if(otpMap['code'] == 0){
+        // signingBulkEksternal(otpMap['otp'], otpMap['bulkId'], listIdSurat, otpMap['tokenCodeBulk']);
+        return [otpMap['data']['token'], otpMap['data']['dataIdBulk']];
+      }
+      else{
+        EasyLoading.showError(otpMap['message']);
+      }
+    }
+    else{
+      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
+    }
+    return [];
+  }
+
+  Future<http.Response> signingBulkEksternal(String token, String bulkId, String otp, List listIdSurat) async {
+
+    String url ='https://eoffice.dev.digiprimatera.co.id/api/signEksternalBulk';
+
+    Map<String, dynamic> data = {
+      'payload': {
+        // 'users_id': mains.objectbox.boxUser.get(1)!.userId,
+        'dataIdBulk': bulkId,
+        'tokenCodeBulk': token,
+        'otpCodeBulk': otp,
+      }
+    };
+
+    var response = await http.post(Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body:jsonEncode(data),
+    );
+    if(response.statusCode == 200){
+      Map<String, dynamic> signingMap = jsonDecode(response.body);
+
+      if(signingMap['code'] == 0){
+        for(var idSurat in listIdSurat){
+          var query = mains.objectbox.boxSurat.query(SuratModel_.idSurat.equals(idSurat['id'])).build();
+          if(query.find().isNotEmpty) {
+            final surat = SuratModel(
+              id: query.find().first.id,
+              idSurat: query.find().first.idSurat,
+              namaSurat: query.find().first.namaSurat,
+              nomorSurat: query.find().first.nomorSurat,
+              editor: query.find().first.editor,
+              perihal: query.find().first.perihal,
+              status: query.find().first.status,
+              tglSelesai: query.find().first.tglSelesai,
+              url: query.find().first.url,
+              kategori: 'signed',
+              tglBuat: query.find().first.tglBuat,
+              tipeSurat: query.find().first.tipeSurat,
+              approver: query.find().first.approver,
+              penerima: query.find().first.penerima,
+              isSelected: query.find().first.isSelected,
+              isMeterai: query.find().first.isMeterai,
+              jenisSurat: query.find().first.jenisSurat,
+            );
+
+            mains.objectbox.boxSurat.put(surat);
+          }
+        }
+        EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
+        Navigator.pop(context);
+        setState(() {
+          clearSelect();
+        });
+      }
+      else{
+        EasyLoading.showError(signingMap['message']);
+      }
+    }
+    else{
+      EasyLoading.showError("${response.statusCode}, Gagal terhubung ke server!");
+    }
+    return response;
+  }
 
 }
 
@@ -727,6 +1147,8 @@ void clearSelect(){
         approver: query.find().first.approver,
         penerima: query.find().first.penerima,
         isSelected: false,
+        jenisSurat: query.find().first.jenisSurat,
+        isMeterai: query.find().first.isMeterai,
       );
 
       mains.objectbox.boxSurat.put(surat);

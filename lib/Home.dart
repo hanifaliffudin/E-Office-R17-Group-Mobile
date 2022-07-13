@@ -116,6 +116,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      setState(() {});
+
       if (message.data['type'] == 'logout') {
         _openDialogAutoLogout(context);
       }
@@ -1015,7 +1017,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         mains.objectbox.boxConversation.put(objConversation);
 
         // Delete typing status after 2 seconds
-        // setState((){});
         Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
           ConversationModel objConversation = ConversationModel(
               id: query.find().first.id,
@@ -1029,7 +1030,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
               statusReceiver: '',
               roomId: query.find().first.roomId);
           mains.objectbox.boxConversation.put(objConversation);
-          // setState((){});
         });
       }
     } else if (objMessage['type'] == "group") {
