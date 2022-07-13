@@ -8,6 +8,7 @@ import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/models/UserModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/models/UserPreferenceModel.dart';
+import 'package:militarymessenger/models/savedModel.dart';
 
 import 'models/ChatModel.dart';
 import 'objectbox.g.dart'; // created by `flutter pub run build_runner build`
@@ -31,6 +32,7 @@ class ObjectBox {
   late final Box<AttendanceModel> boxAttendance;
   late final Box<AttendanceHistoryModel> boxAttendanceHistory;
   late final Box<GroupNotifModel> boxGroupNotif;
+  late final Box<SavedModel> boxSaved;
 
   /// A stream of all notes ordered by date.
   late final Stream<Query<ChatModel>> queryStreamChat;
@@ -43,6 +45,7 @@ class ObjectBox {
   late final Stream<Query<AttendanceModel>> queryStreamAttendance;
   late final Stream<Query<AttendanceHistoryModel>> queryStreamAttendanceHistory;
   late final Stream<Query<GroupNotifModel>> queryStreamGroupNotif;
+  late final Stream<Query<SavedModel>> queryStreamSaved;
 
   ObjectBox._create(this.store) {
     boxChat = Box<ChatModel>(store);
@@ -56,6 +59,7 @@ class ObjectBox {
     boxAttendance = Box<AttendanceModel>(store);
     boxAttendanceHistory = Box<AttendanceHistoryModel>(store);
     boxGroupNotif = Box<GroupNotifModel>(store);
+    boxSaved = Box<SavedModel>(store);
 
     final qBuilderChat = boxChat.query()
       ..order(ChatModel_.id, flags: Order.descending);
@@ -96,6 +100,10 @@ class ObjectBox {
     final qBuilderGroupNotif = boxGroupNotif.query()
       ..order(GroupNotifModel_.id, flags: Order.descending);
     queryStreamGroupNotif = qBuilderGroupNotif.watch(triggerImmediately: true);
+
+    final qBuilderSaved = boxSaved.query()
+      ..order(SavedModel_.id, flags: Order.descending);
+    queryStreamSaved = qBuilderSaved.watch(triggerImmediately: true);
 
     // Add some demo data if the box is empty.
     //if (mains.objectbox.boxConversation.isEmpty()) {

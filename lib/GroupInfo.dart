@@ -37,7 +37,7 @@ class _GroupInfoState extends State<GroupInfo> {
 
   _GroupInfoState(this.conversation, this.roomId);
 
-  void pictureOnTap(String photo) {
+  void _pictureOnTap(String photo) {
     showGeneralDialog(
       context: context, 
       barrierDismissible: false,
@@ -114,7 +114,7 @@ class _GroupInfoState extends State<GroupInfo> {
             Center(
               child: conversation!.photoProfile != '' && conversation!.photoProfile != null ?
               InkWell(
-                onTap: () => pictureOnTap(conversation!.photoProfile!),
+                onTap: () => _pictureOnTap(conversation!.photoProfile!),
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: Color(0xffF2F1F6),

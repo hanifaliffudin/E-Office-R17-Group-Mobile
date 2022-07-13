@@ -24,7 +24,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
 
   _ProfileInfoState(this.conversation, this.roomId);
 
-  void pictureOnTap(String photo) {
+  void _pictureOnTap(String photo) {
     showGeneralDialog(
       context: context, 
       barrierDismissible: false,
@@ -113,7 +113,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                     )
                         :
                     InkWell(
-                      onTap: () => pictureOnTap(contactList[index].photo!),
+                      onTap: () => _pictureOnTap(contactList[index].photo!),
                       child: CircleAvatar(
                         radius: 50,
                         backgroundColor: Color(0xffF2F1F6),

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/functions/permission_dialog_function.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
+import 'package:militarymessenger/models/savedModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:militarymessenger/utils/sp_util.dart';
 import 'main.dart' as mains;
@@ -38,21 +39,44 @@ class _AttendanceState extends State<Attendance> {
 
   void _locationPermissionOnChange(bool value) async {
     if (value) {
+      var queryLocationPermission = mains.objectbox.boxSaved.query(SavedModel_.type.equals('locationPermission')).build().find();
+
       locationPermissionDialog(
         context, 
         () async {
           Navigator.of(context).pop();
-          await SpUtil.instance.setBoolValue('locationPermission', false);
+
+          if (queryLocationPermission.isNotEmpty) {
+            var saved = queryLocationPermission.first;
+            saved.value = false;
+            mains.objectbox.boxSaved.put(saved);
+          } else {
+            mains.objectbox.boxSaved.put(SavedModel(
+              type: 'locationPermission',
+              value: false,
+            ));
+          }
+
           _stateController.locationPermission(false);
         }, 
         () async {
           Navigator.of(context).pop();
-          await SpUtil.instance.setBoolValue('locationPermission', true);
+
+          if (queryLocationPermission.isNotEmpty) {
+            var saved = queryLocationPermission.first;
+            saved.value = true;
+            mains.objectbox.boxSaved.put(saved);
+          } else {
+            mains.objectbox.boxSaved.put(SavedModel(
+              type: 'locationPermission',
+              value: true,
+            ));
+          }
+
           _stateController.locationPermission(true);
         }
       );
     } else {
-      // await SpUtil.instance.setBoolValue('locationPermission', false);
       // _stateController.locationPermission(false);
     }
   }
