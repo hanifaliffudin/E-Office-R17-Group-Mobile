@@ -25,6 +25,7 @@ import 'models/NoteModel.dart';
 import 'models/SuratModel.dart';
 import 'models/UserModel.dart';
 import 'models/UserPreferenceModel.dart';
+import 'models/savedModel.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -676,6 +677,30 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(14, 1663225072182915868),
+      name: 'SavedModel',
+      lastPropertyId: const IdUid(3, 5675923966199701894),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 3083644362904697929),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 4626699012898344338),
+            name: 'type',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 5675923966199701894),
+            name: 'value',
+            type: 1,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -699,7 +724,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(13, 6077117816353556383),
+      lastEntityId: const IdUid(14, 1663225072182915868),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -1392,6 +1417,37 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 8));
 
           return object;
+        }),
+    SavedModel: EntityDefinition<SavedModel>(
+        model: _entities[12],
+        toOneRelations: (SavedModel object) => [],
+        toManyRelations: (SavedModel object) => {},
+        getId: (SavedModel object) => object.id,
+        setId: (SavedModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (SavedModel object, fb.Builder fbb) {
+          final typeOffset =
+              object.type == null ? null : fbb.writeString(object.type!);
+          fbb.startTable(4);
+          fbb.addInt64(0, object.id);
+          fbb.addOffset(1, typeOffset);
+          fbb.addBool(2, object.value);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = SavedModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              type: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 6),
+              value: const fb.BoolReader()
+                  .vTableGetNullable(buffer, rootOffset, 8));
+
+          return object;
         })
   };
 
@@ -1858,4 +1914,19 @@ class GroupNotifModel_ {
   /// see [GroupNotifModel.notifId]
   static final notifId =
       QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[2]);
+}
+
+/// [SavedModel] entity fields to define ObjectBox queries.
+class SavedModel_ {
+  /// see [SavedModel.id]
+  static final id =
+      QueryIntegerProperty<SavedModel>(_entities[12].properties[0]);
+
+  /// see [SavedModel.type]
+  static final type =
+      QueryStringProperty<SavedModel>(_entities[12].properties[1]);
+
+  /// see [SavedModel.value]
+  static final value =
+      QueryBooleanProperty<SavedModel>(_entities[12].properties[2]);
 }
