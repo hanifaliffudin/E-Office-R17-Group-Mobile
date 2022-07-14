@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/instance_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/Canceled.dart';
 import 'package:militarymessenger/NeedReview.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/tracking.dart';
@@ -29,13 +32,37 @@ class EOfficeTabScreen extends StatefulWidget {
 }
 
 class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
+  final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<bool> _refereshEofficePageListener;
 
   @override
   void initState() {
-    // TODO: implement initState
+    super.initState();
+
     getAllBadge();
     getRecent();
-    super.initState();
+    _addRefreshEofficeListener();
+  }
+
+  @override
+  void dispose() {
+    _removeDocumentCategoryListener();
+
+    super.dispose();
+  }
+  
+  void _addRefreshEofficeListener() {
+    _refereshEofficePageListener = _stateController.refreshEofficePage.listen((p0) {
+      if (p0) {
+        getAllBadge();
+        getRecent();
+        _stateController.changeRefreshEoffice(false);
+      }
+    });
+  }
+
+  void _removeDocumentCategoryListener() {
+    _refereshEofficePageListener.cancel();
   }
 
   @override

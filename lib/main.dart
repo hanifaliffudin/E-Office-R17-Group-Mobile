@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -8,6 +9,7 @@ import 'package:militarymessenger/Login.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/provider/theme_provider.dart';
 import 'package:militarymessenger/utils/sp_util.dart';
+import 'package:telephony/telephony.dart';
 import 'ObjectBox.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -48,6 +50,18 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
 
     // print('hashCode: ${message.notification.hashCode}');
     // print('Handling a background message: ${message.data}');
+}
+
+smsBackgrounMessageHandler(SmsMessage message) async {
+	//Handle background message	
+  print('background');
+  String msgBody = message.body!;
+
+  if (msgBody.length >= 39) {
+    if (msgBody.substring(0, 33) == 'Kode OTP Digital Signature Anda: ') {
+      print(msgBody.substring(33, 39));
+    }
+  }
 }
 
 Future<void> main() async {
