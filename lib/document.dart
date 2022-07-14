@@ -107,6 +107,7 @@ class _DocumentPageState extends State<DocumentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldKey,
       // backgroundColor: Colors.white,
       appBar: AppBar(
@@ -126,274 +127,284 @@ class _DocumentPageState extends State<DocumentPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 470,
-                      color: const Color(0xFFD1D1D6),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                          child: surat!.kategori == 'inbox' ?
-                          const PDF(
-                            enableSwipe: true,
-                            swipeHorizontal: true,
-                            autoSpacing: false,
-                            pageFling: false,
-                          ).cachedFromUrl(
-                            'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
-                            placeholder: (progress) => Center(child: Text('$progress %')),
-                            errorWidget: (error) => Center(child: Text(error.toString())),
-                            whenDone: (done) {
-                                if(surat!.status == '1'){
-                                  readSurat(surat!.idSurat!);
-                                }
-                              },
-                          )
-                        :
-                          const PDF(
-                            enableSwipe: true,
-                            swipeHorizontal: true,
-                            autoSpacing: false,
-                            pageFling: false,
-                          ).cachedFromUrl(
-                            surat!.url!,
-                            placeholder: (progress) => Center(child: Text('$progress %')),
-                            errorWidget: (error) => Center(child: Text(error.toString())),
-                          ),
-                      ),
-                    ),
-                    const SizedBox(height: 10,),
-                    CupertinoSegmentedControl<int>(
-                      padding: const EdgeInsets.all(8),
-                      groupValue: groupValue,
-                      selectedColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
-                      unselectedColor: Theme.of(context).cardTheme.color,
-                      borderColor: Theme.of(context).scaffoldBackgroundColor,
-                      pressedColor: const Color(0xFFF8FAFC),
-                      children: {
-                        0: buildSegment(
-                          'Detail'.toUpperCase(),
+              child: Column(
+                children: [
+                  Container(
+                    height: 470,
+                    color: const Color(0xFFD1D1D6),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                        child: surat!.kategori == 'inbox' ?
+                        const PDF(
+                          enableSwipe: true,
+                          swipeHorizontal: true,
+                          autoSpacing: false,
+                          pageFling: false,
+                        ).cachedFromUrl(
+                          'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
+                          placeholder: (progress) => Center(child: Text('$progress %')),
+                          errorWidget: (error) => Center(child: Text(error.toString())),
+                          whenDone: (done) {
+                              if(surat!.status == '1'){
+                                readSurat(surat!.idSurat!);
+                              }
+                            },
+                        )
+                      :
+                        const PDF(
+                          enableSwipe: true,
+                          swipeHorizontal: true,
+                          autoSpacing: false,
+                          pageFling: false,
+                        ).cachedFromUrl(
+                          surat!.url!,
+                          placeholder: (progress) => Center(child: Text('$progress %')),
+                          errorWidget: (error) => Center(child: Text(error.toString())),
                         ),
-                        1: buildSegment('Editor'.toUpperCase()),
-                        2: buildSegment('Approver'.toUpperCase()
-                        )
-                      },
-                      onValueChanged: (groupValue) {
-                        setState(() {
-                          this.groupValue = groupValue;
-                          groupValue == 0
-                              ? [detailVisible = true, editorVisible = false, approverVisible = false]
-                              : groupValue == 1
-                              ? [editorVisible = true, detailVisible = false, approverVisible = false]
-                              : [approverVisible = true, detailVisible = false, editorVisible = false];
-                        });
-                      },
                     ),
-                    Visibility(
-                        visible: detailVisible,
+                  ),
+                  const SizedBox(height: 10,),
+                  CupertinoSegmentedControl<int>(
+                    padding: const EdgeInsets.all(8),
+                    groupValue: groupValue,
+                    selectedColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+                    unselectedColor: Theme.of(context).cardTheme.color,
+                    borderColor: Theme.of(context).scaffoldBackgroundColor,
+                    pressedColor: const Color(0xFFF8FAFC),
+                    children: {
+                      0: buildSegment(
+                        'Detail'.toUpperCase(),
+                      ),
+                      1: buildSegment('Editor'.toUpperCase()),
+                      2: buildSegment('Approver'.toUpperCase()
+                      )
+                    },
+                    onValueChanged: (groupValue) {
+                      setState(() {
+                        this.groupValue = groupValue;
+                        groupValue == 0
+                            ? [detailVisible = true, editorVisible = false, approverVisible = false]
+                            : groupValue == 1
+                            ? [editorVisible = true, detailVisible = false, approverVisible = false]
+                            : [approverVisible = true, detailVisible = false, editorVisible = false];
+                      });
+                    },
+                  ),
+                  Visibility(
+                    visible: detailVisible,
+                    child: Expanded(
+                      child: SingleChildScrollView(
                         child: Container(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    width: 100,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: const [
-                                        Text('Nomor Surat',
-                                          style: TextStyle(
-                                              color: Color(0xFF94A3B8),
-                                              fontSize: 12
-                                          ),
-                                        ),
-                                        Text(':',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 12,
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10,),
-                                  Text(surat!.nomorSurat == null ? '-' : surat!.nomorSurat!,
-                                    style: const TextStyle(
-                                        fontSize: 12
-                                    ),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height:20),
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    width: 100,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: const [
-                                        Text('Perihal',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(':',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 12,
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10,),
-                                  SizedBox(
-                                    width: 200,
-                                    child: Text(surat!.perihal == null ? '-' : surat!.perihal!,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      maxLines: 1,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 20,),
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    width: 100,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: const [
-                                        Text('Lampiran',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(':',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 12,
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10,),
-                                  const Text('-',
-                                    style: TextStyle(
-                                        fontSize: 12
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        )
-                    ),
-                    Visibility(
-                        visible: editorVisible,
-                        child: Container(
-                          padding: const EdgeInsets.all(15),
-                          child: Row(
-                            children: [
-                              const CircleAvatar(
-                                child: Icon(Icons.person),
-                                radius: 18,
-                              ),
-                              const SizedBox(width: 10,),
-                              Text(surat!.editor == null ? '' : surat!.editor! ,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                    ),
-                    Visibility(
-                        visible: approverVisible,
-                        child: Container(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            children: [
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: cardApprover.length,
-                                itemBuilder: (BuildContext context, index)=>
+                            padding: const EdgeInsets.all(15),
+                            child: Column(
+                              children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const CircleAvatar(
-                                          child: Icon(Icons.person),
-                                          radius: 18,
-                                        ),
-                                        const SizedBox(width: 10,),
-                                        SizedBox(
-                                            width: 170,
-                                            child: Text(
-                                              cardApprover[index].name!,
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  overflow: TextOverflow.ellipsis
-                                              ),
-                                              maxLines: 1,
-                                            )
-                                        ),
-                                      ],
-                                    ),
-                                    ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          primary:
-                                          cardApprover[index].status! == 'Approved' ?
-                                          const Color(0xFFECFDF5)
-                                          :
-                                          cardApprover[index].status! == 'Canceled' ?
-                                          const Color(0xFFFFEBEA)
-                                          :
-                                          cardApprover[index].status! == 'Returned' ?
-                                          const Color(0xFFEAF6FF)
-                                          :
-                                          const Color(0xFFECEFF1),
-                                        ),
-                                        child: Text(
-                                          cardApprover[index].status!,
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color:
-                                              cardApprover[index].status! == 'Approved' ?
-                                              const Color(0xFF1FA463)
-                                                  :
-                                              cardApprover[index].status! == 'Canceled' ?
-                                              const Color(0xFFDC2626)
-                                                  :
-                                              cardApprover[index].status! == 'Returned' ?
-                                              const Color(0xFF2481CF)
-                                                  :
-                                              const Color(0xFF94A3B8)
+                                    SizedBox(
+                                      width: 100,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: const [
+                                          Text('Nomor Surat',
+                                            style: TextStyle(
+                                                color: Color(0xFF94A3B8),
+                                                fontSize: 12
+                                            ),
                                           ),
-                                        )
+                                          Text(':',
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10,),
+                                    Text(surat!.nomorSurat == null ? '-' : surat!.nomorSurat!,
+                                      style: const TextStyle(
+                                          fontSize: 12
+                                      ),
                                     )
                                   ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height:20),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 100,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: const [
+                                          Text('Perihal',
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(':',
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10,),
+                                    SizedBox(
+                                      width: 200,
+                                      child: Text(surat!.perihal == null ? '-' : surat!.perihal!,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(height: 20,),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 100,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: const [
+                                          Text('Lampiran',
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(':',
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10,),
+                                    const Text('-',
+                                      style: TextStyle(
+                                          fontSize: 12
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        )
-                    )
-                  ],
-                ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: editorVisible,
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                        child: Container(
+                            padding: const EdgeInsets.all(15),
+                            child: Row(
+                              children: [
+                                const CircleAvatar(
+                                  child: Icon(Icons.person),
+                                  radius: 18,
+                                ),
+                                const SizedBox(width: 10,),
+                                Text(surat!.editor == null ? '' : surat!.editor! ,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: approverVisible,
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                          child: Container(
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                children: [
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: cardApprover.length,
+                                    itemBuilder: (BuildContext context, index)=>
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                const CircleAvatar(
+                                                  child: Icon(Icons.person),
+                                                  radius: 18,
+                                                ),
+                                                const SizedBox(width: 10,),
+                                                SizedBox(
+                                                    width: 170,
+                                                    child: Text(
+                                                      cardApprover[index].name!,
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.bold,
+                                                          overflow: TextOverflow.ellipsis
+                                                      ),
+                                                      maxLines: 1,
+                                                    )
+                                                ),
+                                              ],
+                                            ),
+                                            ElevatedButton(
+                                                onPressed: () {},
+                                                style: ElevatedButton.styleFrom(
+                                                  primary:
+                                                  cardApprover[index].status! == 'Approved' ?
+                                                  const Color(0xFFECFDF5)
+                                                      :
+                                                  cardApprover[index].status! == 'Canceled' ?
+                                                  const Color(0xFFFFEBEA)
+                                                      :
+                                                  cardApprover[index].status! == 'Returned' ?
+                                                  const Color(0xFFEAF6FF)
+                                                      :
+                                                  const Color(0xFFECEFF1),
+                                                ),
+                                                child: Text(
+                                                  cardApprover[index].status!,
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      color:
+                                                      cardApprover[index].status! == 'Approved' ?
+                                                      const Color(0xFF1FA463)
+                                                          :
+                                                      cardApprover[index].status! == 'Canceled' ?
+                                                      const Color(0xFFDC2626)
+                                                          :
+                                                      cardApprover[index].status! == 'Returned' ?
+                                                      const Color(0xFF2481CF)
+                                                          :
+                                                      const Color(0xFF94A3B8)
+                                                  ),
+                                                )
+                                            )
+                                          ],
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ),
+                    ),
+                  ),
+                ],
               ),
             ),
             mains.objectbox.boxSurat.get(surat!.id)!.kategori! == "needApprove"?

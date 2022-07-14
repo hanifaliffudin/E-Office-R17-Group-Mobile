@@ -1,22 +1,17 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:intl/intl.dart';
-import 'package:like_button/like_button.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
-import 'Home.dart' as homes;
-
-import 'package:militarymessenger/provider/theme_provider.dart';
 
 class PostPage extends StatefulWidget {
   NewsModel? news;
 
-  PostPage(this.news);
+  PostPage(this.news, {Key? key}) : super(key: key);
 
   @override
   _PostPageState createState() => _PostPageState(news);
@@ -36,7 +31,7 @@ class _PostPageState extends State<PostPage> {
   List<Comment> bubbleComments = [];
   List listComments = [];
 
-  TextEditingController inputTextController = new TextEditingController();
+  TextEditingController inputTextController = TextEditingController();
 
   @override
   void initState() {
@@ -74,26 +69,26 @@ class _PostPageState extends State<PostPage> {
                 child: Column(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(15),
+                      padding: const EdgeInsets.all(15),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
+                              const CircleAvatar(
                                 backgroundColor: Colors.grey,
                                 child: Icon(
                                   Icons.person,
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(width: 10,),
+                              const SizedBox(width: 10,),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(news!.nameUploader!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14
                                     ),
@@ -101,16 +96,16 @@ class _PostPageState extends State<PostPage> {
                                   Row(
                                     children: [
                                       Text(DateFormat('dd MMM yyyy').format(DateTime.parse(news!.created_at!)).toString(),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.w400,
                                             fontSize: 13,
                                             height: 2
                                         ),
                                       ),
-                                      SizedBox(width: 7,),
+                                      const SizedBox(width: 7,),
                                       Text(DateFormat.Hm().format(DateTime.parse(news!.created_at!)).toString(),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.w400,
                                             fontSize: 13,
@@ -123,7 +118,7 @@ class _PostPageState extends State<PostPage> {
                               )
                             ],
                           ),
-                          SizedBox(height: 10,),
+                          const SizedBox(height: 10,),
                           Row(
                             children: [
                               Expanded(
@@ -144,16 +139,16 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10,),
+                          const SizedBox(height: 10,),
                           Html(
-                              data: "${news!.text!}",
+                              data: news!.text!,
                             customRender: {
                                 "table": (context, child){
                                   return Container();
                                 }
                             },
                           ),
-                          SizedBox(height: 10,),
+                          const SizedBox(height: 10,),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
@@ -162,13 +157,13 @@ class _PostPageState extends State<PostPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.thumb_up_outlined,
-                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                       size: 15,
                                     ),
-                                    SizedBox(width: 5,),
+                                    const SizedBox(width: 5,),
                                     Text(mains.objectbox.boxNews.get(news!.id)!.count_like.toString(),
                                       style: TextStyle(
-                                          color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                          color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w400
                                       ),
@@ -179,7 +174,7 @@ class _PostPageState extends State<PostPage> {
                                 "0 Comments"
                                     :
                                 "${jsonDecode(news!.comments!).length.toString()} Comments",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontSize: 10,
                                       color: Color(0xFF94A3B8)
@@ -190,7 +185,7 @@ class _PostPageState extends State<PostPage> {
                           ),
                           Container(
                             height: 1,
-                            margin: EdgeInsets.only(top: 10),
+                            margin: const EdgeInsets.only(top: 10),
                             color: Colors.grey.withOpacity(.2),
                           ),
                           Row(
@@ -201,12 +196,12 @@ class _PostPageState extends State<PostPage> {
                                   like(news!.idNews!);
                                 },
                                 icon: Icon(Icons.thumb_up_outlined,
-                                  color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                  color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                   size: 15,
                                 ),
                                 label: Text("Like",
                                   style: TextStyle(
-                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? Color(0xFF2481CF) : Colors.grey,
+                                      color: mains.objectbox.boxNews.get(news!.id)!.status_like! ? const Color(0xFF2481CF) : Colors.grey,
                                       fontSize: 14
                                   ),
                                 ),
@@ -215,11 +210,11 @@ class _PostPageState extends State<PostPage> {
                                 onPressed: () {
 
                                 },
-                                icon: Icon(Icons.chat_bubble_outline_rounded,
+                                icon: const Icon(Icons.chat_bubble_outline_rounded,
                                   color: Color(0xFF94A3B8),
                                   size: 15,
                                 ),
-                                label: Text("Comment",
+                                label: const Text("Comment",
                                   style: TextStyle(
                                       color: Color(0xFF94A3B8),
                                       fontSize: 14
@@ -228,7 +223,7 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10,),
+                          const SizedBox(height: 10,),
                           // Container(
                           //   child: Column(
                           //     mainAxisAlignment: MainAxisAlignment.start,
@@ -329,108 +324,106 @@ class _PostPageState extends State<PostPage> {
                           //     ],
                           //   ),
                           // ),
-                          Container(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Comments',
-                                  style: TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400
-                                  ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Comments',
+                                style: TextStyle(
+                                    color: Color(0xFF94A3B8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w400
                                 ),
-                                SizedBox(height: 20,),
-                                ListView.builder(
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: bubbleComments.length,
-                                    itemBuilder: (BuildContext context, index)=>
-                                        Column(
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                CircleAvatar(
-                                                  backgroundColor: Colors.grey,
-                                                  child: Icon(
-                                                      Icons.person,
-                                                    color: Colors.white,
-                                                  ),
+                              ),
+                              const SizedBox(height: 20,),
+                              ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: bubbleComments.length,
+                                  itemBuilder: (BuildContext context, index)=>
+                                      Column(
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const CircleAvatar(
+                                                backgroundColor: Colors.grey,
+                                                child: Icon(
+                                                    Icons.person,
+                                                  color: Colors.white,
                                                 ),
-                                                SizedBox(width: 15,),
-                                                Column(
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        Stack(
-                                                          children: <Widget>[
-                                                            Container(
-                                                              padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
-                                                              // margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
-                                                              decoration: BoxDecoration(
-                                                                color: Color(0xFFEEEEEE),
-                                                                borderRadius: BorderRadius.circular(5),
-                                                              ),
-                                                              child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  Text( bubbleComments[index].commenter_id == mains.objectbox.boxUser.get(1)!.userId ?
-                                                                  mains.objectbox.boxUser.get(1)!.userName!
-                                                                    :
-                                                                  bubbleComments[index].name!,
-                                                                    style: TextStyle(
-                                                                      color: Colors.black,
-                                                                      fontWeight: FontWeight.bold,
-                                                                      fontSize: 15
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(height: 5,),
-                                                                  Row(
-                                                                    mainAxisSize: MainAxisSize.min,
-                                                                    children: <Widget>[
-                                                                      Container(
-                                                                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
-                                                                        child:
-                                                                        Text(
-                                                                          bubbleComments[index].comment!,
-                                                                          style: TextStyle(fontSize: 14, color: Colors.black),
-                                                                          textAlign: TextAlign.left,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ],
-                                                              ),
+                                              ),
+                                              const SizedBox(width: 15,),
+                                              Column(
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                    children: <Widget>[
+                                                      Stack(
+                                                        children: <Widget>[
+                                                          Container(
+                                                            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 12,),
+                                                            // margin: EdgeInsets.symmetric(horizontal: 10,vertical: 2),
+                                                            decoration: BoxDecoration(
+                                                              color: const Color(0xFFEEEEEE),
+                                                              borderRadius: BorderRadius.circular(5),
                                                             ),
-                                                          ],
-                                                        ),
-                                                        SizedBox(width: 5,),
-                                                        Column(
-                                                          mainAxisAlignment: MainAxisAlignment.end,
-                                                          children: [
-                                                            Text(DateFormat.Hm().format(DateTime.parse(bubbleComments[index].created_at!)).toString(),
-                                                              style: TextStyle(
-                                                                  fontSize: 11,
-                                                                  color: Color(0xFF94A3B8)
-                                                              ),),
-                                                          ],
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(height: 10,)
-                                          ],
-                                        ),
-                                ),
-                              ],
-                            ),
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                Text( bubbleComments[index].commenter_id == mains.objectbox.boxUser.get(1)!.userId ?
+                                                                mains.objectbox.boxUser.get(1)!.userName!
+                                                                  :
+                                                                bubbleComments[index].name == null ? "Unknown" : bubbleComments[index].name!,
+                                                                  style: const TextStyle(
+                                                                    color: Colors.black,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 15
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(height: 5,),
+                                                                Row(
+                                                                  mainAxisSize: MainAxisSize.min,
+                                                                  children: <Widget>[
+                                                                    Container(
+                                                                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
+                                                                      child:
+                                                                      Text(
+                                                                        bubbleComments[index].comment!,
+                                                                        style: const TextStyle(fontSize: 14, color: Colors.black),
+                                                                        textAlign: TextAlign.left,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(width: 5,),
+                                                      Column(
+                                                        mainAxisAlignment: MainAxisAlignment.end,
+                                                        children: [
+                                                          Text(DateFormat.Hm().format(DateTime.parse(bubbleComments[index].created_at!)).toString(),
+                                                            style: const TextStyle(
+                                                                fontSize: 11,
+                                                                color: Color(0xFF94A3B8)
+                                                            ),),
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10,)
+                                        ],
+                                      ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -441,12 +434,12 @@ class _PostPageState extends State<PostPage> {
             ),
             Container(
               color: Theme.of(context).backgroundColor,
-              padding: EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
+              padding: const EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
               child: Row(
                 children: [
                   Flexible(
                     child: Container(
-                      margin: EdgeInsets.only(top: 10, bottom: 5),
+                      margin: const EdgeInsets.only(top: 10, bottom: 5),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5),
@@ -463,14 +456,14 @@ class _PostPageState extends State<PostPage> {
                             Expanded(
                               child: TextField(
                                 focusNode: _focusNode,
-                                cursorColor: Color(0xFF2481CF),
+                                cursorColor: const Color(0xFF2481CF),
                                 keyboardType: TextInputType.multiline,
                                 controller: inputTextController,
                                 maxLines: null,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                 ),
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.all(13),
                                     border: InputBorder.none,
                                     hintText: 'Type something...',
@@ -487,7 +480,7 @@ class _PostPageState extends State<PostPage> {
                     ),
                   ),
                   Container(
-                      margin: EdgeInsets.only(left: 20, right: 8),
+                      margin: const EdgeInsets.only(left: 20, right: 8),
                       child: TextButton(
                         style: TextButton.styleFrom(
                           textStyle: TextStyle(
@@ -500,7 +493,6 @@ class _PostPageState extends State<PostPage> {
 
                           }else{
                             List comments = jsonDecode(news!.comments!);
-                            print(comments);
                             comments.add(
                                 {
                                   "comment": inputTextController.text,
@@ -527,19 +519,16 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
-  Future<http.Response> like(int id_news) async {
+  Future<http.Response> like(int idNews) async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_news': id_news,
+        'id_news': idNews,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -550,7 +539,7 @@ class _PostPageState extends State<PostPage> {
 
       if(likeMap['code'] != 95){
         if(likeMap['code'] == 1){
-          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(idNews)).build();
           if(query.find().isNotEmpty) {
             final news = NewsModel(
               id: query.find().first.id,
@@ -573,7 +562,7 @@ class _PostPageState extends State<PostPage> {
           }
         }
         else{
-          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(idNews)).build();
           if(query.find().isNotEmpty) {
             final news = NewsModel(
               id: query.find().first.id,
@@ -599,7 +588,6 @@ class _PostPageState extends State<PostPage> {
       else{
         print(likeMap['code']);
         print(likeMap['message']);
-        print(response.statusCode);
       }
     }
     else{
@@ -609,20 +597,17 @@ class _PostPageState extends State<PostPage> {
     return response;
   }
 
-  Future<http.Response> postComment(int id_news, String comment, String comments) async {
+  Future<http.Response> postComment(int idNews, String comment, String comments) async {
 
     String url ='https://eoffice.dev.digiprimatera.co.id/api/postComment';
 
     Map<String, dynamic> data = {
       'payload': {
-        'id_news': id_news,
+        'id_news': idNews,
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
         'comment': comment,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -633,7 +618,7 @@ class _PostPageState extends State<PostPage> {
 
       if(postCommentMap['code'] != 95){
         if(postCommentMap['code'] == 0){
-          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(id_news)).build();
+          var query = mains.objectbox.boxNews.query(NewsModel_.idNews.equals(idNews)).build();
           if(query.find().isNotEmpty) {
             final news = NewsModel(
               id: query.find().first.id,
@@ -669,7 +654,6 @@ class _PostPageState extends State<PostPage> {
       else{
         print(postCommentMap['code']);
         print(postCommentMap['message']);
-        print(response.statusCode);
       }
     }
     else{
