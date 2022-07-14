@@ -117,8 +117,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      setState(() {});
-
       if (message.data['type'] == 'logout') {
         _openDialogAutoLogout(context);
       }

@@ -187,7 +187,7 @@ class _InboxPageState extends State<InboxPage> {
                                   ),
                                   Positioned(
                                     right: 5,
-                                    top: 10,
+                                    top: 7,
                                     child: Padding(
                                         padding: const EdgeInsets.only(left: 20),
                                         child: Text(
@@ -234,9 +234,6 @@ class _InboxPageState extends State<InboxPage> {
         'id_user': mains.objectbox.boxUser.get(1)!.userId,
       }
     };
-
-    //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},

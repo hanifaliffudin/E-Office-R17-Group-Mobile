@@ -22,8 +22,8 @@ class _SignedPageState extends State<SignedPage> {
   @override
   void initState() {
     // TODO: implement initState
-    getDataSurat();
     super.initState();
+    getDataSurat();
   }
 
   @override
@@ -223,11 +223,11 @@ class _SignedPageState extends State<SignedPage> {
     if(response.statusCode == 200){
       Map<String, dynamic> suratMap = jsonDecode(response.body);
 
-      var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
-      List<SuratModel> suratList = query.find().toList();
-      for(var surat in suratList){
-        mains.objectbox.boxSurat.remove(surat.id);
-      }
+      // var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('sent')).build();
+      // List<SuratModel> suratList = query.find().toList();
+      // for(var surat in suratList){
+      //   mains.objectbox.boxSurat.remove(surat.id);
+      // }
 
       if(suratMap['code'] == 0){
         if(suratMap['count']>0){
@@ -254,9 +254,6 @@ class _SignedPageState extends State<SignedPage> {
               );
 
               mains.objectbox.boxSurat.put(surat);
-              setState(() {
-
-              });
             }
             else{
               final surat = SuratModel(
@@ -277,12 +274,9 @@ class _SignedPageState extends State<SignedPage> {
               );
 
               mains.objectbox.boxSurat.put(surat);
-
-              setState(() {
-
-              });
             }
           }
+          setState(() {});
         }
       }
       else{
