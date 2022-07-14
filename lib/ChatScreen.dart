@@ -383,19 +383,19 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _removeNotifByRoomId() {
-    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.roomId.equals(roomId!)).build();
+    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.dataId.equals(roomId!.toString()) & GroupNotifModel_.type.equals('chat')).build();
 
     if (query.find().isNotEmpty) {
       List<GroupNotifModel> groupNotifs = query.find().toList();
 
       for (var i = 0; i < groupNotifs.length; i++) {
-        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].notifId!);
+        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
       }
     }
   }
 
   void _chatOnSwipe(ChatModel chat) {
-    print(chat.text);
+    
   }
 
   @override

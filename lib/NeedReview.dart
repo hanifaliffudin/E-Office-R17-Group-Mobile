@@ -1,14 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/instance_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/document.dart';
+import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
+import 'main.dart';
 
 class NeedReview extends StatefulWidget {
   const NeedReview({Key? key}) : super(key: key);
@@ -18,12 +23,49 @@ class NeedReview extends StatefulWidget {
 }
 
 class _NeedReviewState extends State<NeedReview> {
+  final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<String> _documentCategoryListener;
 
   @override
   void initState() {
     // TODO: implement initState
-    getDataSuratNeedApprove();
     super.initState();
+    
+    getDataSuratNeedApprove();
+    _addDocumentCategoryListener();
+    _removeNotifByType();
+  }
+
+  @override
+  void dispose() {
+    _removeDocumentCategoryListener();
+
+    super.dispose();
+  }
+
+  void _addDocumentCategoryListener() {
+    _documentCategoryListener = _stateController.documentCategory.listen((p0) {
+      if (p0 == 'needApprove') {
+        getDataSuratNeedApprove();
+        _stateController.changeDocumentCategory('');
+      }
+    });
+  }
+
+  void _removeDocumentCategoryListener() {
+    _documentCategoryListener.cancel();
+  }
+
+  void _removeNotifByType() {
+    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.type.equals('dokumenneedReview')).build();
+
+    if (query.find().isNotEmpty) {
+      List<GroupNotifModel> groupNotifs = query.find().toList();
+
+      for (var i = 0; i < groupNotifs.length; i++) {
+        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
+      }
+    }
   }
 
   @override
@@ -223,7 +265,9 @@ class _NeedReviewState extends State<NeedReview> {
     );
     if(response.statusCode == 200){
       Map<String, dynamic> suratMap = jsonDecode(response.body);
-
+print(mains.objectbox.boxUser.get(1)!.userName);
+print(mains.objectbox.boxUser.get(1)!.userId);
+print(suratMap);
       var query = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needApprove')).build();
       List<SuratModel> suratList = query.find().toList();
       for(var surat in suratList){

@@ -2,14 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/instance_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
+import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
+import 'main.dart';
 
 class InboxPage extends StatefulWidget {
   const InboxPage({Key? key}) : super(key: key);
@@ -20,12 +24,37 @@ class InboxPage extends StatefulWidget {
 
 class _InboxPageState extends State<InboxPage> {
   String apiKey = homes.apiKeyCore;
+  final StateController _stateController = Get.put(StateController());
 
   @override
   void initState() {
     // TODO: implement initState
-    getDataSurat();
     super.initState();
+
+    getDataSurat();
+    _addDocumentCategoryListener();
+    _removeNotifByType();
+  }
+
+  void _addDocumentCategoryListener() {
+    _stateController.documentCategory.listen((p0) {
+      if (p0 == 'inbox') {
+        getDataSurat();
+        _stateController.changeDocumentCategory('');
+      }
+    });
+  }
+
+  void _removeNotifByType() {
+    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.type.equals('dokumeninbox')).build();
+
+    if (query.find().isNotEmpty) {
+      List<GroupNotifModel> groupNotifs = query.find().toList();
+
+      for (var i = 0; i < groupNotifs.length; i++) {
+        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
+      }
+    }
   }
 
   @override

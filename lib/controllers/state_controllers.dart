@@ -5,6 +5,9 @@ class StateController extends GetxController {
   var inAttendance = false.obs;
   var locationPermission = false.obs;
   var locationAccuracy = 0.0.obs;
+  var refreshEofficePage = false.obs;
+  var documentCategory = ''.obs;
+  var otpCodeSms = ''.obs;
 
   void changeFromRoomId(int value) => fromRoomId.value = value;
 
@@ -13,4 +16,10 @@ class StateController extends GetxController {
   void changeLocationPermission(bool value) => locationPermission.value = value;
 
   void changeLocationAccuracy(double value) => locationAccuracy.value = value;
+
+  void changeRefreshEoffice(bool value) => refreshEofficePage.value = value;
+
+  void changeDocumentCategory(String value) => documentCategory.value = value;
+
+  void changeOtpCodeSms(String value) => otpCodeSms.value = value;
 }
