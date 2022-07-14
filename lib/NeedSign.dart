@@ -42,6 +42,7 @@ class _NeedSignState extends State<NeedSign> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Need Sign'.toUpperCase(),

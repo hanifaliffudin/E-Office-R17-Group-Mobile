@@ -307,7 +307,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final ImagePicker _picker = ImagePicker();
     final XFile? imageCamera = await _picker.pickImage(source: ImageSource.camera);
 
-    cropImage(imageCamera!.path);
+    if(imageCamera != null){
+      cropImage(imageCamera!.path);
+    }
   }
 
   Future cropImage(filePath) async {

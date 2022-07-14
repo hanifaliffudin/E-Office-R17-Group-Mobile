@@ -203,7 +203,9 @@ class _ChatGroupState extends State<ChatGroup> {
     final ImagePicker _picker = ImagePicker();
     final XFile? imageCamera = await _picker.pickImage(source: ImageSource.camera);
 
-    cropImage(imageCamera!.path);
+    if(imageCamera != null){
+      cropImage(imageCamera!.path);
+    }
   }
 
   Future cropImage(filePath) async {
