@@ -56,6 +56,7 @@ import 'dart:io';
 import 'package:web_socket_channel/io.dart';
 import 'main.dart' as mains;
 import 'package:http/http.dart' as http;
+import 'package:telephony/telephony.dart';
 
 StreamController<List<ChatModel>> listController = BehaviorSubject();
 StreamController<List<ConversationModel>> listControllerConversation =
@@ -73,6 +74,8 @@ String apiKeyCore =
 
 var channel;
 int? idSender;
+
+final Telephony telephony = Telephony.instance;
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -117,13 +120,30 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      setState(() {});
-
-      if (message.data['type'] == 'logout') {
-        _openDialogAutoLogout(context);
-      }
       RemoteNotification notification = message.notification!;
       bool run = true;
+
+      if (message.data.containsKey('type')) {
+        if (message.data['type'] == 'logout') {
+          _openDialogAutoLogout(context);
+        }
+
+        if (message.data['type'] == 'dokumen') {
+          _stateController.changeRefreshEoffice(true);
+
+          if (message.data.containsKey('kategori')) {
+            _stateController.documentCategory.value = message.data['kategori'];
+          }
+
+          var groupNotif = GroupNotifModel(
+            dataId: message.data['id'],
+            type: 'dokumen${message.data['type']}',
+            hashcode: notification.hashCode,
+          );
+
+          mains.objectbox.boxGroupNotif.put(groupNotif);
+        }
+      }
       
       if (message.data.containsKey('room_id')) {
         if (_stateController.fromRoomId.value == int.parse(message.data['room_id'])) {
@@ -187,8 +207,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
         if (message.data.containsKey('room_id')) {
           var groupNotif = GroupNotifModel(
-            roomId: int.parse(message.data['room_id']),
-            notifId: notification.hashCode,
+            dataId: message.data['room_id'],
+            type: 'chat',
+            hashcode: notification.hashCode,
           );
 
           mains.objectbox.boxGroupNotif.put(groupNotif);
@@ -687,7 +708,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         locationSubscription = location.onLocationChanged.listen((locationData) async {
           _stateController.changeLocationAccuracy(locationData.accuracy!);
 
-          if (locationData.accuracy! < 20) {
+          if (locationData.accuracy! <= 65.0) {
             try {
               final result = await InternetAddress.lookup('google.com');
 
@@ -786,7 +807,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
   @override
   void initState() {
-    
     flutterLocalNotificationsPlugin.cancelAll();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -794,6 +814,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         await _getAllData();
         _accessLocationPermission();
         _locationPermissionListener();
+
+        if (Platform.isAndroid) {
+          telephony.listenIncomingSms(
+            onNewMessage: (SmsMessage message) {
+              String msgBody = message.body!;
+
+              if (msgBody.length >= 39) {
+                if (msgBody.substring(0, 33) == 'Kode OTP Digital Signature Anda: ') {
+                  _stateController.changeOtpCodeSms(msgBody.substring(33, 39));
+                }
+              }
+            },
+            listenInBackground: true,
+            onBackgroundMessage: smsBackgrounMessageHandler,
+          );
+        }
       }
     });
 

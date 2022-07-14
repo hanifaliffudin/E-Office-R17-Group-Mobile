@@ -1,15 +1,20 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/instance_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/document.dart';
+import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:pinput/pinput.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
+import 'main.dart';
 
 class NeedSign extends StatefulWidget {
   const NeedSign({Key? key}) : super(key: key);
@@ -24,19 +29,69 @@ class _NeedSignState extends State<NeedSign> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _pinPutFocusNode = FocusNode();
+  final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<String> _documentCategoryListener;
+  late StreamSubscription<String> _otpCodeSmsListener;
+  final TextEditingController _pinPutInternalTextController = TextEditingController();
+  final TextEditingController _pinPutEksternalTextController = TextEditingController();
 
   @override
   void initState() {
     // TODO: implement initState
+    super.initState();
+
     _pinPutFocusNode.requestFocus();
     getNeedSign();
-    super.initState();
+    _addDocumentCategoryListener();
+    _removeNotifByType();
+    _addOtpCodeSmsListener();
   }
 
   @override
   void dispose() {
     clearSelect();
+    _removeDocumentCategoryListener();
+    _removeOtpCodeSmsListener();
+
     super.dispose();
+  }
+
+  void _addDocumentCategoryListener() {
+    _documentCategoryListener = _stateController.documentCategory.listen((p0) {
+      if (p0 == 'needSign') {
+        getNeedSign();
+        _stateController.changeDocumentCategory('');
+      }
+    });
+  }
+
+  void _removeDocumentCategoryListener() {
+    _documentCategoryListener.cancel();
+  }
+
+  void _addOtpCodeSmsListener() {
+    _otpCodeSmsListener = _stateController.otpCodeSms.listen((p0) {
+      if (p0 != '') {
+        _pinPutEksternalTextController.setText(p0);
+        _stateController.changeOtpCodeSms('');
+      }
+    });
+  }
+
+  void _removeOtpCodeSmsListener() {
+    _otpCodeSmsListener.cancel();
+  }
+
+  void _removeNotifByType() {
+    var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.type.equals('dokumenneedSign')).build();
+
+    if (query.find().isNotEmpty) {
+      List<GroupNotifModel> groupNotifs = query.find().toList();
+
+      for (var i = 0; i < groupNotifs.length; i++) {
+        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
+      }
+    }
   }
 
   @override
@@ -568,13 +623,15 @@ class _NeedSignState extends State<NeedSign> {
                                   borderRadius: BorderRadius.circular(6)
                               ),
                               child: TextButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.pop(context);
 
-                                  getOtpBulk(listMapSurat);
+                                  Map<String, dynamic>? otpData = await getOtpBulk(listMapSurat);
+
+                                  EasyLoading.dismiss();
 
                                   showDialog<String>(
-                                    context: context,
+                                    context: _scaffoldKey.currentContext!,
                                     builder: (BuildContext context) => AlertDialog(
                                       insetPadding: const EdgeInsets.symmetric(horizontal: 7),
                                       content: Column(
@@ -589,12 +646,19 @@ class _NeedSignState extends State<NeedSign> {
                                           ),
                                           const SizedBox(height: 20,),
                                           Scrollbar(
-                                            child: buildPinPut(listMapSurat),
+                                            child: buildPinPut(listMapSurat, otpData!['bulkId']),
                                           ),
                                           const SizedBox(height: 20,),
                                         ],
                                       ),
                                     ),
+                                  );
+
+                                  Future.delayed(
+                                    const Duration(seconds: 1), 
+                                    () {
+                                      _pinPutInternalTextController.setText(otpData!['otp']);
+                                    },
                                   );
                                 },
                                 child: const Text('Confirm',
@@ -754,7 +818,7 @@ class _NeedSignState extends State<NeedSign> {
     );
   }
 
-  Widget buildPinPut(List listIdSurat) {
+  Widget buildPinPut(List listIdSurat, String bulkId) {
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
@@ -777,13 +841,14 @@ class _NeedSignState extends State<NeedSign> {
     );
 
     return Pinput(
+      controller: _pinPutInternalTextController,
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
       focusNode: _pinPutFocusNode,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
-        // signingBulk(idSurat, pin);
+        signingBulk(pin, bulkId, listIdSurat);
       },
     );
   }
@@ -811,6 +876,7 @@ class _NeedSignState extends State<NeedSign> {
     );
 
     return Pinput(
+      controller: _pinPutEksternalTextController,
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
@@ -947,38 +1013,46 @@ class _NeedSignState extends State<NeedSign> {
     return response;
   }
 
-  Future<http.Response> getOtpBulk(List listIdSurat) async {
-    EasyLoading.showToast('Sending OTP');
+  Future<Map<String, dynamic>?> getOtpBulk(List listIdSurat) async {
+    try {
+      EasyLoading.show(status: 'Sending OTP');
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
+      String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
 
-    Map<String, dynamic> data = {
-      'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
-        'surat': listIdSurat,
-      }
-    };
+      Map<String, dynamic> data = {
+        'payload': {
+          'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
+          'surat': listIdSurat,
+        }
+      };
 
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
+      var response = await http.post(Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body:jsonEncode(data),
+      );
 
-    if(response.statusCode == 200){
-      Map<String, dynamic> otpMap = jsonDecode(response.body);
+      if(response.statusCode == 200){
+        Map<String, dynamic> otpMap = jsonDecode(response.body);
 
-      if(otpMap['code'] == 0){
-        EasyLoading.show(status: 'loading...');
-        signingBulk(otpMap['otp'], otpMap['bulkId'], listIdSurat);
+        if(otpMap['code'] == 0){
+          return {
+            'otp': otpMap['otp'],
+            'bulkId': otpMap['bulkId'],
+          };
+          // signingBulk(otpMap['otp'], otpMap['bulkId'], listIdSurat);
+        }
+        else{
+          EasyLoading.showError(otpMap['message']);
+        }
       }
       else{
-        EasyLoading.showError(otpMap['message']);
+        EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
       }
+
+      return null;
+    } catch (e) {
+      return null;
     }
-    else{
-      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
-    }
-    return response;
   }
 
   Future<http.Response> signingBulk(String otp, String bulkId, List listIdSurat) async {
@@ -989,7 +1063,7 @@ class _NeedSignState extends State<NeedSign> {
       'payload': {
         'users_id': mains.objectbox.boxUser.get(1)!.userId,
         'bulk_id': bulkId,
-        "token": otp,
+        'token': otp,
       }
     };
 
@@ -1015,6 +1089,7 @@ class _NeedSignState extends State<NeedSign> {
         setState(() {
           clearSelect();
         });
+        _pinPutInternalTextController.setText('');
       }
       else{
         EasyLoading.showError(signingMap['message']);
@@ -1112,6 +1187,7 @@ class _NeedSignState extends State<NeedSign> {
         setState(() {
           clearSelect();
         });
+        _pinPutEksternalTextController.setText('');
       }
       else{
         EasyLoading.showError(signingMap['message']);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,7 +6,9 @@ import 'dart:typed_data';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/instance_manager.dart';
 import 'package:militarymessenger/Signed.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
 import 'package:open_file/open_file.dart';
@@ -45,6 +48,11 @@ class _DocumentPageState extends State<DocumentPage> {
   TextEditingController inputTextControllerApprove = TextEditingController();
   TextEditingController inputTextControllerReturn = TextEditingController();
   TextEditingController inputTextControllerCancel = TextEditingController();
+  
+  final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<String> _otpCodeSmsListener;
+  final TextEditingController _pinPutInternalTextController = TextEditingController();
+  final TextEditingController _pinPutEksternalTextController = TextEditingController();
 
   @override
   void initState() {
@@ -64,14 +72,36 @@ class _DocumentPageState extends State<DocumentPage> {
     }
 
     super.initState();
+
+    _addOtpCodeSmsListener();
   }
 
-    Future<String> _createFileFromUint(Uint8List bytes, String nameFile) async {
+  @override
+  void dispose() {
+    _removeOtpCodeSmsListener();
+
+    super.dispose();
+  }
+
+  Future<String> _createFileFromUint(Uint8List bytes, String nameFile) async {
     String dir = (await getApplicationDocumentsDirectory()).path;
     File file = File(
         "$dir/" + nameFile + ".pdf");
     await file.writeAsBytes(bytes);
     return file.path;
+  }
+
+  void _addOtpCodeSmsListener() {
+    _otpCodeSmsListener = _stateController.otpCodeSms.listen((p0) {
+      if (p0 != '') {
+        _pinPutEksternalTextController.setText(p0);
+        _stateController.changeOtpCodeSms('');
+      }
+    });
+  }
+
+  void _removeOtpCodeSmsListener() {
+    _otpCodeSmsListener.cancel();
   }
 
   @override
@@ -833,11 +863,12 @@ class _DocumentPageState extends State<DocumentPage> {
                                   Navigator.pop(context);
 
                                   if(surat!.jenisSurat == 'Internal'){
+                                    Map<String, dynamic>? otpData = await getOtpBulk(surat!.idSurat!);
 
-                                    getOtpBulk(surat!.idSurat!);
+                                    EasyLoading.dismiss();
 
                                     showDialog<String>(
-                                      context: context,
+                                      context: _scaffoldKey.currentContext!,
                                       builder: (BuildContext context) => AlertDialog(
                                         insetPadding: const EdgeInsets.symmetric(horizontal: 7),
                                         content: Column(
@@ -852,16 +883,22 @@ class _DocumentPageState extends State<DocumentPage> {
                                             ),
                                             const SizedBox(height: 20,),
                                             Scrollbar(
-                                              child: buildPinPut(surat!.idSurat!),
+                                              child: buildPinPut(surat!.idSurat!, otpData!['bulkId']),
                                             ),
                                             const SizedBox(height: 20,),
                                           ],
                                         ),
                                       ),
                                     );
+
+                                    Future.delayed(
+                                      const Duration(seconds: 1), 
+                                      () {
+                                        _pinPutInternalTextController.setText(otpData!['otp']);
+                                      },
+                                    );
                                   }
                                   else if(surat!.jenisSurat == 'External'){
-
                                     List otpData = await getOtpBulkEksternal(surat!.idSurat!);
 
                                     EasyLoading.dismiss();
@@ -890,7 +927,6 @@ class _DocumentPageState extends State<DocumentPage> {
                                       ),
                                     );
                                   }
-
                                 },
                                 child: const Text('Confirm',
                                   style: TextStyle(
@@ -1100,7 +1136,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   }
 
-  Widget buildPinPut(String idSurat) {
+  Widget buildPinPut(String idSurat, String bulkId) {
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
@@ -1123,18 +1159,19 @@ class _DocumentPageState extends State<DocumentPage> {
     );
 
     return Pinput(
+      controller: _pinPutInternalTextController,
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
       focusNode: _pinPutFocusNode,
       onCompleted: (pin) {
         EasyLoading.show(status: 'loading...');
-        // signingBulk(pin, , idSurat);
-        },
+        signingBulk(pin, bulkId, idSurat);
+      },
     );
   }
 
-  Widget buildPinPutEksternal(String idSurat, String token, String bulkId) {
+  Widget buildPinPutEksternal(String idSurat, String token, String bulkId) {    
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
@@ -1157,6 +1194,7 @@ class _DocumentPageState extends State<DocumentPage> {
     );
 
     return Pinput(
+      controller: _pinPutEksternalTextController,
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
       length: 6,
@@ -1164,7 +1202,7 @@ class _DocumentPageState extends State<DocumentPage> {
       onCompleted: (otp) {
         EasyLoading.show(status: 'loading...');
         signingBulkEksternal(token, bulkId, otp, idSurat);
-        },
+      },
     );
   }
 
@@ -1431,38 +1469,46 @@ class _DocumentPageState extends State<DocumentPage> {
     return response;
   }
 
-  Future<http.Response> getOtpBulk(String idSurat) async {
-    EasyLoading.showToast('Sending OTP');
+  Future<Map<String, dynamic>?> getOtpBulk(String idSurat) async {
+    try {
+      EasyLoading.show(status: 'Sending OTP');
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
+      String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
 
-    Map<String, dynamic> data = {
-      'payload': {
-        'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
-        'surat': [{"id": idSurat}],
-      }
-    };
+      Map<String, dynamic> data = {
+        'payload': {
+          'users_id': mains.objectbox.boxUser.get(1)!.userId.toString(),
+          'surat': [{"id": idSurat}],
+        }
+      };
 
-    var response = await http.post(Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body:jsonEncode(data),
-    );
+      var response = await http.post(Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body:jsonEncode(data),
+      );
 
-    if(response.statusCode == 200){
-      Map<String, dynamic> otpMap = jsonDecode(response.body);
+      if(response.statusCode == 200){
+        Map<String, dynamic> otpMap = jsonDecode(response.body);
 
-      if(otpMap['code'] == 0){
-        EasyLoading.show(status: 'loading...');
-        signingBulk(otpMap['otp'], otpMap['bulkId'], idSurat);
+        if(otpMap['code'] == 0){
+          return {
+            'otp': otpMap['otp'],
+            'bulkId': otpMap['bulkId'],
+          };
+          // signingBulk(otpMap['otp'], otpMap['bulkId'], idSurat);
+        }
+        else{
+          EasyLoading.showError(otpMap['message']);
+        }
       }
       else{
-        EasyLoading.showError(otpMap['message']);
+        EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
       }
+
+      return null;
+    } catch (e) {
+      return null;
     }
-    else{
-      EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
-    }
-    return response;
   }
 
   Future<http.Response> signingBulk(String otp, String bulkId, String idSurat) async {
@@ -1512,8 +1558,6 @@ class _DocumentPageState extends State<DocumentPage> {
           EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
           Navigator.pop(context);
           Navigator.pop(context);
-          setState(() {});
-
         }
       }
       else{
@@ -1606,7 +1650,6 @@ class _DocumentPageState extends State<DocumentPage> {
           mains.objectbox.boxSurat.put(surat);
 
           EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
-          Navigator.pop(context);
           Navigator.pop(context);
           Navigator.pop(context);
           setState(() {});

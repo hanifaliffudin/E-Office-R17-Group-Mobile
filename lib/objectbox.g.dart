@@ -657,7 +657,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(13, 6077117816353556383),
       name: 'GroupNotifModel',
-      lastPropertyId: const IdUid(3, 5656664121130420701),
+      lastPropertyId: const IdUid(6, 6631057096584766799),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -666,13 +666,18 @@ final _entities = <ModelEntity>[
             type: 6,
             flags: 1),
         ModelProperty(
-            id: const IdUid(2, 7456693257277162964),
-            name: 'roomId',
-            type: 6,
+            id: const IdUid(4, 4234484954186228370),
+            name: 'dataId',
+            type: 9,
             flags: 0),
         ModelProperty(
-            id: const IdUid(3, 5656664121130420701),
-            name: 'notifId',
+            id: const IdUid(5, 7704557263000373948),
+            name: 'type',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(6, 6631057096584766799),
+            name: 'hashcode',
             type: 6,
             flags: 0)
       ],
@@ -738,7 +743,9 @@ ModelDefinition getObjectBoxModel() {
         8107107720145537335,
         4949612167761542987,
         638927138085380728,
-        4177655746767577483
+        4177655746767577483,
+        7456693257277162964,
+        5656664121130420701
       ],
       retiredRelationUids: const [],
       modelVersion: 5,
@@ -1398,10 +1405,15 @@ ModelDefinition getObjectBoxModel() {
           object.id = id;
         },
         objectToFB: (GroupNotifModel object, fb.Builder fbb) {
-          fbb.startTable(4);
+          final dataIdOffset =
+              object.dataId == null ? null : fbb.writeString(object.dataId!);
+          final typeOffset =
+              object.type == null ? null : fbb.writeString(object.type!);
+          fbb.startTable(7);
           fbb.addInt64(0, object.id);
-          fbb.addInt64(1, object.roomId);
-          fbb.addInt64(2, object.notifId);
+          fbb.addOffset(3, dataIdOffset);
+          fbb.addOffset(4, typeOffset);
+          fbb.addInt64(5, object.hashcode);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1411,10 +1423,12 @@ ModelDefinition getObjectBoxModel() {
 
           final object = GroupNotifModel(
               id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
-              roomId: const fb.Int64Reader()
-                  .vTableGetNullable(buffer, rootOffset, 6),
-              notifId: const fb.Int64Reader()
-                  .vTableGetNullable(buffer, rootOffset, 8));
+              dataId: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 10),
+              type: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 12),
+              hashcode: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 14));
 
           return object;
         }),
@@ -1907,13 +1921,17 @@ class GroupNotifModel_ {
   static final id =
       QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[0]);
 
-  /// see [GroupNotifModel.roomId]
-  static final roomId =
-      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[1]);
+  /// see [GroupNotifModel.dataId]
+  static final dataId =
+      QueryStringProperty<GroupNotifModel>(_entities[11].properties[1]);
 
-  /// see [GroupNotifModel.notifId]
-  static final notifId =
-      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[2]);
+  /// see [GroupNotifModel.type]
+  static final type =
+      QueryStringProperty<GroupNotifModel>(_entities[11].properties[2]);
+
+  /// see [GroupNotifModel.hashcode]
+  static final hashcode =
+      QueryIntegerProperty<GroupNotifModel>(_entities[11].properties[3]);
 }
 
 /// [SavedModel] entity fields to define ObjectBox queries.

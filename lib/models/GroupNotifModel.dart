@@ -3,12 +3,14 @@ import 'package:objectbox/objectbox.dart';
 @Entity()
 class GroupNotifModel {
   int id;
-  int? roomId;
-  int? notifId;
+  String? dataId;
+  String? type;
+  int? hashcode;
 
   GroupNotifModel({
     this.id = 0,
-    this.roomId,
-    this.notifId,
+    this.dataId,
+    this.type,
+    this.hashcode,
   });
 }
