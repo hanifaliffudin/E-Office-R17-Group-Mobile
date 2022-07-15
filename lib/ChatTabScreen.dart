@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
 import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/ChatScreen.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/functions/index_function.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
@@ -42,7 +45,7 @@ class ChatTabScreen extends StatefulWidget {
 
 List<ConversationModel> convSelected = [];
 
-class _ChatTabScreenState extends State<ChatTabScreen> {
+class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserver {
   Store? store;
 
   //Checklist
@@ -52,37 +55,64 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   bool isVisible = false;
 
   String apiKey = homes.apiKeyCore;
+  final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<bool> _runGetLastMessagesListener;
 
   List<String?> pp = [];
   List<TempConversation> _tempConv = [];
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
+
     idUser = mains.objectbox.boxUser.get(1)?.userId;
     // TODO: implement initState
-    var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""));
-    List<ConversationModel> conversationList = builder.build().find().toList();
-
-    List<int?> idRoom = conversationList.map((e) => e.roomId).toList();
-
     // for(int i=0;i<conversationList.length;i++){
     //   pp.add(mains.objectbox.boxConversation.get(conversationList[i].id)!.photoProfile);
     // }
 
-    var msg = {};
-    msg["api_key"] = apiKey;
-    msg["type"] = "get_last_message";
-    msg["id_rooms"] = json.encode(idRoom);
-    msg["id_receiver"] = idUser;
-    String msgString = json.encode(msg);
-    homes.channel.sink.add(msgString);
-
     super.initState();
+
+    _getLastMessages();
+    _addRunGetLastMessagesListener();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _removeRunGetLastMessagesListener();
+
     super.dispose();
+  }
+
+  void _getLastMessages() {
+    var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""));
+    List<ConversationModel> conversationList = builder.build().find().toList();
+    List<int?> idRooms = conversationList.map((e) => e.roomId).toList();
+    var msg = {};
+    msg["api_key"] = apiKey;
+    msg["type"] = "get_last_message";
+    msg["id_rooms"] = json.encode(idRooms);
+    msg["id_receiver"] = idUser;
+    String msgString = json.encode(msg);
+    homes.channel.sink.add(msgString);
+  }
+  
+  String _getIdUnique(ConversationModel conversation) {
+    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.photoProfile!;
+  }
+
+  void _addRunGetLastMessagesListener() {
+    _runGetLastMessagesListener = _stateController.runGetLastMessages.listen((p0) {
+      if (p0) {
+        _stateController.changeRunGetLastMessages(false);
+        _getLastMessages();
+      }
+    });
+  }
+
+  void _removeRunGetLastMessagesListener() {
+    _runGetLastMessagesListener.cancel();
   }
 
   ImageProvider<Object> _getPhoto(ConversationModel conversation) {
@@ -102,9 +132,20 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
     return _tempConv[indexFound].photoProfile!;
   }
-  
-  String getIdUnique(ConversationModel conversation) {
-    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.photoProfile!;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _getLastMessages();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
   }
 
   @override
@@ -363,7 +404,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                           :
                                                       CircleAvatar(
                                                         // backgroundImage: _tempConv[index].photoProfile,
-                                                        backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                        backgroundImage: CacheImageProviderWidget(_getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                         backgroundColor: Colors.white,
                                                         radius: 25,
                                                       )
@@ -716,7 +757,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                                                             :
                                                         CircleAvatar(
                                                           // backgroundImage: _getPhoto(conversationList[index]),
-                                                          backgroundImage: CacheImageProviderWidget(getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
+                                                          backgroundImage: CacheImageProviderWidget(_getIdUnique(conversationList[index]), base64.decode(mains.objectbox.boxConversation.get(conversationList[index].id)!.photoProfile!)),
                                                           backgroundColor: Colors.transparent,
                                                           radius: 25,
                                                           // child: Image(

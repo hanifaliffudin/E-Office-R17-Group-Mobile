@@ -27,6 +27,7 @@ import 'package:militarymessenger/models/ContactGroupModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'main.dart' as mains;
@@ -287,6 +288,10 @@ class _ChatGroupState extends State<ChatGroup> {
     });
   }
 
+  String _getIdUnique(ConversationModel conversation) {
+    return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.photoProfile!;
+  }
+
   @override
   Widget build(BuildContext context) {
     List<ContactModel> contactList = [];
@@ -321,7 +326,8 @@ class _ChatGroupState extends State<ChatGroup> {
                         contentPadding: const EdgeInsets.all(0),
                         leading: ClipOval(
                             child: conversation!.photoProfile != '' && conversation!.photoProfile != null ? CircleAvatar(
-                              backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                              // backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                              backgroundImage:  CacheImageProviderWidget(_getIdUnique(conversation!), base64.decode(conversation!.photoProfile!)),
                               backgroundColor: const Color(0xffF2F1F6),
                               radius: 20,
                             ):

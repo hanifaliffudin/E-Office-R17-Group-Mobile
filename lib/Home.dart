@@ -146,6 +146,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
       }
       
       if (message.data.containsKey('room_id')) {
+        _stateController.changeRunGetLastMessages(true);
+
         if (_stateController.fromRoomId.value == int.parse(message.data['room_id'])) {
           run = false;
         }
@@ -708,7 +710,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         locationSubscription = location.onLocationChanged.listen((locationData) async {
           _stateController.changeLocationAccuracy(locationData.accuracy!);
 
-          if (locationData.accuracy! <= 65.0) {
+          if (locationData.accuracy! <= 30.0) {
             try {
               final result = await InternetAddress.lookup('google.com');
 
@@ -807,9 +809,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     mains.objectbox.boxGroupNotif.removeAll();
     flutterLocalNotificationsPlugin.cancelAll();
-    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (await checkFcmToken() == true) {
         await _getAllData();
