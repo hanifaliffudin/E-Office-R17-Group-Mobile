@@ -874,6 +874,8 @@ class _DocumentPageState extends State<DocumentPage> {
                                   Navigator.pop(context);
 
                                   if(surat!.jenisSurat == 'Internal'){
+                                    _pinPutInternalTextController.setText('');
+                                    
                                     Map<String, dynamic>? otpData = await getOtpBulk(surat!.idSurat!);
 
                                     EasyLoading.dismiss();
@@ -910,6 +912,8 @@ class _DocumentPageState extends State<DocumentPage> {
                                     );
                                   }
                                   else if(surat!.jenisSurat == 'External'){
+                                    _pinPutEksternalTextController.setText('');
+
                                     List otpData = await getOtpBulkEksternal(surat!.idSurat!);
 
                                     EasyLoading.dismiss();
@@ -1663,7 +1667,6 @@ class _DocumentPageState extends State<DocumentPage> {
           EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
           Navigator.pop(context);
           Navigator.pop(context);
-          setState(() {});
 
         }
       }

@@ -73,89 +73,86 @@ class _TrackingPageState extends State<TrackingPage> {
                 return Container(
                   padding: const EdgeInsets.all(20),
                   child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       itemCount: listSurat.length,
                       itemBuilder:(BuildContext context,index)=>
-                      Column(
-                      children: [
-                        Card(
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(right: 10.0),
-                                      child: Image(
-                                        image: listSurat[index].isMeterai == 0 ?
-                                        const AssetImage('assets/images/pdf.png')
-                                            :
-                                        const AssetImage('assets/images/pdf-emeterai.png'),
-                                        width: 50,
-                                      ),
+                      Card(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 10.0),
+                                    child: Image(
+                                      image: listSurat[index].isMeterai == 0 ?
+                                      const AssetImage('assets/images/pdf.png')
+                                          :
+                                      const AssetImage('assets/images/pdf-emeterai.png'),
+                                      width: 50,
                                     ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ConstrainedBox(
-                                          constraints: const BoxConstraints(
-                                              maxWidth: 200
-                                          ),
-                                          child: Text(listSurat[index].namaSurat!,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            maxWidth: 200
                                         ),
-                                        const SizedBox(height: 5,),
-                                        date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
-                                        Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
-                                            :
-                                        Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
-                                        const SizedBox(height: 5,),
-                                        Text(listSurat[index].status!),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 50,
-                                  width: 30,
+                                        child: Text(listSurat[index].namaSurat!,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: const TextStyle(fontWeight: FontWeight.bold),),
+                                      ),
+                                      const SizedBox(height: 5,),
+                                      date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
+                                      Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
+                                          :
+                                      Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
+                                      const SizedBox(height: 5,),
+                                      Text(listSurat[index].status!),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 50,
+                                width: 30,
 
-                                  child:
-                                  listSurat[index].status == "APPROVE" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  listSurat[index].status == "RETURN" ?
-                                  const Image(image: AssetImage("assets/icons/return.png"))
-                                      :
-                                  listSurat[index].status == "REJECT" ?
-                                  const Image(image: AssetImage("assets/icons/reject.png"))
-                                      :
-                                  listSurat[index].status == "READ" ?
-                                  const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
-                                      :
-                                  listSurat[index].status == "SUBMIT" ?
-                                  const Icon(Icons.upload_file_rounded, color: Colors.black,)
-                                      :
-                                  listSurat[index].status == "APPROVED" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  listSurat[index].status == "SIGNED" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  Container()
-                                  ,
-                                ),
-                              ],
-                            ),
+                                child:
+                                listSurat[index].status == "APPROVE" ?
+                                const Image(image: AssetImage("assets/icons/approve.png"))
+                                    :
+                                listSurat[index].status == "RETURN" ?
+                                const Image(image: AssetImage("assets/icons/return.png"))
+                                    :
+                                listSurat[index].status == "REJECT" ?
+                                const Image(image: AssetImage("assets/icons/reject.png"))
+                                    :
+                                listSurat[index].status == "READ" ?
+                                const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
+                                    :
+                                listSurat[index].status == "SUBMIT" ?
+                                const Icon(Icons.upload_file_rounded, color: Colors.black,)
+                                    :
+                                listSurat[index].status == "APPROVED" ?
+                                const Image(image: AssetImage("assets/icons/approve.png"))
+                                    :
+                                listSurat[index].status == "SIGNED" ?
+                                const Image(image: AssetImage("assets/icons/approve.png"))
+                                    :
+                                Container()
+                                ,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
                   ),
                 );
               }
