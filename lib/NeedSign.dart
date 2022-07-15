@@ -512,7 +512,7 @@ class _NeedSignState extends State<NeedSign> {
                                                           }
                                                       )
                                                   ),
-                                                ) : SizedBox()
+                                                ) : const SizedBox()
                                                     :
                                                 listSurat[index].jenisSurat == 'External' ?
                                                 // show checkbox external
@@ -557,7 +557,7 @@ class _NeedSignState extends State<NeedSign> {
                                                           }
                                                       )
                                                   ),
-                                                ) : SizedBox()
+                                                ) : const SizedBox()
                                               ],
                                             ),
                                           ),
@@ -695,8 +695,8 @@ class _NeedSignState extends State<NeedSign> {
                   size: 13,
                   color: Colors.white
               ),
-              label: const Text("Sign Internal Selected Document",
-                style: TextStyle(
+              label: Text("Sign Internal Selected Document (${suratSelected.length})",
+                style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16
                 ),),
@@ -816,8 +816,8 @@ class _NeedSignState extends State<NeedSign> {
                   size: 13,
                   color: Colors.white
               ),
-              label: const Text("Sign External Selected Document",
-                style: TextStyle(
+              label: Text("Sign External Selected Document (${suratSelected.length})",
+                style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16
                 ),),
