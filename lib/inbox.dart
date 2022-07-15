@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class InboxPage extends StatefulWidget {
 class _InboxPageState extends State<InboxPage> {
   String apiKey = homes.apiKeyCore;
   final StateController _stateController = Get.put(StateController());
+  late StreamSubscription<String> _documentCategoryListener;
 
   @override
   void initState() {
@@ -32,17 +34,28 @@ class _InboxPageState extends State<InboxPage> {
     super.initState();
 
     getDataSurat();
-    _addDocumentCategoryListener();
     _removeNotifByType();
+    _addDocumentCategoryListener();
+  }
+
+  @override
+  void dispose() {
+    _removeDocumentCategoryListener();
+
+    super.dispose();
   }
 
   void _addDocumentCategoryListener() {
-    _stateController.documentCategory.listen((p0) {
+    _documentCategoryListener = _stateController.documentCategory.listen((p0) {
       if (p0 == 'inbox') {
         _stateController.changeDocumentCategory('');
         getDataSurat();
       }
     });
+  }
+
+  void _removeDocumentCategoryListener() {
+    _documentCategoryListener.cancel();
   }
 
   void _removeNotifByType() {

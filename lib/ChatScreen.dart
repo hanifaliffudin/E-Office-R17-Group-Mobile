@@ -15,6 +15,7 @@ import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/cards/friend_message_card_personal.dart';
 import 'package:militarymessenger/cards/my_message_card_personal.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
+import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'package:image_picker/image_picker.dart';
@@ -434,12 +435,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: conversation!.photoProfile != null  ?
                       conversation!.photoProfile != '' ?
                       CircleAvatar(
-                        backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                        // backgroundImage:  Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                        backgroundImage: CacheImageProviderWidget(conversation!.idReceiver.toString(), base64.decode(conversation!.photoProfile!)),
                         backgroundColor: Color(0xffF2F1F6),
                         radius: 20,
-                        child: Image(
-                          image: Image.memory(base64.decode(conversation!.photoProfile!)).image,
-                        ),
+                        // child: Image(
+                        //   image: Image.memory(base64.decode(conversation!.photoProfile!)).image,
+                        // ),
                       )
                           :
                       CircleAvatar(
