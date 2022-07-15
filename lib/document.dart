@@ -1663,7 +1663,6 @@ class _DocumentPageState extends State<DocumentPage> {
           EasyLoading.showSuccess('Silahkan menunggu antrian signing!');
           Navigator.pop(context);
           Navigator.pop(context);
-          setState(() {});
 
         }
       }

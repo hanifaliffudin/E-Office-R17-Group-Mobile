@@ -114,7 +114,7 @@ class _NeedSignState extends State<NeedSign> {
             itemBuilder: (context) => [
               const PopupMenuItem<int>(
                 value: 0,
-                child: Text('Select All',
+                child: Text('Select All Internal',
                   style: TextStyle(
                       fontSize: 15
                   ),
@@ -123,6 +123,15 @@ class _NeedSignState extends State<NeedSign> {
               ),
               const PopupMenuItem<int>(
                 value: 1,
+                child: Text('Select All External',
+                  style: TextStyle(
+                      fontSize: 15
+                  ),
+                ),
+                textStyle: TextStyle(color: Colors.black,fontSize: 17),
+              ),
+              const PopupMenuItem<int>(
+                value: 2,
                 child: Text('Cancel',
                   style: TextStyle(
                       fontSize: 15
@@ -893,7 +902,9 @@ class _NeedSignState extends State<NeedSign> {
   void onSelected(BuildContext context, int item)  {
     switch (item) {
       case 0:
-        var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign')).build();
+        clearSelect();
+
+        var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign') & SuratModel_.jenisSurat.equals('Internal')).build();
         List<SuratModel> listSurat = queryInbox.find().toList();
         for(var item in listSurat) {
           var query = mains.objectbox.boxSurat.query(SuratModel_.id.equals(item.id)).build();
@@ -915,6 +926,7 @@ class _NeedSignState extends State<NeedSign> {
               penerima: query.find().first.penerima,
               isSelected: true,
               jenisSurat: query.find().first.jenisSurat,
+              isMeterai: query.find().first.isMeterai,
             );
 
             mains.objectbox.boxSurat.put(surat);
@@ -924,7 +936,42 @@ class _NeedSignState extends State<NeedSign> {
         suratSelected.clear();
         suratSelected.addAll(listSurat);
         break;
-      case 1:
+        case 1:
+          clearSelect();
+
+        var queryInbox = mains.objectbox.boxSurat.query(SuratModel_.kategori.equals('needSign') & SuratModel_.jenisSurat.equals('External')).build();
+        List<SuratModel> listSurat = queryInbox.find().toList();
+        for(var item in listSurat) {
+          var query = mains.objectbox.boxSurat.query(SuratModel_.id.equals(item.id)).build();
+          if (query.find().isNotEmpty) {
+            final surat = SuratModel(
+              id: query.find().first.id,
+              idSurat: query.find().first.idSurat,
+              namaSurat: query.find().first.namaSurat,
+              nomorSurat: query.find().first.nomorSurat,
+              editor: query.find().first.editor,
+              perihal: query.find().first.perihal,
+              status: query.find().first.status,
+              tglSelesai: query.find().first.tglSelesai,
+              kategori: query.find().first.kategori,
+              url: query.find().first.url,
+              tipeSurat: query.find().first.tipeSurat,
+              tglBuat: query.find().first.tglBuat,
+              approver: query.find().first.approver,
+              penerima: query.find().first.penerima,
+              isSelected: true,
+              jenisSurat: query.find().first.jenisSurat,
+              isMeterai: query.find().first.isMeterai,
+            );
+
+            mains.objectbox.boxSurat.put(surat);
+            setState(() {});
+          }
+        }
+        suratSelected.clear();
+        suratSelected.addAll(listSurat);
+        break;
+      case 2:
         setState(() {
           clearSelect();
         });
