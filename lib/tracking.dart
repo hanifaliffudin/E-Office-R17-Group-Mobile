@@ -54,8 +54,9 @@ class _TrackingPageState extends State<TrackingPage> {
             }
             else {
               var queryInbox = mains.objectbox.boxSurat.query(
-                  SuratModel_.kategori.equals('tracking')).build();
-              List<SuratModel> listSurat = queryInbox.find().toList();
+                  SuratModel_.kategori.equals('tracking'))..order(SuratModel_.tglBuat);
+              var query = queryInbox.build();
+              List<SuratModel> listSurat = query.find().reversed.toList();
               if (listSurat.isEmpty) {
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
@@ -201,6 +202,8 @@ class _TrackingPageState extends State<TrackingPage> {
                 kategori: 'tracking',
                 status: dataSurat['stat'],
                 isMeterai: dataSurat['isMeterai'],
+                editor: dataSurat['name'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -215,6 +218,8 @@ class _TrackingPageState extends State<TrackingPage> {
                 kategori: 'tracking',
                 status: dataSurat['stat'],
                 isMeterai: dataSurat['isMeterai'],
+                editor: dataSurat['name'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);

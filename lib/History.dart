@@ -84,7 +84,13 @@ class _HistoryState extends State<History> {
                                       children: [
                                         Container(
                                           margin: const EdgeInsets.only(right: 20.0),
-                                          child: const Image(image: AssetImage('assets/images/pdf.png'),width: 50,),
+                                          child: Image(
+                                            image: listSurat[index].isMeterai == 0 ?
+                                            const AssetImage('assets/images/pdf.png')
+                                                :
+                                            const AssetImage('assets/images/pdf-emeterai.png'),
+                                            width: 50,
+                                          ),
                                         ),
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
