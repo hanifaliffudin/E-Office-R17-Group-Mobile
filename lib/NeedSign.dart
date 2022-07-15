@@ -59,8 +59,8 @@ class _NeedSignState extends State<NeedSign> {
   void _addDocumentCategoryListener() {
     _documentCategoryListener = _stateController.documentCategory.listen((p0) {
       if (p0 == 'needSign') {
-        getNeedSign();
         _stateController.changeDocumentCategory('');
+        getNeedSign();
       }
     });
   }
@@ -72,8 +72,8 @@ class _NeedSignState extends State<NeedSign> {
   void _addOtpCodeSmsListener() {
     _otpCodeSmsListener = _stateController.otpCodeSms.listen((p0) {
       if (p0 != '') {
-        _pinPutEksternalTextController.setText(p0);
         _stateController.changeOtpCodeSms('');
+        _pinPutEksternalTextController.setText(p0);
       }
     });
   }
@@ -635,6 +635,7 @@ class _NeedSignState extends State<NeedSign> {
                               child: TextButton(
                                 onPressed: () async {
                                   Navigator.pop(context);
+                                  _pinPutInternalTextController.setText('');
 
                                   Map<String, dynamic>? otpData = await getOtpBulk(listMapSurat);
 
@@ -762,6 +763,7 @@ class _NeedSignState extends State<NeedSign> {
                               child: TextButton(
                                 onPressed: () async {
                                   Navigator.pop(context);
+                                  _pinPutEksternalTextController.setText('');
 
                                   List otpData = await getOtpBulkEksternal(listMapSurat);
 
@@ -1053,7 +1055,6 @@ class _NeedSignState extends State<NeedSign> {
         setState(() {});
       }
 
-
     }
     else{
       EasyLoading.showError('${response.statusCode}, Gagal terhubung ke server!');
@@ -1137,7 +1138,6 @@ class _NeedSignState extends State<NeedSign> {
         setState(() {
           clearSelect();
         });
-        _pinPutInternalTextController.setText('');
       }
       else{
         EasyLoading.showError(signingMap['message']);
@@ -1235,7 +1235,6 @@ class _NeedSignState extends State<NeedSign> {
         setState(() {
           clearSelect();
         });
-        _pinPutEksternalTextController.setText('');
       }
       else{
         EasyLoading.showError(signingMap['message']);

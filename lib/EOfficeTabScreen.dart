@@ -54,9 +54,9 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
   void _addRefreshEofficeListener() {
     _refereshEofficePageListener = _stateController.refreshEofficePage.listen((p0) {
       if (p0) {
+        _stateController.changeRefreshEoffice(false);
         getAllBadge();
         getRecent();
-        _stateController.changeRefreshEoffice(false);
       }
     });
   }
