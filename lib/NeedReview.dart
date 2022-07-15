@@ -46,8 +46,8 @@ class _NeedReviewState extends State<NeedReview> {
   void _addDocumentCategoryListener() {
     _documentCategoryListener = _stateController.documentCategory.listen((p0) {
       if (p0 == 'needApprove') {
-        getDataSuratNeedApprove();
         _stateController.changeDocumentCategory('');
+        getDataSuratNeedApprove();
       }
     });
   }

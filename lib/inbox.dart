@@ -39,8 +39,8 @@ class _InboxPageState extends State<InboxPage> {
   void _addDocumentCategoryListener() {
     _stateController.documentCategory.listen((p0) {
       if (p0 == 'inbox') {
-        getDataSurat();
         _stateController.changeDocumentCategory('');
+        getDataSurat();
       }
     });
   }

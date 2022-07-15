@@ -136,7 +136,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
           }
 
           var groupNotif = GroupNotifModel(
-            dataId: message.data['id'],
+            dataId: message.data['id'].toString(),
             type: 'dokumen${message.data['type']}',
             hashcode: notification.hashCode,
           );
@@ -207,7 +207,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
         if (message.data.containsKey('room_id')) {
           var groupNotif = GroupNotifModel(
-            dataId: message.data['room_id'],
+            dataId: message.data['room_id'].toString(),
             type: 'chat',
             hashcode: notification.hashCode,
           );
@@ -584,7 +584,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
         DateTime dateYesterday = DateTime(now.year, now.month, now.day - 1);
 
         // print('$locationData $distanceOnMeter ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}');
-        if (distanceOnMeter <= 70 && now.hour >= 7) {
+        if (distanceOnMeter <= 50 && now.hour >= 7) {
           var query = mains.objectbox.boxAttendance
               .query(AttendanceModel_.date
                   .equals(DateFormat('dd MM yyyy').format(now)))
@@ -807,6 +807,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
 
   @override
   void initState() {
+    mains.objectbox.boxGroupNotif.removeAll();
     flutterLocalNotificationsPlugin.cancelAll();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -1462,6 +1463,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin, WidgetsBindi
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
+        mains.objectbox.boxGroupNotif.removeAll();
         flutterLocalNotificationsPlugin.cancelAll();
         // print("app in resumed");
         break;
