@@ -42,8 +42,8 @@ class _NeedSignState extends State<NeedSign> {
 
     _pinPutFocusNode.requestFocus();
     getNeedSign();
-    _addDocumentCategoryListener();
     _removeNotifByType();
+    _addDocumentCategoryListener();
     _addOtpCodeSmsListener();
   }
 

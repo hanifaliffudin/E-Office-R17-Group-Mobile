@@ -32,8 +32,8 @@ class _NeedReviewState extends State<NeedReview> {
     super.initState();
     
     getDataSuratNeedApprove();
-    _addDocumentCategoryListener();
     _removeNotifByType();
+    _addDocumentCategoryListener();
   }
 
   @override

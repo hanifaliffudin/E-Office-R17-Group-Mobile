@@ -8,6 +8,7 @@ class StateController extends GetxController {
   var refreshEofficePage = false.obs;
   var documentCategory = ''.obs;
   var otpCodeSms = ''.obs;
+  var runGetLastMessages = false.obs;
 
   void changeFromRoomId(int value) => fromRoomId.value = value;
 
@@ -22,4 +23,6 @@ class StateController extends GetxController {
   void changeDocumentCategory(String value) => documentCategory.value = value;
 
   void changeOtpCodeSms(String value) => otpCodeSms.value = value;
+
+  void changeRunGetLastMessages(bool value) => runGetLastMessages.value = value;
 }

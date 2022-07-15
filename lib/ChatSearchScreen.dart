@@ -347,13 +347,21 @@ class _MyWidgetState extends State<ChatSearchScreen> {
                   if (_chats[index].idReceiver != null) {
                     query = mains.objectbox.boxContact.query(ContactModel_.userId.equals(_chats[index].idReceiver!)).build();
                   } else {
-                    query = null;
+                    if (_chats[index].idSender != null) {
+                      query = mains.objectbox.boxContact.query(ContactModel_.userId.equals(_chats[index].idSender!)).build();
+                    } else {
+                      query = null;
+                    }
                   }
                 }
 
                 if (query != null) {
                   if (query.find().isNotEmpty) {
                     contact = query.find().first;
+                  } else if (_chats[index].idSender == _self.userId) {
+                    contact = ContactModel(
+                      userName: _self.userName,
+                    );
                   }
                 }
 
