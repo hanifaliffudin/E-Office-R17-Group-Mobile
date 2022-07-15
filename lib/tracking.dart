@@ -54,8 +54,9 @@ class _TrackingPageState extends State<TrackingPage> {
             }
             else {
               var queryInbox = mains.objectbox.boxSurat.query(
-                  SuratModel_.kategori.equals('tracking')).build();
-              List<SuratModel> listSurat = queryInbox.find().toList();
+                  SuratModel_.kategori.equals('tracking'))..order(SuratModel_.tglBuat);
+              var query = queryInbox.build();
+              List<SuratModel> listSurat = query.find().reversed.toList();
               if (listSurat.isEmpty) {
                 return Container(
                     margin: const EdgeInsets.only(top: 15.0),
@@ -77,85 +78,105 @@ class _TrackingPageState extends State<TrackingPage> {
                       shrinkWrap: true,
                       itemCount: listSurat.length,
                       itemBuilder:(BuildContext context,index)=>
-                      Column(
-                      children: [
-                        Card(
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 5),
+                            height: 95,
+                            width: 500,
+                            child: Card(
+                              margin: const EdgeInsets.symmetric(vertical: 3),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Stack(
                                   children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(right: 10.0),
-                                      child: Image(
-                                        image: listSurat[index].isMeterai == 0 ?
-                                        const AssetImage('assets/images/pdf.png')
-                                            :
-                                        const AssetImage('assets/images/pdf-emeterai.png'),
-                                        width: 50,
+                                    Positioned(
+                                      left: 0,
+                                      top: 5,
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.transparent,
+                                        child: Image(
+                                          image: listSurat[index].isMeterai == 0 ?
+                                          const AssetImage('assets/images/pdf.png')
+                                              :
+                                          const AssetImage('assets/images/pdf-emeterai.png'),
+                                          width: 50,
+                                        ),
+                                        radius: 25,
                                       ),
                                     ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ConstrainedBox(
-                                          constraints: const BoxConstraints(
-                                              maxWidth: 200
+                                    Positioned(
+                                      left: 65,
+                                      top: 5,
+                                      bottom: 5,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                                maxWidth: 250
+                                            ),
+                                            child: Text(
+                                              listSurat[index].perihal!,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
                                           ),
-                                          child: Text(listSurat[index].namaSurat!,
+                                          Text(
+                                            listSurat[index].status!,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),),
-                                        ),
-                                        const SizedBox(height: 5,),
-                                        date.isBefore(DateTime.parse(listSurat[index].tglBuat!))?
-                                        Text(DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString())
-                                            :
-                                        Text(DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()),
-                                        const SizedBox(height: 5,),
-                                        Text(listSurat[index].status!),
-                                      ],
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.normal,
+                                              height: 1.5,
+                                              // color: Color(0xFF171717),
+                                            ),
+                                          ),
+                                          Text(
+                                            listSurat[index].editor!,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.normal,
+                                              height: 1.5,
+                                              // color: Color(0xFF171717),
+                                            ),
+                                          ),
+
+                                        ],
+                                      ),
                                     ),
+                                    Positioned(
+                                      right: 5,
+                                      top: 10,
+                                      child: Padding(
+                                          padding: const EdgeInsets.only(left: 20),
+                                          child: Text(
+                                            listSurat[index].tglBuat == null ?
+                                            ""
+                                                :
+                                            date.isAfter(DateTime.parse(listSurat[index].tglBuat!))?
+                                            DateFormat('dd MMM yyyy \n H:mm').format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                                :
+                                            DateFormat.Hm().format(DateTime.parse(listSurat[index].tglBuat!)).toString()
+                                            ,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            textAlign: TextAlign.right,
+                                          )
+                                      ),
+                                    )
                                   ],
                                 ),
-                                SizedBox(
-                                  height: 50,
-                                  width: 30,
-
-                                  child:
-                                  listSurat[index].status == "APPROVE" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  listSurat[index].status == "RETURN" ?
-                                  const Image(image: AssetImage("assets/icons/return.png"))
-                                      :
-                                  listSurat[index].status == "REJECT" ?
-                                  const Image(image: AssetImage("assets/icons/reject.png"))
-                                      :
-                                  listSurat[index].status == "READ" ?
-                                  const Icon(Icons.mark_email_read_rounded,color: Colors.black,)
-                                      :
-                                  listSurat[index].status == "SUBMIT" ?
-                                  const Icon(Icons.upload_file_rounded, color: Colors.black,)
-                                      :
-                                  listSurat[index].status == "APPROVED" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  listSurat[index].status == "SIGNED" ?
-                                  const Image(image: AssetImage("assets/icons/approve.png"))
-                                      :
-                                  Container()
-                                  ,
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 );
               }
@@ -204,6 +225,8 @@ class _TrackingPageState extends State<TrackingPage> {
                 kategori: 'tracking',
                 status: dataSurat['stat'],
                 isMeterai: dataSurat['isMeterai'],
+                editor: dataSurat['name'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
@@ -218,6 +241,8 @@ class _TrackingPageState extends State<TrackingPage> {
                 kategori: 'tracking',
                 status: dataSurat['stat'],
                 isMeterai: dataSurat['isMeterai'],
+                editor: dataSurat['name'],
+                jenisSurat: dataSurat['jenis_surat'],
               );
 
               mains.objectbox.boxSurat.put(surat);
