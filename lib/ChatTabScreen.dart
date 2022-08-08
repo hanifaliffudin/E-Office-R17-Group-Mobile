@@ -10,6 +10,7 @@ import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/functions/index_function.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'objectbox.g.dart';
 import 'package:intl/intl.dart';
 import 'ChatScreen.dart';
@@ -46,6 +47,9 @@ class ChatTabScreen extends StatefulWidget {
 List<ConversationModel> convSelected = [];
 
 class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserver {
+  final _indexFunction = IndexFunction();
+  final VariableUtil _variableUtil = VariableUtil();
+  late Timer timerGetLastMessage;
   Store? store;
 
   //Checklist
@@ -54,9 +58,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserv
   //Delete widget
   bool isVisible = false;
 
-  String apiKey = homes.apiKeyCore;
   final StateController _stateController = Get.put(StateController());
-  late StreamSubscription<bool> _runGetLastMessagesListener;
+  late StreamSubscription<bool> _runGetLastMessageListener;
 
   List<String?> pp = [];
   List<TempConversation> _tempConv = [];
@@ -73,46 +76,61 @@ class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserv
 
     super.initState();
 
-    _getLastMessages();
-    _addRunGetLastMessagesListener();
+    timerGetLastMessage = Timer.periodic(Duration(seconds: 1), (_) {
+      if (homes.channel != null) {
+        _getLastMessage();
+        timerGetLastMessage.cancel();
+      }
+    });
+    
+    _addRunGetLastMessageListener();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _removeRunGetLastMessagesListener();
+    _removeRunGetLastMessageListener();
 
     super.dispose();
   }
 
-  void _getLastMessages() {
+  void _getLastMessage() {
     var builder = mains.objectbox.boxConversation.query(ConversationModel_.id.notEquals(0) & ConversationModel_.message.notEquals(""));
     List<ConversationModel> conversationList = builder.build().find().toList();
     List<int?> idRooms = conversationList.map((e) => e.roomId).toList();
     var msg = {};
-    msg["api_key"] = apiKey;
+    msg["api_key"] = _variableUtil.apiKeyCore;
     msg["type"] = "get_last_message";
     msg["id_rooms"] = json.encode(idRooms);
     msg["id_receiver"] = idUser;
+    msg['from'] = 'other';
     String msgString = json.encode(msg);
     homes.channel.sink.add(msgString);
+    var msgSelf = {};
+    msgSelf["api_key"] = _variableUtil.apiKeyCore;
+    msgSelf["type"] = "get_last_message";
+    msgSelf["id_rooms"] = json.encode(idRooms);
+    msgSelf["id_receiver"] = idUser;
+    msgSelf['from'] = 'self';
+    String msgSelfString = json.encode(msgSelf);
+    homes.channel.sink.add(msgSelfString);
   }
   
   String _getIdUnique(ConversationModel conversation) {
     return conversation.idReceiver != null ? conversation.idReceiver.toString() : conversation.photoProfile!;
   }
 
-  void _addRunGetLastMessagesListener() {
-    _runGetLastMessagesListener = _stateController.runGetLastMessages.listen((p0) {
+  void _addRunGetLastMessageListener() {
+    _runGetLastMessageListener = _stateController.runGetLastMessage.listen((p0) {
       if (p0) {
-        _stateController.changeRunGetLastMessages(false);
-        _getLastMessages();
+        _stateController.changeRunGetLastMessage(false);
+        // _getLastMessage();
       }
     });
   }
 
-  void _removeRunGetLastMessagesListener() {
-    _runGetLastMessagesListener.cancel();
+  void _removeRunGetLastMessageListener() {
+    _runGetLastMessageListener.cancel();
   }
 
   ImageProvider<Object> _getPhoto(ConversationModel conversation) {
@@ -137,7 +155,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserv
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        _getLastMessages();
+        _getLastMessage();
         break;
       case AppLifecycleState.inactive:
         break;
@@ -641,12 +659,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserv
                           DateTime date2 = DateTime.parse(conversationList[index].date!);
                           String desc = "";
 
-                          if (IndexFunction.daysBetween(date2, now) < 7) {
+                          if (_indexFunction.daysBetween(date2, now) < 7) {
                             bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(conversationList[index].date!));
 
                             if (isToday) {
                               desc = DateFormat('HH:mm').format(DateTime.parse(conversationList[index].date!));
-                            } else if (IndexFunction.daysBetween(date2, now) == 1) {
+                            } else if (_indexFunction.daysBetween(date2, now) == 1) {
                               desc = "Yesterday";
                             } else {
                               desc = DateFormat('EEEE').format(DateTime.parse(conversationList[index].date!));
@@ -927,15 +945,15 @@ class _ChatTabScreenState extends State<ChatTabScreen> with WidgetsBindingObserv
 
   Future<http.Response> getMessages(String idRooms) async {
 
-    String url ='https://chat.dev.r17.co.id/get_message.php';
+    String url ='${_variableUtil.apiChatUrl}/get_message.php';
 
     Map<String, dynamic> data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'id_rooms': idRooms,
     };
 
     //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
+    //var body = "?api_key="+this._variableUtil.apiKeyCore;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},

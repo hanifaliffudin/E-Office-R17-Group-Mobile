@@ -11,6 +11,7 @@ import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:pinput/pinput.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -26,7 +27,7 @@ class NeedSign extends StatefulWidget {
 List<SuratModel> suratSelected = [];
 
 class _NeedSignState extends State<NeedSign> {
-
+  final VariableUtil _variableUtil = VariableUtil();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _pinPutFocusNode = FocusNode();
   final StateController _stateController = Get.put(StateController());
@@ -431,7 +432,7 @@ class _NeedSignState extends State<NeedSign> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        listSurat[index].nomorSurat!,
+                                                        listSurat[index].nomorSurat == null ? "-" : listSurat[index].nomorSurat!,
                                                         overflow: TextOverflow.ellipsis,
                                                         maxLines: 1,
                                                         style: const TextStyle(
@@ -983,7 +984,7 @@ class _NeedSignState extends State<NeedSign> {
 
   Future<http.Response> getNeedSign() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getNeedSign';
+    String url ='${_variableUtil.eOfficeUrl}/api/getNeedSign';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1066,7 +1067,7 @@ class _NeedSignState extends State<NeedSign> {
     try {
       EasyLoading.show(status: 'Sending OTP');
 
-      String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
+      String url ='${_variableUtil.eOfficeUrl}/api/getOtpBulk';
 
       Map<String, dynamic> data = {
         'payload': {
@@ -1106,7 +1107,7 @@ class _NeedSignState extends State<NeedSign> {
 
   Future<http.Response> signingBulk(String otp, String bulkId, List listIdSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/bulkSigning';
+    String url ='${_variableUtil.eOfficeUrl}/api/bulkSigning';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1152,7 +1153,7 @@ class _NeedSignState extends State<NeedSign> {
   Future<List> getOtpBulkEksternal(List listIdSurat) async {
     EasyLoading.show(status: 'Sending OTP');
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/otpSignEksternal';
+    String url ='${_variableUtil.eOfficeUrl}/api/otpSignEksternal';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1185,7 +1186,7 @@ class _NeedSignState extends State<NeedSign> {
 
   Future<http.Response> signingBulkEksternal(String token, String bulkId, String otp, List listIdSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/signEksternalBulk';
+    String url ='${_variableUtil.eOfficeUrl}/api/signEksternalBulk';
 
     Map<String, dynamic> data = {
       'payload': {

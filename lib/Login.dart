@@ -5,6 +5,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:militarymessenger/PinVerification.dart';
 import 'package:http/http.dart' as http;
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'Home.dart' as homes;
@@ -17,6 +18,7 @@ class Login extends StatefulWidget {
 }
 
 class LoginPageState extends State<Login>  {
+  final VariableUtil _variableUtil = VariableUtil();
   var fcmToken;
   @override
   void initState() {
@@ -31,13 +33,10 @@ class LoginPageState extends State<Login>  {
   final TextEditingController _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String apiKey = homes.apiKeyCore;
-
-
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text('R17 Group',
+      title: const Text('R17 Group',
         style: TextStyle(
           letterSpacing: 2.0,
           fontWeight: FontWeight.bold,
@@ -62,20 +61,29 @@ class LoginPageState extends State<Login>  {
                 cursorColor: Colors.grey,
                 autofocus: true,
                 validator: (value) {
-                  if(value == null || value.isEmpty){
-                    return 'Email is not valid!';
-                  }else if(!value.contains('@r17.co.id')){
-                    if(!value.contains('@digiprimatera.co.id')){
-                      return "Only the email accounts of R17 and Digiprimatera can login!";
+                  if(value == null || value.isEmpty) {
+                    return 'Email is empty!';
+                  } else {
+                    if (!EmailValidator.validate(value.trim())) {
+                      return 'Email is not valid!';
+                    } else {
+                      if (
+                        value.contains('@r17.co.id')
+                        || value.contains('@digiprimatera.co.id')
+                        || value.contains('@alursolusi.com')
+                      ) {
+                        return null;
+                      } else {
+                        return "Only the email accounts of R17, Digiprimatera, and Alur Solusi can login!";
+                      }
                     }
                   }
-                  else if (!EmailValidator.validate(value.trim())) {
-                    return 'Email is not valid!';
-                  }
+
                   return null;
                 },
                 controller: _controller,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
+                    errorMaxLines: 3,
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -105,7 +113,7 @@ class LoginPageState extends State<Login>  {
                   elevation: 0,
                   primary: Color(0xFF2481CF),
                 ),
-                child: Text(
+                child: const Text(
                   'Next',
                   style: TextStyle(
                       color: Colors.white
@@ -162,9 +170,9 @@ class LoginPageState extends State<Login>  {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    String url ='https://chat.dev.r17.co.id/send_email.php';
+    String url ='${_variableUtil.apiChatUrl}/send_email.php';
     Map data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'email': email,
       'fcm_token': fcmToken
     };

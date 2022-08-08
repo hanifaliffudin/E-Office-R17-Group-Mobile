@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -18,7 +19,8 @@ class SignedPage extends StatefulWidget {
 }
 
 class _SignedPageState extends State<SignedPage> {
-
+  final VariableUtil _variableUtil = VariableUtil();
+  
   @override
   void initState() {
     // TODO: implement initState
@@ -208,7 +210,7 @@ class _SignedPageState extends State<SignedPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getSuratKirim';
+    String url ='${_variableUtil.eOfficeUrl}/api/getSuratKirim';
 
     Map<String, dynamic> data = {
       'payload': {

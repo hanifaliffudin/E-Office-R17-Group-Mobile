@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -18,7 +19,8 @@ class CanceledPage extends StatefulWidget {
 }
 
 class _CanceledPageState extends State<CanceledPage> {
-
+  final VariableUtil _variableUtil = VariableUtil();
+  
   @override
   void initState() {
     // TODO: implement initState
@@ -218,7 +220,7 @@ class _CanceledPageState extends State<CanceledPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getRejected';
+    String url ='${_variableUtil.eOfficeUrl}/api/getRejected';
 
     Map<String, dynamic> data = {
       'payload': {

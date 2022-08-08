@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>542174991248-cnrfklda49llpaashlnnmfe6lsaer4sd.apps.googleusercontent.com</string>
+	<string>542174991248-mccrqsr2s6oolu65tfejaukr46oamevr.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.542174991248-cnrfklda49llpaashlnnmfe6lsaer4sd</string>
+	<string>com.googleusercontent.apps.542174991248-mccrqsr2s6oolu65tfejaukr46oamevr</string>
 	<key>API_KEY</key>
 	<string>AIzaSyB5DP-Xs4uNPxJMLCrime6ueuUmE8AzN38</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>id.co.digiprimatera.eoffice17</string>
+	<string>id.co.digiprimatera.eofficeR17</string>
 	<key>PROJECT_ID</key>
 	<string>dimensy-19190</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:542174991248:ios:8c170bec423473a4639915</string>
+	<string>1:542174991248:ios:afcf78d144abdaeb639915</string>
 </dict>
 </plist>

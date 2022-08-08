@@ -6,6 +6,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:militarymessenger/post.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'objectbox.g.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
@@ -20,6 +21,7 @@ class FeedTabScreen extends StatefulWidget {
 }
 
 class _FeedTabScreenState extends State<FeedTabScreen> {
+  final VariableUtil _variableUtil = VariableUtil();
   Store? store;
 
   @override
@@ -139,7 +141,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
                                                   width: MediaQuery.of(context).size.width * 1,
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: NetworkImage('https://eoffice.dev.digiprimatera.co.id/${listNews[index].image}'),
+                                                        image: NetworkImage('${_variableUtil.eOfficeUrl}/${listNews[index].image}'),
                                                         fit: BoxFit.cover,
                                                       ),
                                                       borderRadius: BorderRadius.circular(6)
@@ -259,7 +261,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
 
   Future<http.Response> getNews() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getNews/';
+    String url ='${_variableUtil.eOfficeUrl}/api/getNews/';
 
     var response = await http.get(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -348,7 +350,7 @@ class _FeedTabScreenState extends State<FeedTabScreen> {
 
   Future<http.Response> like(int idNews) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
+    String url ='${_variableUtil.eOfficeUrl}/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {

@@ -1,4 +1,5 @@
 import 'package:militarymessenger/models/AttendanceHistoryModel.dart';
+import 'package:militarymessenger/models/AttendanceLocationModel.dart';
 import 'package:militarymessenger/models/AttendanceModel.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
@@ -33,6 +34,7 @@ class ObjectBox {
   late final Box<AttendanceHistoryModel> boxAttendanceHistory;
   late final Box<GroupNotifModel> boxGroupNotif;
   late final Box<SavedModel> boxSaved;
+  late final Box<AttendanceLocationModel> boxAttendanceLocation;
 
   /// A stream of all notes ordered by date.
   late final Stream<Query<ChatModel>> queryStreamChat;
@@ -46,6 +48,7 @@ class ObjectBox {
   late final Stream<Query<AttendanceHistoryModel>> queryStreamAttendanceHistory;
   late final Stream<Query<GroupNotifModel>> queryStreamGroupNotif;
   late final Stream<Query<SavedModel>> queryStreamSaved;
+  late final Stream<Query<AttendanceLocationModel>> queryStreamAttendanceLocation;
 
   ObjectBox._create(this.store) {
     boxChat = Box<ChatModel>(store);
@@ -60,6 +63,7 @@ class ObjectBox {
     boxAttendanceHistory = Box<AttendanceHistoryModel>(store);
     boxGroupNotif = Box<GroupNotifModel>(store);
     boxSaved = Box<SavedModel>(store);
+    boxAttendanceLocation = Box<AttendanceLocationModel>(store);
 
     final qBuilderChat = boxChat.query()
       ..order(ChatModel_.id, flags: Order.descending);
@@ -104,6 +108,10 @@ class ObjectBox {
     final qBuilderSaved = boxSaved.query()
       ..order(SavedModel_.id, flags: Order.descending);
     queryStreamSaved = qBuilderSaved.watch(triggerImmediately: true);
+
+    final qBuilderAttendanceLocation = boxAttendanceLocation.query()
+      ..order(AttendanceLocationModel_.id, flags: Order.descending);
+    queryStreamAttendanceLocation = qBuilderAttendanceLocation.watch(triggerImmediately: true);
 
     // Add some demo data if the box is empty.
     //if (mains.objectbox.boxConversation.isEmpty()) {

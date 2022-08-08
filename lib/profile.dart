@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:path_provider/path_provider.dart';
 import 'main.dart' as mains;
 import 'home.dart' as homes;
@@ -26,7 +27,7 @@ enum AppState {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
+  final VariableUtil _variableUtil = VariableUtil();
   String apiKey ='1Hw3G9UYOhounou0679y3*OhouH978%hOtfr57fRtug#9UI8nl7iU4Yt5vR6Fb87tLRB5u3g4Hi92983huiU3g5bkH5BVGv3daf2F5e2Ae4k6F5vblUwIJD9W7ryiuBL24Lbv3P';
 
   final String? email = mains.objectbox.boxUser.get(1)?.email;
@@ -455,7 +456,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<http.Response> setPhoto(String photo64) async {
 
-    String url ='https://chat.dev.r17.co.id/profile.php';
+    String url ='${_variableUtil.apiChatUrl}/profile.php';
 
 
     Map<String, dynamic> data = {
@@ -492,7 +493,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<http.Response> setName(String name) async {
 
-    String url ='https://chat.dev.r17.co.id/profile.php';
+    String url ='${_variableUtil.apiChatUrl}/profile.php';
 
     Map<String, dynamic> data = {
       'api_key': this.apiKey,
@@ -549,7 +550,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<http.Response> setPhone(String phone) async {
 
-    String url ='https://chat.dev.r17.co.id/profile.php';
+    String url ='${_variableUtil.apiChatUrl}/profile.php';
 
     Map<String, dynamic> data = {
       'api_key': this.apiKey,

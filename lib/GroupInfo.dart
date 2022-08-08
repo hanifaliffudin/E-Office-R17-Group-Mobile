@@ -10,6 +10,7 @@ import 'package:militarymessenger/EditGroupInfo.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'package:http/http.dart' as http;
@@ -26,8 +27,8 @@ class GroupInfo extends StatefulWidget {
 }
 
 class _GroupInfoState extends State<GroupInfo> {
+  final VariableUtil _variableUtil = VariableUtil();
   String? photo = mains.objectbox.boxUser.get(1)?.photo;
-  String apiKey = homes.apiKeyCore;
   ConversationModel? conversation;
   int? roomId;
   List<int> arrReceivers = [];
@@ -299,7 +300,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                                       int id = mains.objectbox.boxChat.put(chat);
 
                                                       var msg = {};
-                                                      msg["api_key"] = apiKey;
+                                                      msg["api_key"] = _variableUtil.apiKeyCore;
                                                       msg["decrypt_key"] = "";
                                                       msg["id_chat_model"] = id;
                                                       msg["type"] = "group";
@@ -366,10 +367,10 @@ class _GroupInfoState extends State<GroupInfo> {
 
   Future<http.Response> getListParticipantsGroup() async {
 
-    String url ='https://chat.dev.r17.co.id/get_user.php';
+    String url ='${_variableUtil.apiChatUrl}/get_user.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'room_id': conversation!.roomId,
       'id_sender': mains.objectbox.boxUser.get(1)?.userId,
     };
@@ -474,7 +475,7 @@ class _GroupInfoState extends State<GroupInfo> {
 //                 int id = mains.objectbox.boxChat.put(chat);
 //
 //                 var msg = {};
-//                 msg["api_key"] = apiKey;
+//                 msg["api_key"] = _variableUtil.apiKeyCore;
 //                 msg["decrypt_key"] = "";
 //                 msg["id_chat_model"] = id;
 //                 msg["type"] = "group";

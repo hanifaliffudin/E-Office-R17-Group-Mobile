@@ -5,6 +5,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'objectbox.g.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart' as mains;
@@ -18,6 +19,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+  final VariableUtil _variableUtil = VariableUtil();
   Store? store;
 
   @override
@@ -164,7 +166,7 @@ class _HistoryState extends State<History> {
 
   Future<http.Response> getRecent() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/recent';
+    String url ='${_variableUtil.eOfficeUrl}/api/recent';
 
     Map<String, dynamic> data = {
       'payload': {

@@ -11,6 +11,7 @@ import 'package:militarymessenger/document.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'main.dart';
@@ -23,6 +24,7 @@ class NeedReview extends StatefulWidget {
 }
 
 class _NeedReviewState extends State<NeedReview> {
+  final VariableUtil _variableUtil = VariableUtil();
   final StateController _stateController = Get.put(StateController());
   late StreamSubscription<String> _documentCategoryListener;
 
@@ -248,7 +250,7 @@ class _NeedReviewState extends State<NeedReview> {
 
   Future<http.Response> getDataSuratNeedApprove() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/needApprover';
+    String url ='${_variableUtil.eOfficeUrl}/api/needApprover';
 
     Map<String, dynamic> data = {
       'payload': {

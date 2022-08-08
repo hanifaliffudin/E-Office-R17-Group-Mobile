@@ -27,6 +27,7 @@ import 'package:militarymessenger/models/ContactGroupModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:swipe_to/swipe_to.dart';
@@ -49,7 +50,8 @@ class ChatGroup extends StatefulWidget {
 List<BubbleColor> bubbleColor = [];
 
 class _ChatGroupState extends State<ChatGroup> {
-  String apiKey = homes.apiKeyCore;
+  final _indexFunction = IndexFunction();
+  final VariableUtil _variableUtil = VariableUtil();
   var contactList,contactData,contactName;
   List<ContactGroupModel> contactGroup = [];
   StreamController<List<ContactGroupModel>>? StreamControllerContactGroup;
@@ -91,17 +93,16 @@ class _ChatGroupState extends State<ChatGroup> {
         delivered: 0,
         read: 0,
       );
-
       int id = mains.objectbox.boxChat.put(chat);
-
       var msg = {};
-      msg["api_key"] = apiKey;
+      msg["api_key"] = _variableUtil.apiKeyCore;
       msg["decrypt_key"] = "";
       msg["id_chat_model"] = id;
       msg["type"] = "group";
       msg["id_sender"] = idUser;
       msg["id_receivers"] = conversation!.idReceiversGroup;
       msg["msg_tipe"] = 'system';
+      msg["system_feature"] = 'create_group';
       msg["msg_data"] = '${mains.objectbox.boxUser.get(1)?.userName} created group "${conversation?.fullName}"';
       msg["room_id"] = roomId;
       msg["group_name"] = conversation?.fullName;
@@ -124,7 +125,7 @@ class _ChatGroupState extends State<ChatGroup> {
       List<ChatModel> chatsNotSent = queryNotSent.find().toList();
       for(int i=0;i<chatsNotSent.length;i++){
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["decrypt_key"] = "";
         msg["id_chat_model"] = chatsNotSent[i].id;
         msg["type"] = "group";
@@ -205,7 +206,7 @@ class _ChatGroupState extends State<ChatGroup> {
     final XFile? imageCamera = await _picker.pickImage(source: ImageSource.camera);
 
     if(imageCamera != null){
-      cropImage(imageCamera!.path);
+      cropImage(imageCamera.path);
     }
   }
 
@@ -253,7 +254,7 @@ class _ChatGroupState extends State<ChatGroup> {
 
 
           var msg = {};
-          msg["api_key"] = apiKey;
+          msg["api_key"] = _variableUtil.apiKeyCore;
           msg["decrypt_key"] = "";
           msg["id_chat_model"] = id;
           msg["type"] = "group";
@@ -425,521 +426,549 @@ class _ChatGroupState extends State<ChatGroup> {
             ],
           ),
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10, left: 10),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: StreamBuilder<List<ChatModel>>(
-                          stream: homes.listController.stream,
-                          builder: (context, snapshot)
-                          {
-                            if(snapshot.data != null){
-                              //update chat read when standby chat
-                              var standby = mains.objectbox.boxChat.query(ChatModel_.idRoom.equals(conversation!.roomId!) & ChatModel_.read.equals(0) & ChatModel_.idChatFriends.notNull() & ChatModel_.tipe.notEquals("system")).build();
-                              List<ChatModel> chatsUnread = standby.find().toList();
-                              for(int i=0;i<chatsUnread.length;i++){
-                                var msg = {};
-                                msg["api_key"] = apiKey;
-                                msg["type"] = "group_read";
-                                msg["id_chat_model_friends"] = chatsUnread[i].idChatFriends;
-                                msg["id_sender"] = chatsUnread[i].idSender;
-                                msg["id_receivers"] = chatsUnread[i].idReceiversGroup;
-                                msg["msg_tipe"] = chatsUnread[i].tipe;
-                                msg["room_id"] = conversation!.roomId;
-                                String msgString = json.encode(msg);
-                                homes.channel.sink.add(msgString);
+        body: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10, left: 10),
+                  child: StreamBuilder<List<ChatModel>>(
+                      stream: homes.listController.stream,
+                      builder: (context, snapshot)
+                      {
+                        if(snapshot.data != null){
+                          //update chat read when standby chat
+                          var standby = mains.objectbox.boxChat.query(ChatModel_.idRoom.equals(conversation!.roomId!) & ChatModel_.read.equals(0) & ChatModel_.idChatFriends.notNull() & ChatModel_.tipe.notEquals("system")).build();
+                          List<ChatModel> chatsUnread = standby.find().toList();
+                          for(int i=0;i<chatsUnread.length;i++){
+                            var msg = {};
+                            msg["api_key"] = _variableUtil.apiKeyCore;
+                            msg["type"] = "group_read";
+                            msg["id_chat_model_friends"] = chatsUnread[i].idChatFriends;
+                            msg["id_sender"] = chatsUnread[i].idSender;
+                            msg["id_receivers"] = chatsUnread[i].idReceiversGroup;
+                            msg["msg_tipe"] = chatsUnread[i].tipe;
+                            msg["id_reader"] = idUser;
+                            msg["date"] = chatsUnread[i].date;
+                            msg["room_id"] = conversation!.roomId;
+                            String msgString = json.encode(msg);
+                            homes.channel.sink.add(msgString);
 
-                                // update status to read=1
-                                final chat = ChatModel(
-                                  id: chatsUnread[i].id,
-                                  idChatFriends: chatsUnread[i].idChatFriends,
-                                  idSender: chatsUnread[i].idSender,
-                                  nameSender: chatsUnread[i].nameSender,
-                                  idRoom: chatsUnread[i].idRoom,
-                                  idReceiversGroup: chatsUnread[i].idReceiversGroup,
-                                  text: chatsUnread[i].text,
-                                  tipe: chatsUnread[i].tipe,
-                                  content: chatsUnread[i].content,
-                                  date: chatsUnread[i].date,
-                                  sendStatus: chatsUnread[i].sendStatus,
-                                  delivered: 1,
-                                  read: chatsUnread[i].read!+1,
-                                );
-                                mains.objectbox.boxChat.put(chat);
+                            // update status to read=1
+                            final chat = ChatModel(
+                              id: chatsUnread[i].id,
+                              idChatFriends: chatsUnread[i].idChatFriends,
+                              idSender: chatsUnread[i].idSender,
+                              nameSender: chatsUnread[i].nameSender,
+                              idRoom: chatsUnread[i].idRoom,
+                              idReceiversGroup: chatsUnread[i].idReceiversGroup,
+                              text: chatsUnread[i].text,
+                              tipe: chatsUnread[i].tipe,
+                              content: chatsUnread[i].content,
+                              date: chatsUnread[i].date,
+                              sendStatus: chatsUnread[i].sendStatus,
+                              delivered: 1,
+                              read: chatsUnread[i].read!+1,
+                            );
+                            mains.objectbox.boxChat.put(chat);
 
+                          }
+
+
+
+                          var queryBuilder = mains.objectbox.boxChat.query( ( ChatModel_.idRoom.equals(conversation!.roomId!)) )..order(ChatModel_.date);
+                          var query = queryBuilder.build();
+                          List<ChatModel> chats = query.find().reversed.toList();
+
+                          DateTime now = DateTime.now();
+
+                          if(query.find().isNotEmpty){
+                            ConversationModel objConversation = ConversationModel(
+                                id: conversation!.id,
+                                message: query.find().toList().isEmpty ? '' : query.find().last.text,
+                                idReceiversGroup: conversation!.idReceiversGroup,
+                                fullName: conversation!.fullName,
+                                image: '',
+                                photoProfile: conversation!.photoProfile,
+                                date: query.find().last.date,
+                                roomId: conversation!.roomId,
+                                messageCout: 0);
+
+                            mains.objectbox.boxConversation.put(objConversation);
+                          }
+
+                          List<MaterialColor> primary = <MaterialColor>[
+                            Colors.red,
+                            Colors.pink,
+                            Colors.purple,
+                            Colors.deepPurple,
+                            Colors.indigo,
+                            Colors.blue,
+                            Colors.teal,
+                            Colors.green,
+                            Colors.orange,
+                            Colors.brown,
+                            Colors.blueGrey,
+                          ];
+
+                          if (conversation!.idReceiversGroup != null) {
+                            for(var item in json.decode(conversation!.idReceiversGroup!)){
+                              if(!bubbleColor.map((e) => e.idUser).contains(item)){
+                                bubbleColor.add(BubbleColor(idUser: item, Color: primary[Random().nextInt(primary.length)]));
                               }
+                            }
+                          }
 
+                          return ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              reverse: true,
+                              shrinkWrap: false,
+                              padding: const EdgeInsets.all(2),
+                              itemCount: chats.isNotEmpty ? chats.length : 0,
+                              itemBuilder: (context, index) {
+                                DateTime date2 = DateTime.parse(chats[index].date);
+                                bool isSame = false;
+                                String desc = "";
+                                bool showTriangleRight = false;
+                                bool showTriangleLeft = false;
 
+                                if (index != chats.length-1) {
+                                  isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
+                                }
 
-                              var queryBuilder = mains.objectbox.boxChat.query( ( ChatModel_.idRoom.equals(conversation!.roomId!)) )..order(ChatModel_.date);
-                              var query = queryBuilder.build();
-                              List<ChatModel> chats = query.find().reversed.toList();
+                                if (!isSame) {
+                                  if (_indexFunction.daysBetween(date2, now) < 7) {
+                                    bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
 
-                              DateTime now = DateTime.now();
+                                    if (isToday) {
+                                      desc = "Today";
+                                    } else if (_indexFunction.daysBetween(date2, now) == 1) {
+                                      desc = "Yesterday";
+                                    } else {
+                                      desc = DateFormat('EEEE').format(DateTime.parse(chats[index].date));
+                                    }
+                                  } else {
+                                    desc = DateFormat('dd-MM-yyyy').format(DateTime.parse(chats[index].date));
+                                  }
 
-                              if(query.find().isNotEmpty){
-                                ConversationModel objConversation = ConversationModel(
-                                    id: conversation!.id,
-                                    message: query.find().toList().isEmpty ? '' : query.find().last.text,
-                                    idReceiversGroup: conversation!.idReceiversGroup,
-                                    fullName: conversation!.fullName,
-                                    image: '',
-                                    photoProfile: conversation!.photoProfile,
-                                    date: query.find().last.date,
-                                    roomId: conversation!.roomId,
-                                    messageCout: 0);
-
-                                mains.objectbox.boxConversation.put(objConversation);
-                              }
-
-                              List<MaterialColor> primary = <MaterialColor>[
-                                Colors.red,
-                                Colors.pink,
-                                Colors.purple,
-                                Colors.deepPurple,
-                                Colors.indigo,
-                                Colors.blue,
-                                Colors.teal,
-                                Colors.green,
-                                Colors.orange,
-                                Colors.brown,
-                                Colors.blueGrey,
-                              ];
-
-                              if (conversation!.idReceiversGroup != null) {
-                                for(var item in json.decode(conversation!.idReceiversGroup!)){
-                                  if(!bubbleColor.map((e) => e.idUser).contains(item)){
-                                    bubbleColor.add(BubbleColor(idUser: item, Color: primary[Random().nextInt(primary.length)]));
+                                  showTriangleLeft = true;
+                                  showTriangleRight = true;
+                                } else {
+                                  if (chats[index].idSender != chats[index+1].idSender) {
+                                    showTriangleLeft = true;
+                                  }
+                                  
+                                  if (chats[index].idSender != chats[index+1].idSender) {
+                                    showTriangleRight = true;
                                   }
                                 }
-                              }
 
-                              return ListView.builder(
-                                  scrollDirection: Axis.vertical,
-                                  reverse: true,
-                                  shrinkWrap: false,
-                                  padding: const EdgeInsets.only(top: 2, bottom: 2),
-                                  itemCount: chats.isNotEmpty ? chats.length : 0,
-                                  itemBuilder: (context, index) {
-                                    var content = chats[index].idSender == idUser ?
-                                    SwipeTo(
-                                        onLeftSwipe: () {
-                                        },
-                                        child: chats[index].tipe == 'text' ?
-                                        MyMessageCardGroup(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          '',
-                                          index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
-                                          false,
-                                        )
-                                            : chats[index].tipe == 'image' ?
-                                        MyMessageCardGroup(
-                                          chats[index].content!,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true,
-                                        )
-                                            : chats[index].tipe == 'file' ?
-                                        MyMessageCardGroup(
-                                          chats[index].text,
-                                          chats[index].sendStatus == "" ?
-                                          ""
-                                              :
-                                          DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                          chats[index].read!,
-                                          chats[index].tipe!,
-                                          chats[index].content!,
-                                          false,
-                                          true,
-                                        )
-                                            :
-                                        //    card system bubble
-                                        SystemMessage(
-                                          chats[index].text,
-                                        )
-                                    ) :
-                                    chats[index].tipe == 'text' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
+                                int readCount = 0;
+
+                                if (chats[index].readBy != null) {
+                                  List<dynamic> arrTemp = jsonDecode(chats[index].readBy!);
+                                  readCount = arrTemp.length;
+                                } else {
+                                  if (chats[index].read! > 0) {
+                                    readCount = chats[index].read!;
+                                  }
+                                }
+
+                                var content = chats[index].idSender == idUser ?
+                                SwipeTo(
+                                    onLeftSwipe: () {
+                                    },
+                                    child: chats[index].tipe == 'text' ?
+                                    MyMessageCardGroup(
                                       chats[index].text,
+                                      chats[index].sendStatus == "" ?
+                                      ""
+                                          :
                                       DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                      readCount,
                                       chats[index].tipe!,
                                       '',
-                                      index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                      showTriangleRight,
                                       false,
                                     )
                                         : chats[index].tipe == 'image' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
+                                    MyMessageCardGroup(
                                       chats[index].content!,
+                                      chats[index].sendStatus == "" ?
+                                      ""
+                                          :
                                       DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                      readCount,
                                       chats[index].tipe!,
                                       chats[index].content!,
                                       false,
                                       true,
                                     )
                                         : chats[index].tipe == 'file' ?
-                                    FriendMessageCardGroup(
-                                      chats[index].idSender!,
-                                      chats[index].nameSender.toString(),
+                                    MyMessageCardGroup(
                                       chats[index].text,
+                                      chats[index].sendStatus == "" ?
+                                      ""
+                                          :
                                       DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
-                                      bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                      readCount,
                                       chats[index].tipe!,
                                       chats[index].content!,
                                       false,
                                       true,
                                     )
                                         :
-                                    //    system bubble
+                                    //    card system bubble
                                     SystemMessage(
                                       chats[index].text,
-                                    );
+                                    )
+                                ) :
+                                chats[index].tipe == 'text' ?
+                                FriendMessageCardGroup(
+                                  chats[index].idSender!,
+                                  chats[index].nameSender.toString(),
+                                  chats[index].text,
+                                  DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                  bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                  chats[index].tipe!,
+                                  '',
+                                  // index+1==chats.length?true:chats[index].idSender==chats[index+1].idSender?false:true,
+                                  showTriangleLeft,
+                                  false,
+                                )
+                                    : chats[index].tipe == 'image' ?
+                                FriendMessageCardGroup(
+                                  chats[index].idSender!,
+                                  chats[index].nameSender.toString(),
+                                  chats[index].content!,
+                                  DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                  bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                  chats[index].tipe!,
+                                  chats[index].content!,
+                                  false,
+                                  true,
+                                )
+                                    : chats[index].tipe == 'file' ?
+                                FriendMessageCardGroup(
+                                  chats[index].idSender!,
+                                  chats[index].nameSender.toString(),
+                                  chats[index].text,
+                                  DateFormat.Hm().format( DateTime.parse(chats[index].date) ),
+                                  bubbleColor.where((element) => element.idUser == chats[index].idSender).map((e) => e.Color).toString(),
+                                  chats[index].tipe!,
+                                  chats[index].content!,
+                                  false,
+                                  true,
+                                )
+                                    :
+                                //    system bubble
+                                SystemMessage(
+                                  chats[index].text,
+                                );
 
-                                    DateTime date2 = DateTime.parse(chats[index].date);
-                                    bool isSame = false;
-                                    String desc = "";
-
-                                    if (index != chats.length-1) {
-                                      isSame = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date)) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index+1].date));
-                                    }
-
-                                    if (!isSame) {
-                                      if (IndexFunction.daysBetween(date2, now) <= 7) {
-                                        bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
-                                        bool isYesterday = IndexFunction.daysBetween(date2, now) == 1;
-
-                                        if (isToday) {
-                                          desc = "Today";
-                                        } else if (isYesterday) {
-                                          desc = "Yesterday";
-                                        } else {
-                                          desc = DateFormat('E').format(DateTime.parse(chats[index].date));
-                                        }
-                                      } else {
-                                        desc = DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
-                                      }
-                                    }
 // DateTime lastDayOfMonth = new DateTime(now.year, now.month, (now.day+4)-6);
-                                    return Column(
-                                      children: [
-                                        !isSame ?
-                                        Container(
-                                          padding: const EdgeInsets.all(8.0),
-                                          margin: const EdgeInsets.symmetric(
-                                            vertical: 8.0,
-                                          ),
-                                          child: Text(
-                                            desc,
-                                            style: const TextStyle(
-                                              fontSize: 12.0,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            borderRadius: BorderRadius.circular(10.0),
-                                          ),
-                                        ) : Container(),
-                                        content,
-                                      ],
-                                    );
-                                  }
-                              );
-                            }else{
-                              if (snapshot.hasError) {
-                                // print(snapshot.error.toString());
-                                return const Text("Error");
+                                return Column(
+                                  children: [
+                                    !isSame ?
+                                    Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      margin: EdgeInsets.only(
+                                        top: index == chats.length ? 2.0 : 8.0,
+                                        bottom: 10.0,
+                                      ),
+                                      child: Text(
+                                        desc,
+                                        style: const TextStyle(
+                                          fontSize: 12.0,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey,
+                                        borderRadius: BorderRadius.circular(10.0),
+                                      ),
+                                    ) : Container(),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        bottom: index == 0 ? 8.0 : 2.0,
+                                      ),
+                                      child: content,
+                                    ),
+                                  ],
+                                );
                               }
-                              return const CircularProgressIndicator();
-                            }
+                          );
+                        }else{
+                          if (snapshot.hasError) {
+                            // print(snapshot.error.toString());
+                            return const Text("Error");
                           }
-                      ),
-                    )
-                    ,
-                  ],
+                          return const CircularProgressIndicator();
+                        }
+                      }
+                  ),
                 ),
               ),
-            ),
-            Container(
-              color: Theme.of(context).backgroundColor,
-              padding: Platform.isAndroid ?
-              const EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 7):
-              const EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
-              margin: const EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 10, bottom: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      constraints: BoxConstraints(
-                        minHeight: 25.0,
-                        maxHeight: 100,
-                        minWidth: MediaQuery.of(context).size.width,
-                        maxWidth: MediaQuery.of(context).size.width,
-                      ),
-                      child: Scrollbar(
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  emojiShowing = !emojiShowing;
-                                  if (emojiShowing) {
-                                    _focusNode.unfocus();
-                                  }
-                                  else {
-                                    FocusScope.of(context).requestFocus(_focusNode);
-                                  }
-                                });
-                              },
-                              icon: const Icon(
-                                Icons.tag_faces,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Expanded(
-                              child: FocusScope(
-                                child: Focus(
-                                  onFocusChange: (focus) {
-                                    if(focus){
-                                      emojiShowing = false;
+              Container(
+                color: Theme.of(context).backgroundColor,
+                padding: Platform.isAndroid ?
+                const EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 7):
+                const EdgeInsets.only(right: 10, left: 10, top: 7, bottom: 25),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 10, bottom: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        constraints: BoxConstraints(
+                          minHeight: 25.0,
+                          maxHeight: 100,
+                          minWidth: MediaQuery.of(context).size.width,
+                          maxWidth: MediaQuery.of(context).size.width,
+                        ),
+                        child: Scrollbar(
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    emojiShowing = !emojiShowing;
+                                    if (emojiShowing) {
+                                      _focusNode.unfocus();
                                     }
-                                  },
-                                  child: TextField(
-                                    focusNode: _focusNode,
-                                    cursorColor: const Color(0xFF2481CF),
-                                    keyboardType: TextInputType.multiline,
-                                    controller: inputTextController,
-                                    maxLines: null,
-                                    style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 15
-                                    ),
-                                    decoration: const InputDecoration(
-                                        contentPadding: EdgeInsets.only(top: 13, bottom: 13),
-                                        border: InputBorder.none,
-                                        hintText: 'Type a message',
-                                        hintStyle: TextStyle(
-                                            color: Color(0xff99999B),
-                                            fontSize: 15
-                                        )
+                                    else {
+                                      FocusScope.of(context).requestFocus(_focusNode);
+                                    }
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.tag_faces,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Expanded(
+                                child: FocusScope(
+                                  child: Focus(
+                                    onFocusChange: (focus) {
+                                      if(focus){
+                                        emojiShowing = false;
+                                      }
+                                    },
+                                    child: TextField(
+                                      focusNode: _focusNode,
+                                      cursorColor: const Color(0xFF2481CF),
+                                      keyboardType: TextInputType.multiline,
+                                      controller: inputTextController,
+                                      maxLines: null,
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 15
+                                      ),
+                                      decoration: const InputDecoration(
+                                          contentPadding: EdgeInsets.only(top: 13, bottom: 13),
+                                          border: InputBorder.none,
+                                          hintText: 'Type a message',
+                                          hintStyle: TextStyle(
+                                              color: Color(0xff99999B),
+                                              fontSize: 15
+                                          )
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Transform.rotate(
-                              angle: 70,
-                              child: IconButton(
-                                onPressed: () {
-                                  showCupertinoModalPopup(
-                                      context: context,
-                                      builder: (context) => CupertinoActionSheet(
-                                        actions: <Widget>[
-                                          Container(
-                                            color: Colors.white,
-                                            child: CupertinoActionSheetAction(
-                                              onPressed: () {
-                                                getCamera();
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text(
-                                                'Camera',
-                                                style: TextStyle(
-                                                    color: Color(0xFF2481CF)
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            color: Colors.white,
-                                            child: CupertinoActionSheetAction(
-                                              onPressed: () {
-                                                getImage();
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text(
-                                                'Photo & Video Library',
-                                                style: TextStyle(
-                                                    color: Color(0xFF2481CF)
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            color: Colors.white,
-                                            child: CupertinoActionSheetAction(
-                                              child: const Text(
-                                                'Documents',
-                                                style: TextStyle(
-                                                    color: Color(0xFF2481CF)
-                                                ),
-                                              ),
-                                              onPressed: () {
-                                                pickFile();
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ),
-                                          // Container(
-                                          //   color: Colors.white,
-                                          //   child: CupertinoActionSheetAction(
-                                          //     child: const Text(
-                                          //       'Contacts',
-                                          //       style: TextStyle(
-                                          //           color: Color(0xFF2481CF)
-                                          //       ),
-                                          //     ),
-                                          //     onPressed: () {
-                                          //       // getContact();
-                                          //     },
-                                          //   ),
-                                          // ),
-                                        ],
-                                        cancelButton: Container(
-                                          decoration: BoxDecoration(
+                              Transform.rotate(
+                                angle: 70,
+                                child: IconButton(
+                                  onPressed: () {
+                                    showCupertinoModalPopup(
+                                        context: context,
+                                        builder: (context) => CupertinoActionSheet(
+                                          actions: <Widget>[
+                                            Container(
                                               color: Colors.white,
-                                              borderRadius: BorderRadius.circular(10)
-                                          ),
-                                          child: CupertinoActionSheetAction(
-                                            child: const Text(
-                                              'Cancel',
-                                              style: TextStyle(
-                                                  color: Color(0xFF2481CF)
+                                              child: CupertinoActionSheetAction(
+                                                onPressed: () {
+                                                  getCamera();
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text(
+                                                  'Camera',
+                                                  style: TextStyle(
+                                                      color: Color(0xFF2481CF)
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
+                                            Container(
+                                              color: Colors.white,
+                                              child: CupertinoActionSheetAction(
+                                                onPressed: () {
+                                                  getImage();
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text(
+                                                  'Photo & Video Library',
+                                                  style: TextStyle(
+                                                      color: Color(0xFF2481CF)
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              color: Colors.white,
+                                              child: CupertinoActionSheetAction(
+                                                child: const Text(
+                                                  'Documents',
+                                                  style: TextStyle(
+                                                      color: Color(0xFF2481CF)
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  pickFile();
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ),
+                                            // Container(
+                                            //   color: Colors.white,
+                                            //   child: CupertinoActionSheetAction(
+                                            //     child: const Text(
+                                            //       'Contacts',
+                                            //       style: TextStyle(
+                                            //           color: Color(0xFF2481CF)
+                                            //       ),
+                                            //     ),
+                                            //     onPressed: () {
+                                            //       // getContact();
+                                            //     },
+                                            //   ),
+                                            // ),
+                                          ],
+                                          cancelButton: Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(10)
+                                            ),
+                                            child: CupertinoActionSheetAction(
+                                              child: const Text(
+                                                'Cancel',
+                                                style: TextStyle(
+                                                    color: Color(0xFF2481CF)
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.attach_file_rounded,
-                                  size: 25,
-                                  color: Colors.grey,
+                                        )
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.attach_file_rounded,
+                                    size: 25,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      child: IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: () async {
-                          if(inputTextController.text.trim().isEmpty) {
-                            print(conversation!.roomId!);
-                          }else{
-                            final chat = ChatModel (
-                              idSender: idUser,
-                              idRoom: roomId,
-                              idReceiversGroup: conversation!.idReceiversGroup,
-                              text: inputTextController.text,
-                              tipe: 'text',
-                              date: DateTime.now().toString(),
-                              sendStatus: '',
-                              delivered: 0,
-                              read: 0,
-                            );
+                    Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        child: IconButton(
+                          icon: const Icon(Icons.send),
+                          onPressed: () async {
+                            if(inputTextController.text.trim().isEmpty) {
+                              print(conversation!.roomId!);
+                            }else{
+                              final chat = ChatModel (
+                                idSender: idUser,
+                                idRoom: roomId,
+                                idReceiversGroup: conversation!.idReceiversGroup,
+                                text: inputTextController.text,
+                                tipe: 'text',
+                                date: DateTime.now().toString(),
+                                sendStatus: '',
+                                delivered: 0,
+                                read: 0,
+                              );
 
-                            int id = mains.objectbox.boxChat.put(chat);
+                              int id = mains.objectbox.boxChat.put(chat);
 
 
-                            var msg = {};
-                            msg["api_key"] = apiKey;
-                            msg["decrypt_key"] = "";
-                            msg["id_chat_model"] = id;
-                            msg["type"] = "group";
-                            msg["id_sender"] = idUser;
-                            msg["id_receivers"] = conversation!.idReceiversGroup;
-                            msg["msg_tipe"] = 'text';
-                            msg["msg_data"] = chat.text;
-                            msg["room_id"] = roomId;
-                            msg["group_name"] = conversation?.fullName;
+                              var msg = {};
+                              msg["api_key"] = _variableUtil.apiKeyCore;
+                              msg["decrypt_key"] = "";
+                              msg["id_chat_model"] = id;
+                              msg["type"] = "group";
+                              msg["id_sender"] = idUser;
+                              msg["id_receivers"] = conversation!.idReceiversGroup;
+                              msg["msg_tipe"] = 'text';
+                              msg["msg_data"] = chat.text;
+                              msg["room_id"] = roomId;
+                              msg["group_name"] = conversation?.fullName;
 
-                            String msgString = json.encode(msg);
+                              String msgString = json.encode(msg);
 
-                            homes.channel.sink.add(msgString);
+                              homes.channel.sink.add(msgString);
 
-                            inputTextController.clear();
+                              inputTextController.clear();
 
-                          }
-                        },
-                        color: Theme.of(context).floatingActionButtonTheme.backgroundColor,
-                      )
-                  )
-                ],
-              ),
-            ),
-            Offstage(
-              offstage: !emojiShowing,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: SizedBox(
-                  height: 250,
-                  child: EmojiPicker(
-                      onEmojiSelected: (Category category, Emoji emoji) {
-                        _onEmojiSelected(emoji);
-                      },
-                      onBackspacePressed: _onBackspacePressed,
-                      config: Config(
-                          columns: 8,
-                          // Issue: https://github.com/flutter/flutter/issues/28894
-                          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                          verticalSpacing: 0,
-                          horizontalSpacing: 0,
-                          initCategory: Category.SMILEYS,
-                          bgColor: Theme.of(context).scaffoldBackgroundColor,
-                          indicatorColor: Colors.blue,
-                          iconColor: Colors.grey,
-                          iconColorSelected: Colors.blue,
-                          progressIndicatorColor: Colors.blue,
-                          backspaceColor: Colors.blue,
-                          skinToneDialogBgColor: Colors.white,
-                          skinToneIndicatorColor: Colors.grey,
-                          enableSkinTones: true,
-                          showRecentsTab: true,
-                          recentsLimit: 28,
-                          tabIndicatorAnimDuration: kTabScrollDuration,
-                          categoryIcons: const CategoryIcons(),
-                          buttonMode: ButtonMode.MATERIAL)),
+                            }
+                          },
+                          color: Theme.of(context).floatingActionButtonTheme.backgroundColor,
+                        )
+                    )
+                  ],
                 ),
               ),
-            ),
-          ],
+              Offstage(
+                offstage: !emojiShowing,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: SizedBox(
+                    height: 250,
+                    child: EmojiPicker(
+                        onEmojiSelected: (Category category, Emoji emoji) {
+                          _onEmojiSelected(emoji);
+                        },
+                        onBackspacePressed: _onBackspacePressed,
+                        config: Config(
+                            columns: 8,
+                            // Issue: https://github.com/flutter/flutter/issues/28894
+                            emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                            verticalSpacing: 0,
+                            horizontalSpacing: 0,
+                            initCategory: Category.SMILEYS,
+                            bgColor: Theme.of(context).scaffoldBackgroundColor,
+                            indicatorColor: Colors.blue,
+                            iconColor: Colors.grey,
+                            iconColorSelected: Colors.blue,
+                            progressIndicatorColor: Colors.blue,
+                            backspaceColor: Colors.blue,
+                            skinToneDialogBgColor: Colors.white,
+                            skinToneIndicatorColor: Colors.grey,
+                            enableSkinTones: true,
+                            showRecentsTab: true,
+                            recentsLimit: 28,
+                            tabIndicatorAnimDuration: kTabScrollDuration,
+                            categoryIcons: const CategoryIcons(),
+                            buttonMode: ButtonMode.MATERIAL)),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -973,7 +1002,7 @@ class _ChatGroupState extends State<ChatGroup> {
 
         //send file message
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["decrypt_key"] = "";
         msg["id_chat_model"] = id;
         msg["type"] = "group";
@@ -1011,15 +1040,15 @@ class _ChatGroupState extends State<ChatGroup> {
 
   Future<http.Response> getDataUser() async {
 
-    String url ='https://chat.dev.r17.co.id/get_user.php';
+    String url ='${_variableUtil.apiChatUrl}/get_user.php';
 
     Map<String, dynamic> data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'id_receivers': conversation!.idReceiversGroup,
     };
 
     //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
+    //var body = "?api_key="+this._variableUtil.apiKeyCore;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -1045,10 +1074,10 @@ class _ChatGroupState extends State<ChatGroup> {
 
   Future<http.Response> getListParticipantsGroup() async {
 
-    String url ='https://chat.dev.r17.co.id/get_user.php';
+    String url ='${_variableUtil.apiChatUrl}/get_user.php';
 
     Map<String, dynamic> data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'room_id': conversation!.roomId,
       'id_sender': idUser,
     };
