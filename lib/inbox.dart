@@ -12,6 +12,7 @@ import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'main.dart';
@@ -24,7 +25,7 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-  String apiKey = homes.apiKeyCore;
+  final VariableUtil _variableUtil = VariableUtil();
   final StateController _stateController = Get.put(StateController());
   late StreamSubscription<String> _documentCategoryListener;
 
@@ -269,7 +270,7 @@ class _InboxPageState extends State<InboxPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getSuratMasuk';
+    String url ='${_variableUtil.eOfficeUrl}/api/getSuratMasuk';
 
     Map<String, dynamic> data = {
       'payload': {

@@ -7,6 +7,8 @@ import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
+import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,11 +24,11 @@ class AddParticipantsGroup extends StatefulWidget {
 }
 
 class _NewGroupPageState extends State<AddParticipantsGroup> {
+  final VariableUtil _variableUtil = VariableUtil();
   final ConversationModel? conversation;
   int? roomId;
   List<int?>? idReceivers;
 
-  String apiKey = homes.apiKeyCore;
   var contactData,contactName;
   List<ContactModel> newParticipantsGroups = [];
 
@@ -139,7 +141,7 @@ class _NewGroupPageState extends State<AddParticipantsGroup> {
                   int id = mains.objectbox.boxChat.put(chat);
 
                   var msg = {};
-                  msg["api_key"] = apiKey;
+                  msg["api_key"] = _variableUtil.apiKeyCore;
                   msg["decrypt_key"] = "";
                   msg["id_chat_model"] = id;
                   msg["type"] = "group";
@@ -271,10 +273,10 @@ class _NewGroupPageState extends State<AddParticipantsGroup> {
                                             CircleAvatar(
                                               radius: 20,
                                               backgroundColor: Color(0xffF2F1F6),
-                                              backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!), gaplessPlayback: true,).image,
-                                              child: Image(
-                                                image: Image.memory(base64.decode(_foundContact[index].photo!), gaplessPlayback: true,).image,
-                                              ),
+                                              backgroundImage: CacheImageProviderWidget(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
+                                              // child: Image(
+                                              //   image: Image.memory(base64.decode(_foundContact[index].photo!), gaplessPlayback: true,).image,
+                                              // ),
                                             )
                                         ),
                                         Column(
@@ -336,7 +338,7 @@ class _NewGroupPageState extends State<AddParticipantsGroup> {
                                               ) :CircleAvatar(
                                                 radius: 20,
                                                 backgroundColor: Color(0xffF2F1F6),
-                                                backgroundImage: Image.memory(base64.decode(_foundContact[index].photo!)).image,
+                                                backgroundImage: CacheImageProviderWidget(_foundContact[index].userId.toString(), base64.decode(_foundContact[index].photo!)),
                                               )
                                           ),
                                           Column(

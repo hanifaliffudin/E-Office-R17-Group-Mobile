@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/NewsModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 
 class PostPage extends StatefulWidget {
@@ -19,6 +20,7 @@ class PostPage extends StatefulWidget {
 
 
 class _PostPageState extends State<PostPage> {
+  final VariableUtil _variableUtil = VariableUtil();
   NewsModel? news;
 
   _PostPageState(this.news);
@@ -130,7 +132,7 @@ class _PostPageState extends State<PostPage> {
                                     width: MediaQuery.of(context).size.width * 1,
                                     decoration: BoxDecoration(
                                         image: DecorationImage(
-                                          image: NetworkImage('https://eoffice.dev.digiprimatera.co.id/${news!.image}'),
+                                          image: NetworkImage('${_variableUtil.eOfficeUrl}/${news!.image}'),
                                           fit: BoxFit.cover,
                                         ),
                                         borderRadius: BorderRadius.circular(6)
@@ -521,7 +523,7 @@ class _PostPageState extends State<PostPage> {
 
   Future<http.Response> like(int idNews) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/likes';
+    String url ='${_variableUtil.eOfficeUrl}/api/likes';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -599,7 +601,7 @@ class _PostPageState extends State<PostPage> {
 
   Future<http.Response> postComment(int idNews, String comment, String comments) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/postComment';
+    String url ='${_variableUtil.eOfficeUrl}/api/postComment';
 
     Map<String, dynamic> data = {
       'payload': {

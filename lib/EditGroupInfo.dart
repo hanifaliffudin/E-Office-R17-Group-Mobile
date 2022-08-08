@@ -10,10 +10,9 @@ import 'package:militarymessenger/ChatTabScreen.dart';
 import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
-
-String apiKey = homes.apiKeyCore;
 
 class EditGroupInfo extends StatefulWidget {
   ConversationModel? conversation;
@@ -28,7 +27,7 @@ class EditGroupInfo extends StatefulWidget {
 final TextEditingController _controller = TextEditingController();
 
 class _EditGroupInfoState extends State<EditGroupInfo> {
-
+  final VariableUtil _variableUtil = VariableUtil();
   ConversationModel? conversation;
   int? roomId;
 
@@ -107,7 +106,7 @@ class _EditGroupInfoState extends State<EditGroupInfo> {
           int id = mains.objectbox.boxChat.put(chat);
 
           var msg = {};
-          msg["api_key"] = apiKey;
+          msg["api_key"] = _variableUtil.apiKeyCore;
           msg["decrypt_key"] = "";
           msg["id_chat_model"] = id;
           msg["type"] = "group";
@@ -306,10 +305,9 @@ class _EditGroupInfoState extends State<EditGroupInfo> {
       ),
     );
   }
-}
 
-void _openDialog(ctx, ConversationModel conversation) {
-  showCupertinoDialog(
+  void _openDialog(ctx, ConversationModel conversation) {
+    showCupertinoDialog(
       context: ctx,
       builder: (_) => CupertinoAlertDialog(
         title: Text("Edit Group Name"),
@@ -366,7 +364,7 @@ void _openDialog(ctx, ConversationModel conversation) {
                 int id = mains.objectbox.boxChat.put(chat);
 
                 var msg = {};
-                msg["api_key"] = apiKey;
+                msg["api_key"] = _variableUtil.apiKeyCore;
                 msg["decrypt_key"] = "";
                 msg["id_chat_model"] = id;
                 msg["type"] = "group";
@@ -391,5 +389,7 @@ void _openDialog(ctx, ConversationModel conversation) {
             },
           )
         ],
-      ));
+      ),
+    );
+  }
 }

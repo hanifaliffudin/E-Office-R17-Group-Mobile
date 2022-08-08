@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/instance_manager.dart';
 import 'package:militarymessenger/Home.dart';
 import 'package:militarymessenger/Login.dart';
+import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
 import 'package:militarymessenger/provider/theme_provider.dart';
-import 'package:militarymessenger/utils/sp_util.dart';
 import 'package:telephony/telephony.dart';
 import 'ObjectBox.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +17,7 @@ import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+// import 'package:awesome_notifications/awesome_notifications.dart';
 
 late ObjectBox objectbox;
 
@@ -23,8 +25,8 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
     // 'This channel is used for important notifications.', // description
-    importance: Importance.high,
-    playSound: true);
+    importance: Importance.max,
+);
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
@@ -40,7 +42,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
     //   };
     //   String url = 'https://chat.dev.r17.co.id/get_datetime.php';
     //   var response = await http.post(Uri.parse(url),
-    //     body: jsonEncode(data),
+    //     body: jsonEncode(data), 
     //   );
     //   Map<String, dynamic> datetimeMap = jsonDecode(response.body);
     //   print(datetimeMap);
@@ -53,32 +55,38 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
 }
 
 smsBackgrounMessageHandler(SmsMessage message) async {
+  final StateController _stateController = Get.put(StateController());
 	//Handle background message	
-  print('background');
   String msgBody = message.body!;
 
   if (msgBody.length >= 39) {
     if (msgBody.substring(0, 33) == 'Kode OTP Digital Signature Anda: ') {
-      print(msgBody.substring(33, 39));
+      _stateController.changeOtpCodeSms(msgBody.substring(33, 39));
     }
   }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  await flutterLocalNotificationsPlugin
+  // if (Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-
+  // } else if (Platform.isIOS) {
+    await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+      ?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+  // }
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
+    alert: false,
     badge: true,
     sound: true,
   );
@@ -96,9 +104,18 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       theme: MyThemes.lightTheme,
       darkTheme: MyThemes.darkTheme,
-      home: objectbox.boxUser.isEmpty() ? Login() : Home(),
-      builder: EasyLoading.init(),
+      home: objectbox.boxUser.isEmpty() ? Login() : const Home(),
       debugShowCheckedModeBanner: false,
+      builder: (BuildContext context, Widget? child) {
+        child = EasyLoading.init()(context, child);
+
+        return child;
+      //   return MediaQuery(
+      //     child: child!,
+      //     data: MediaQuery.of(context)
+      //       .copyWith(textScaleFactor: 1.0),
+      //   );
+      },
     );
   }
 }

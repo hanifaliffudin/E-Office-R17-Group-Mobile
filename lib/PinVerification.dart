@@ -6,6 +6,7 @@ import 'package:militarymessenger/Home.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:pinput/pinput.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -27,6 +28,7 @@ class PinVerification extends StatefulWidget {
 }
 
 class PinVerificationState extends State<PinVerification> {
+  final VariableUtil _variableUtil = VariableUtil();
   String? fcmToken;
   final _formKey = GlobalKey<FormState>();
   final _pinPutController = TextEditingController();
@@ -38,8 +40,6 @@ class PinVerificationState extends State<PinVerification> {
   PinVerificationState(this.email, this.fcmToken){
     globalEmail = email;
   }
-
-  String apiKey = homes.apiKeyCore;
 
   int _pageIndex = 0;
 
@@ -214,9 +214,9 @@ class PinVerificationState extends State<PinVerification> {
   }
 
   Future<http.Response> sendEmail(String email) async {
-    String url ='https://chat.dev.r17.co.id/send_email.php';
+    String url ='${_variableUtil.apiChatUrl}/send_email.php';
     Map data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'email': email,
       'fcm_token': fcmToken
     };
@@ -275,9 +275,9 @@ class PinVerificationState extends State<PinVerification> {
   }
 
   Future<http.Response> postRequest(String pin) async {
-    String url ='https://chat.dev.r17.co.id/register.php';
+    String url ='${_variableUtil.apiChatUrl}/register.php';
     Map data = {
-      'api_key': apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'email': globalEmail,
       'pin': pin,
       'fcm_token': fcmToken,
@@ -311,7 +311,7 @@ class PinVerificationState extends State<PinVerification> {
 
         if(userMap['last_connection'] != 0){
           var channel = IOWebSocketChannel.connect(
-            Uri.parse('wss://chat.dev.r17.co.id:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
+            Uri.parse('wss://${_variableUtil.apiChatUrl}:443/wss/?open_key=2K0LJBnj7BK17sdlH65jh58B33Ky1V2bY5Tcr09Ex8e76wZ54eRc4dF1H2G7vG570J9H8465GJ&email=${mains.objectbox.boxUser.get(1)?.email.toString()}'),
             pingInterval: const Duration(
               seconds: 1,
             ),
@@ -319,7 +319,7 @@ class PinVerificationState extends State<PinVerification> {
 
           // sink last conn
           var msg = {};
-          msg["api_key"] = apiKey;
+          msg["api_key"] = _variableUtil.apiKeyCore;
           msg["decrypt_key"] = "";
           msg["type"] = "logout";
           msg["last_connection"] = userMap['last_connection'];

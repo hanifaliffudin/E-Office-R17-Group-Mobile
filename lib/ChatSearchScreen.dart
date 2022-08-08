@@ -10,6 +10,7 @@ import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/models/ConversationModel.dart';
 import 'package:militarymessenger/models/UserModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -22,7 +23,8 @@ class ChatSearchScreen extends StatefulWidget {
 }
 
 class _MyWidgetState extends State<ChatSearchScreen> {
-  String apiKey = homes.apiKeyCore;
+  final _indexFunction = IndexFunction();
+  final VariableUtil _variableUtil = VariableUtil();
   final TextEditingController _messageController = TextEditingController();
   List<ChatModel> _chats = [];
   List<ChatModel> _chatsTemp = [];
@@ -102,10 +104,10 @@ class _MyWidgetState extends State<ChatSearchScreen> {
   }
 
   Future<http.Response> createChat(int idSender, int idReceiver, String userName, String photo) async {
-    String url ='https://chat.dev.r17.co.id/create_chat.php';
+    String url ='${_variableUtil.apiChatUrl}/create_chat.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'id_sender': idSender,
       'id_receiver': idReceiver,
       'tipe_chat': 'pm',
@@ -173,25 +175,25 @@ class _MyWidgetState extends State<ChatSearchScreen> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(63.0),
         child: AppBar(
+          // leading: Padding(
+          //   padding: const EdgeInsets.only(
+          //     top: 4.0,
+          //   ),
+          //   child: IconButton(
+          //     icon: const Icon(
+          //       Icons.arrow_back, 
+          //       color: Colors.white
+          //     ),
+          //     onPressed: () {
+          //       Navigator.pop(context);
+          //     },
+          //   ),
+          // ),
           elevation: 0,
-          leading: Padding(
-            padding: const EdgeInsets.only(
-              top: 4.0,
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.arrow_back, 
-                color: Colors.white
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
           titleSpacing: 0,
           title: Container(
             margin: const EdgeInsets.only(
-              top: 5.0,
+              // top: 5.0,
               right: 25.0,
             ),
             decoration: BoxDecoration(
@@ -369,12 +371,12 @@ class _MyWidgetState extends State<ChatSearchScreen> {
                 DateTime date2 = DateTime.parse(_chats[index].date);
                 String desc = "";
 
-                if (IndexFunction.daysBetween(date2, now) < 7) {
+                if (_indexFunction.daysBetween(date2, now) < 7) {
                   bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(_chats[index].date));
 
                   if (isToday) {
                     desc = DateFormat('HH:mm').format(DateTime.parse(_chats[index].date));
-                  } else if (IndexFunction.daysBetween(date2, now) == 1) {
+                  } else if (_indexFunction.daysBetween(date2, now) == 1) {
                     desc = "Yesterday";
                   } else {
                     desc = DateFormat('EEEE').format(DateTime.parse(_chats[index].date));

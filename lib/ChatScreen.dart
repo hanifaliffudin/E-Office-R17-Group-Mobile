@@ -15,6 +15,7 @@ import 'package:militarymessenger/models/ChatModel.dart';
 import 'package:militarymessenger/cards/friend_message_card_personal.dart';
 import 'package:militarymessenger/cards/my_message_card_personal.dart';
 import 'package:militarymessenger/models/GroupNotifModel.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:swipe_to/swipe_to.dart';
@@ -52,6 +53,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _indexFunction = IndexFunction();
+  final VariableUtil _variableUtil = VariableUtil();
   final ConversationModel? conversation;
   int? roomId;
   Store? store;
@@ -66,8 +69,6 @@ class _ChatScreenState extends State<ChatScreen> {
   int? idReceiver;
 
   TextEditingController inputTextController = new TextEditingController();
-
-  String apiKey = homes.apiKeyCore;
 
   Timer? timer;
 
@@ -97,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
       List<ChatModel> chatsUnread = queryUnread.find().toList();
       for(int i=0;i<chatsUnread.length;i++){
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["type"] = "status_read";
         msg["id_chat_model"] = chatsUnread[i].id;
         msg["id_chat_model_friends"] = chatsUnread[i].idChatFriends;
@@ -142,7 +143,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       for(int i=0;i<chatsUnreadDb.length;i++){
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["type"] = "status_read";
         msg["id_chat_model"] = chatsUnreadDb[i].id;
         msg["id_chat_model_friends"] = chatsUnreadDb[i].idChatFriends;
@@ -171,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       for(int i=0;i<chatsUndelivNUnread.length;i++){
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["type"] = "check_status";
         msg["id_chat_model"] = chatsUndelivNUnread[i].id;
         msg["id_sender"] = chatsUndelivNUnread[i].idSender;
@@ -200,7 +201,7 @@ class _ChatScreenState extends State<ChatScreen> {
       List<ChatModel> chatsNotSent = queryNotSent.find().toList();
       for(int i=0;i<chatsNotSent.length;i++){
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["decrypt_key"] = "";
         msg["id_chat_model"] = chatsNotSent[i].id;
         msg["id_chat_db"] = chatsNotSent[i].idChat;
@@ -309,7 +310,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final XFile? imageCamera = await _picker.pickImage(source: ImageSource.camera);
 
     if(imageCamera != null){
-      cropImage(imageCamera!.path);
+      cropImage(imageCamera.path);
     }
   }
 
@@ -357,7 +358,7 @@ class _ChatScreenState extends State<ChatScreen> {
           int id = mains.objectbox.boxChat.put(chat);
 
           var msg = {};
-          msg["api_key"] = apiKey;
+          msg["api_key"] = _variableUtil.apiKeyCore;
           msg["decrypt_key"] = "";
           msg["id_chat_model"] = id;
           msg["type"] = "pm";
@@ -383,14 +384,14 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _removeNotifByRoomId() {
+  void _removeNotifByRoomId() async {
     var query = mains.objectbox.boxGroupNotif.query(GroupNotifModel_.dataId.equals(roomId!.toString()) & GroupNotifModel_.type.equals('chat')).build();
 
     if (query.find().isNotEmpty) {
       List<GroupNotifModel> groupNotifs = query.find().toList();
 
       for (var i = 0; i < groupNotifs.length; i++) {
-        flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
+        await flutterLocalNotificationsPlugin.cancel(groupNotifs[i].hashcode!);
       }
     }
   }
@@ -412,15 +413,15 @@ class _ChatScreenState extends State<ChatScreen> {
           preferredSize: Size.fromHeight(63.0),
           child: AppBar(
             elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () {
-                Navigator.pop(context);
-                // Navigator.pushReplacement(context, 
-                //   MaterialPageRoute(builder: (context) => Home()),
-                // );
-              },
-            ),
+            // leading: IconButton(
+            //   icon: Icon(Icons.arrow_back, color: Colors.white),
+            //   onPressed: () {
+            //     Navigator.pop(context);
+            //     // Navigator.pushReplacement(context, 
+            //     //   MaterialPageRoute(builder: (context) => Home()),
+            //     // );
+            //   },
+            // ),
             titleSpacing: 0,
             title: InkWell(
               onTap: () {
@@ -533,7 +534,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         List<ChatModel> chats2 = query2.find().toList();
                         for(int i=0;i<chats2.length;i++){
                           var msg = {};
-                          msg["api_key"] = apiKey;
+                          msg["api_key"] = _variableUtil.apiKeyCore;
                           msg["type"] = "status_read";
                           msg["id_chat_model"] = chats2[i].id;
                           msg["id_chat_model_friends"] = chats2[i].idChatFriends;
@@ -635,12 +636,12 @@ class _ChatScreenState extends State<ChatScreen> {
                               }
 
                               if (!isSame) {
-                                if (IndexFunction.daysBetween(date2, now) < 7) {
+                                if (_indexFunction.daysBetween(date2, now) < 7) {
                                   bool isToday = DateFormat('yyyy-MM-dd').format(now) == DateFormat('yyyy-MM-dd').format(DateTime.parse(chats[index].date));
 
                                   if (isToday) {
                                     desc = "Today";
-                                  } else if (IndexFunction.daysBetween(date2, now) == 1) {
+                                  } else if (_indexFunction.daysBetween(date2, now) == 1) {
                                     desc = "Yesterday";
                                   } else {
                                     desc = DateFormat('EEEE').format(DateTime.parse(chats[index].date));
@@ -833,7 +834,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                             //update typing status when type messages
                                             var msg = {};
-                                            msg["api_key"] = apiKey;
+                                            msg["api_key"] = _variableUtil.apiKeyCore;
                                             msg["type"] = "status_typing";
                                             msg["id_sender"] = idUser;
                                             msg["id_receiver"] = idReceiver;
@@ -977,7 +978,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               int id = mains.objectbox.boxChat.put(chat);
 
                               var msg = {};
-                              msg["api_key"] = apiKey;
+                              msg["api_key"] = _variableUtil.apiKeyCore;
                               msg["decrypt_key"] = "";
                               msg["id_chat_model"] = id;
                               msg["type"] = "pm";
@@ -1068,7 +1069,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
         //send file message
         var msg = {};
-        msg["api_key"] = apiKey;
+        msg["api_key"] = _variableUtil.apiKeyCore;
         msg["decrypt_key"] = "";
         msg["id_chat_model"] = id;
         msg["type"] = "pm";

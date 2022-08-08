@@ -11,6 +11,7 @@ import 'package:militarymessenger/ChatGroup.dart';
 import 'package:militarymessenger/contact.dart';
 import 'package:http/http.dart' as http;
 import 'package:militarymessenger/models/ConversationModel.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,7 +19,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class NewGroupDetail extends StatefulWidget {
   // const NewGroupDetail(List<ContactModel> groups, {Key? key}) : super(key: key);
-
   int? userId = mains.objectbox.boxUser.get(1)?.userId;
   List<ContactModel> groups;
 
@@ -33,8 +33,8 @@ enum AppState {
 }
 
 class _NewGroupDetailState extends State<NewGroupDetail> {
+  final VariableUtil _variableUtil = VariableUtil();
   String? groupName, groupImg64;
-  String apiKey = homes.apiKeyCore;
   List<ContactModel> groups;
   _NewGroupDetailState(this.groups);
 
@@ -412,10 +412,10 @@ class _NewGroupDetailState extends State<NewGroupDetail> {
 
 
   Future<http.Response> createGroup(int idSender, String Receivers, String groupName, String groupImg) async {
-    String url ='https://chat.dev.r17.co.id/create_chat.php';
+    String url ='${_variableUtil.apiChatUrl}/create_chat.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'id_sender': idSender,
       'id_receivers': Receivers,
       'group_name': groupName,
@@ -424,7 +424,7 @@ class _NewGroupDetailState extends State<NewGroupDetail> {
     };
 
     //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
+    //var body = "?api_key="+_variableUtil.apiKeyCore;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},

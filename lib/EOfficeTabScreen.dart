@@ -11,6 +11,7 @@ import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/BadgeModel.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/tracking.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'objectbox.g.dart';
 import 'package:badges/badges.dart';
 import 'document.dart';
@@ -32,6 +33,7 @@ class EOfficeTabScreen extends StatefulWidget {
 }
 
 class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
+  final VariableUtil _variableUtil = VariableUtil();
   final StateController _stateController = Get.put(StateController());
   late StreamSubscription<bool> _refereshEofficePageListener;
 
@@ -487,7 +489,7 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
   }
 
   Future<http.Response> getBadgeInbox() async {
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeInbox';
+    String url ='${_variableUtil.eOfficeUrl}/api/badgeInbox';
 
     Map<String, dynamic> data = {
 
@@ -542,7 +544,7 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
   }
 
   Future<http.Response> getBadgeSign() async {
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeSign';
+    String url ='${_variableUtil.eOfficeUrl}/api/badgeSign';
 
     Map<String, dynamic> data = {
 
@@ -590,7 +592,7 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
   }
 
   Future<http.Response> getBadgeNeedApprove() async {
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/badgeNeedApprove';
+    String url ='${_variableUtil.eOfficeUrl}/api/badgeNeedApprove';
 
     Map<String, dynamic> data = {
 
@@ -643,7 +645,7 @@ class _EOfficeTabScreenState extends State<EOfficeTabScreen> {
 
   Future<http.Response> getRecent() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/recent';
+    String url ='${_variableUtil.eOfficeUrl}/api/recent';
 
     Map<String, dynamic> data = {
       'payload': {

@@ -11,6 +11,7 @@ import 'package:militarymessenger/Signed.dart';
 import 'package:militarymessenger/controllers/state_controllers.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pinput/pinput.dart';
@@ -30,6 +31,7 @@ class DocumentPage extends StatefulWidget {
 }
 
 class _DocumentPageState extends State<DocumentPage> {
+  final VariableUtil _variableUtil = VariableUtil();
   SuratModel? surat;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -134,33 +136,23 @@ class _DocumentPageState extends State<DocumentPage> {
                     color: const Color(0xFFD1D1D6),
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
-                        child: surat!.kategori == 'inbox' ?
-                        const PDF(
-                          enableSwipe: true,
-                          swipeHorizontal: true,
-                          autoSpacing: false,
-                          pageFling: false,
-                        ).cachedFromUrl(
-                          'https://eoffice.dev.digiprimatera.co.id/public/${surat!.url!}',
-                          placeholder: (progress) => Center(child: Text('$progress %')),
-                          errorWidget: (error) => Center(child: Text(error.toString())),
-                          whenDone: (done) {
-                              if(surat!.status == '1'){
-                                readSurat(surat!.idSurat!);
-                              }
-                            },
-                        )
-                      :
-                        const PDF(
-                          enableSwipe: true,
-                          swipeHorizontal: true,
-                          autoSpacing: false,
-                          pageFling: false,
-                        ).cachedFromUrl(
-                          surat!.url!,
-                          placeholder: (progress) => Center(child: Text('$progress %')),
-                          errorWidget: (error) => Center(child: Text(error.toString())),
-                        ),
+                      child: const PDF(
+                        enableSwipe: true,
+                        swipeHorizontal: true,
+                        autoSpacing: false,
+                        pageFling: false,
+                      ).cachedFromUrl(
+                        surat!.kategori == 'inbox' ? '${_variableUtil.eOfficeUrl}/public/${surat!.url!}' : surat!.url!,
+                        placeholder: (progress) => Center(child: Text('$progress %')),
+                        errorWidget: (error) => Center(child: Text(error.toString())),
+                        whenDone: (done) {
+                          if (surat!.kategori == 'inbox') {
+                            if(surat!.status == '1'){
+                              readSurat(surat!.idSurat!);
+                            }
+                          }
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10,),
@@ -172,12 +164,9 @@ class _DocumentPageState extends State<DocumentPage> {
                     borderColor: Theme.of(context).scaffoldBackgroundColor,
                     pressedColor: const Color(0xFFF8FAFC),
                     children: {
-                      0: buildSegment(
-                        'Detail'.toUpperCase(),
-                      ),
+                      0: buildSegment('Detail'.toUpperCase()),
                       1: buildSegment('Editor'.toUpperCase()),
-                      2: buildSegment('Approver'.toUpperCase()
-                      )
+                      2: buildSegment('Approver'.toUpperCase()),
                     },
                     onValueChanged: (groupValue) {
                       setState(() {
@@ -1239,7 +1228,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> approve(String idSurat, String catatan) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/approve';
+    String url ='${_variableUtil.eOfficeUrl}/api/approve';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1300,7 +1289,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> returnSurat(String idSurat, String catatan) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/return';
+    String url ='${_variableUtil.eOfficeUrl}/api/return';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1362,7 +1351,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> cancel(String idSurat, String catatan) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/reject';
+    String url ='${_variableUtil.eOfficeUrl}/api/reject';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1420,7 +1409,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> readSurat(String idSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/reader';
+    String url ='${_variableUtil.eOfficeUrl}/api/reader';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1450,7 +1439,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> download(String idSurat, String namaSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/download';
+    String url ='${_variableUtil.eOfficeUrl}/api/download';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1488,7 +1477,7 @@ class _DocumentPageState extends State<DocumentPage> {
     try {
       EasyLoading.show(status: 'Sending OTP');
 
-      String url ='https://eoffice.dev.digiprimatera.co.id/api/getOtpBulk';
+      String url ='${_variableUtil.eOfficeUrl}/api/getOtpBulk';
 
       Map<String, dynamic> data = {
         'payload': {
@@ -1528,7 +1517,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> signingBulk(String otp, String bulkId, String idSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/bulkSigning';
+    String url ='${_variableUtil.eOfficeUrl}/api/bulkSigning';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1588,7 +1577,7 @@ class _DocumentPageState extends State<DocumentPage> {
   Future<List> getOtpBulkEksternal(String idSurat) async {
     EasyLoading.show(status: 'Sending OTP');
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/otpSignEksternal';
+    String url ='${_variableUtil.eOfficeUrl}/api/otpSignEksternal';
 
     Map<String, dynamic> data = {
       'payload': {
@@ -1621,7 +1610,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<http.Response> signingBulkEksternal(String token, String bulkId, String otp, String idSurat) async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/signEksternalBulk';
+    String url ='${_variableUtil.eOfficeUrl}/api/signEksternalBulk';
 
     Map<String, dynamic> data = {
       'payload': {
