@@ -5,6 +5,7 @@ import 'package:militarymessenger/NewGroupPage.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -28,8 +29,7 @@ String tableName = '';
 int? roomId;
 
 class _ContactPageState extends State<ContactPage> {
-
-  String apiKey = homes.apiKeyCore;
+  final VariableUtil _variableUtil = VariableUtil();
   Uint8List? bytes;
 
   ConversationModel? conversation;
@@ -315,17 +315,17 @@ class _ContactPageState extends State<ContactPage> {
 
 
   Future<http.Response> createChat(int idSender, int idReceiver, String userName, String photo) async {
-    String url ='https://chat.dev.r17.co.id/create_chat.php';
+    String url ='${_variableUtil.apiChatUrl}/create_chat.php';
 
     Map<String, dynamic> data = {
-      'api_key': this.apiKey,
+      'api_key': _variableUtil.apiKeyCore,
       'id_sender': idSender,
       'id_receiver': idReceiver,
       'tipe_chat': 'pm',
     };
 
     //encode Map to JSON
-    //var body = "?api_key="+this.apiKey;
+    //var body = "?api_key="+_variableUtil.apiKeyCore;
 
     var response = await http.post(Uri.parse(url),
       headers: {"Content-Type": "application/json"},

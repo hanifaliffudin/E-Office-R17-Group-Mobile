@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:8545207845013479679",
-      "lastPropertyId": "17:1344865564871643261",
+      "lastPropertyId": "18:1119534394098933086",
       "name": "ChatModel",
       "properties": [
         {
@@ -93,6 +93,11 @@
           "id": "17:1344865564871643261",
           "name": "readDB",
           "type": 6
+        },
+        {
+          "id": "18:1119534394098933086",
+          "name": "readBy",
+          "type": 9
         }
       ],
       "relations": []
@@ -531,7 +536,7 @@
     },
     {
       "id": "10:1015253999311660028",
-      "lastPropertyId": "9:2477052192921268610",
+      "lastPropertyId": "10:8750098687869665549",
       "name": "AttendanceModel",
       "properties": [
         {
@@ -579,13 +584,18 @@
           "id": "9:2477052192921268610",
           "name": "server",
           "type": 1
+        },
+        {
+          "id": "10:8750098687869665549",
+          "name": "idLocationDb",
+          "type": 6
         }
       ],
       "relations": []
     },
     {
       "id": "12:5002030077723218516",
-      "lastPropertyId": "8:7050715817132016200",
+      "lastPropertyId": "9:2487875113833645238",
       "name": "AttendanceHistoryModel",
       "properties": [
         {
@@ -623,6 +633,11 @@
           "id": "8:7050715817132016200",
           "name": "server",
           "type": 1
+        },
+        {
+          "id": "9:2487875113833645238",
+          "name": "idLocationDb",
+          "type": 6
         }
       ],
       "relations": []
@@ -679,9 +694,48 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "15:7876447506922372530",
+      "lastPropertyId": "6:8414998782244486119",
+      "name": "AttendanceLocationModel",
+      "properties": [
+        {
+          "id": "1:7811873219056525901",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3311979204989791154",
+          "name": "idDb",
+          "type": 6
+        },
+        {
+          "id": "3:7961189783190851330",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:1473572363625637007",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "5:765002895817113975",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "6:8414998782244486119",
+          "name": "range",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "14:1663225072182915868",
+  "lastEntityId": "15:7876447506922372530",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

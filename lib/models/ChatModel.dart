@@ -16,6 +16,7 @@ class ChatModel {
   int? reply;
   String? tipe;
   String? content;
+  String? readBy;
 
   String text="";
   String sendStatus="";
@@ -40,6 +41,7 @@ class ChatModel {
         this.text='',
         this.sendStatus='',
         this.date='',
+        this.readBy,
       });
 
   /*

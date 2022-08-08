@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:militarymessenger/models/SuratModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
 
@@ -17,6 +18,7 @@ class TrackingPage extends StatefulWidget {
 }
 
 class _TrackingPageState extends State<TrackingPage> {
+  final VariableUtil _variableUtil = VariableUtil();
 
   @override
   void initState() {
@@ -167,7 +169,7 @@ class _TrackingPageState extends State<TrackingPage> {
 
   Future<http.Response> getDataSurat() async {
 
-    String url ='https://eoffice.dev.digiprimatera.co.id/api/getTrack';
+    String url ='${_variableUtil.eOfficeUrl}/api/getTrack';
 
     Map<String, dynamic> data = {
       'payload': {

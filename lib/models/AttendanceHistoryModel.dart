@@ -7,6 +7,7 @@ class AttendanceHistoryModel {
   String? datetime;
   double? latitude;
   double? longitude;
+  int? idLocationDb;
   int status = 0;
   bool server = false;
 
@@ -16,6 +17,7 @@ class AttendanceHistoryModel {
     this.datetime,
     this.latitude,
     this.longitude,
+    this.idLocationDb,
     this.status = 0,
     this.server = false,
   });

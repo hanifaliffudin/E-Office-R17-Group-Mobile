@@ -9,6 +9,7 @@ class AttendanceModel {
   double? latitude;
   double? longitude;
   String? category;
+  int? idLocationDb;
   int status = 0;
   bool server = false;
 
@@ -21,6 +22,7 @@ class AttendanceModel {
         this.latitude,
         this.longitude,
         this.category,
+        this.idLocationDb,
         this.status = 0,
         this.server = false,
       });

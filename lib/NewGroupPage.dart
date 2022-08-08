@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:militarymessenger/NewGroupDetail.dart';
 import 'package:militarymessenger/models/ContactModel.dart';
 import 'package:militarymessenger/objectbox.g.dart';
+import 'package:militarymessenger/utils/variable_util.dart';
 import 'package:militarymessenger/widgets/cache_image_provider_widget.dart';
 import 'main.dart' as mains;
 import 'Home.dart' as homes;
@@ -54,29 +55,15 @@ class NewGroupPage extends StatefulWidget {
 }
 
 class _NewGroupPageState extends State<NewGroupPage> {
-
-  String apiKey = homes.apiKeyCore;
   var contactData,contactName;
   List<ContactModel> groups = [];
 
   List<ContactModel> contactList = mains.objectbox.boxContact.getAll().toList();
 
   List<ContactModel> _foundContact = [];
-  List<ImageProvider<Object>?> _tempPhoto = [];
 
   @override
   void initState() {
-    List<ImageProvider<Object>?> temp = [];
-
-    for (var i = 0; i < contactList.length; i++) {
-      if (contactList[i].photo != '') {
-        temp.add(Image.memory(base64.decode(contactList[i].photo!)).image);
-      } else {
-        temp.add(null);
-      }
-    }
-
-    _tempPhoto = temp;
     _foundContact = contactList;
     clearSelect();
     fToast = FToast();
@@ -96,19 +83,7 @@ class _NewGroupPageState extends State<NewGroupPage> {
       _foundContact = results;
     });
   }
-
-  ImageProvider<Object> _getPhoto(ContactModel foundContact) {
-    int indexFound = -1;
-
-    for (var i = 0; i < contactList.length; i++) {
-      if (contactList[i].photo == foundContact.photo) {
-        indexFound = i;
-      }
-    }
-
-    return _tempPhoto[indexFound]!;
-  }
-
+  
   late FToast fToast;
 
   _showToast() {

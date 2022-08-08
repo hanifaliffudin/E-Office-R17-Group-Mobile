@@ -14,6 +14,7 @@ import 'package:objectbox/objectbox.dart';
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'models/AttendanceHistoryModel.dart';
+import 'models/AttendanceLocationModel.dart';
 import 'models/AttendanceModel.dart';
 import 'models/BadgeModel.dart';
 import 'models/ChatModel.dart';
@@ -33,7 +34,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(1, 8545207845013479679),
       name: 'ChatModel',
-      lastPropertyId: const IdUid(17, 1344865564871643261),
+      lastPropertyId: const IdUid(18, 1119534394098933086),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -120,6 +121,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(17, 1344865564871643261),
             name: 'readDB',
             type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(18, 1119534394098933086),
+            name: 'readBy',
+            type: 9,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -559,7 +565,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(10, 1015253999311660028),
       name: 'AttendanceModel',
-      lastPropertyId: const IdUid(9, 2477052192921268610),
+      lastPropertyId: const IdUid(10, 8750098687869665549),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -606,6 +612,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(9, 2477052192921268610),
             name: 'server',
             type: 1,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(10, 8750098687869665549),
+            name: 'idLocationDb',
+            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -613,7 +624,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(12, 5002030077723218516),
       name: 'AttendanceHistoryModel',
-      lastPropertyId: const IdUid(8, 7050715817132016200),
+      lastPropertyId: const IdUid(9, 2487875113833645238),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -650,6 +661,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(8, 7050715817132016200),
             name: 'server',
             type: 1,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(9, 2487875113833645238),
+            name: 'idLocationDb',
+            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -706,6 +722,45 @@ final _entities = <ModelEntity>[
             flags: 0)
       ],
       relations: <ModelRelation>[],
+      backlinks: <ModelBacklink>[]),
+  ModelEntity(
+      id: const IdUid(15, 7876447506922372530),
+      name: 'AttendanceLocationModel',
+      lastPropertyId: const IdUid(6, 8414998782244486119),
+      flags: 0,
+      properties: <ModelProperty>[
+        ModelProperty(
+            id: const IdUid(1, 7811873219056525901),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        ModelProperty(
+            id: const IdUid(2, 3311979204989791154),
+            name: 'idDb',
+            type: 6,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(3, 7961189783190851330),
+            name: 'name',
+            type: 9,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(4, 1473572363625637007),
+            name: 'latitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(5, 765002895817113975),
+            name: 'longitude',
+            type: 8,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(6, 8414998782244486119),
+            name: 'range',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <ModelRelation>[],
       backlinks: <ModelBacklink>[])
 ];
 
@@ -729,7 +784,7 @@ Future<Store> openStore(
 ModelDefinition getObjectBoxModel() {
   final model = ModelInfo(
       entities: _entities,
-      lastEntityId: const IdUid(14, 1663225072182915868),
+      lastEntityId: const IdUid(15, 7876447506922372530),
       lastIndexId: const IdUid(0, 0),
       lastRelationId: const IdUid(0, 0),
       lastSequenceId: const IdUid(0, 0),
@@ -775,7 +830,9 @@ ModelDefinition getObjectBoxModel() {
           final nameSenderOffset = object.nameSender == null
               ? null
               : fbb.writeString(object.nameSender!);
-          fbb.startTable(18);
+          final readByOffset =
+              object.readBy == null ? null : fbb.writeString(object.readBy!);
+          fbb.startTable(19);
           fbb.addInt64(0, object.id);
           fbb.addInt64(1, object.idChat);
           fbb.addInt64(2, object.idChatFriends);
@@ -793,6 +850,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addInt64(14, object.idRoom);
           fbb.addOffset(15, nameSenderOffset);
           fbb.addInt64(16, object.readDB);
+          fbb.addOffset(17, readByOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -826,7 +884,8 @@ ModelDefinition getObjectBoxModel() {
               content: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 24),
               text: const fb.StringReader(asciiOptimization: true).vTableGet(buffer, rootOffset, 26, ''),
               sendStatus: const fb.StringReader(asciiOptimization: true).vTableGet(buffer, rootOffset, 28, ''),
-              date: const fb.StringReader(asciiOptimization: true).vTableGet(buffer, rootOffset, 30, ''));
+              date: const fb.StringReader(asciiOptimization: true).vTableGet(buffer, rootOffset, 30, ''),
+              readBy: const fb.StringReader(asciiOptimization: true).vTableGetNullable(buffer, rootOffset, 38));
 
           return object;
         }),
@@ -1312,7 +1371,7 @@ ModelDefinition getObjectBoxModel() {
           final categoryOffset = object.category == null
               ? null
               : fbb.writeString(object.category!);
-          fbb.startTable(10);
+          fbb.startTable(11);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, checkInAtOffset);
           fbb.addOffset(2, checkOutAtOffset);
@@ -1322,6 +1381,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addOffset(6, categoryOffset);
           fbb.addInt64(7, object.status);
           fbb.addBool(8, object.server);
+          fbb.addInt64(9, object.idLocationDb);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1343,10 +1403,11 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 12),
               category: const fb.StringReader(asciiOptimization: true)
                   .vTableGetNullable(buffer, rootOffset, 16),
+              idLocationDb: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 22),
               status:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
-              server: const fb.BoolReader()
-                  .vTableGet(buffer, rootOffset, 20, false));
+              server: const fb.BoolReader().vTableGet(buffer, rootOffset, 20, false));
 
           return object;
         }),
@@ -1364,7 +1425,7 @@ ModelDefinition getObjectBoxModel() {
           final datetimeOffset = object.datetime == null
               ? null
               : fbb.writeString(object.datetime!);
-          fbb.startTable(9);
+          fbb.startTable(10);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, dateOffset);
           fbb.addOffset(2, datetimeOffset);
@@ -1372,6 +1433,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.addFloat64(4, object.longitude);
           fbb.addInt64(6, object.status);
           fbb.addBool(7, object.server);
+          fbb.addInt64(8, object.idLocationDb);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -1389,6 +1451,8 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 10),
               longitude: const fb.Float64Reader()
                   .vTableGetNullable(buffer, rootOffset, 12),
+              idLocationDb: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 20),
               status:
                   const fb.Int64Reader().vTableGet(buffer, rootOffset, 16, 0),
               server: const fb.BoolReader()
@@ -1460,6 +1524,46 @@ ModelDefinition getObjectBoxModel() {
                   .vTableGetNullable(buffer, rootOffset, 6),
               value: const fb.BoolReader()
                   .vTableGetNullable(buffer, rootOffset, 8));
+
+          return object;
+        }),
+    AttendanceLocationModel: EntityDefinition<AttendanceLocationModel>(
+        model: _entities[13],
+        toOneRelations: (AttendanceLocationModel object) => [],
+        toManyRelations: (AttendanceLocationModel object) => {},
+        getId: (AttendanceLocationModel object) => object.id,
+        setId: (AttendanceLocationModel object, int id) {
+          object.id = id;
+        },
+        objectToFB: (AttendanceLocationModel object, fb.Builder fbb) {
+          final nameOffset =
+              object.name == null ? null : fbb.writeString(object.name!);
+          fbb.startTable(7);
+          fbb.addInt64(0, object.id);
+          fbb.addInt64(1, object.idDb);
+          fbb.addOffset(2, nameOffset);
+          fbb.addFloat64(3, object.latitude);
+          fbb.addFloat64(4, object.longitude);
+          fbb.addInt64(5, object.range);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+
+          final object = AttendanceLocationModel(
+              id: const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0),
+              idDb: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 6),
+              name: const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 8),
+              latitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 10),
+              longitude: const fb.Float64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 12),
+              range: const fb.Int64Reader()
+                  .vTableGetNullable(buffer, rootOffset, 14));
 
           return object;
         })
@@ -1536,6 +1640,10 @@ class ChatModel_ {
   /// see [ChatModel.readDB]
   static final readDB =
       QueryIntegerProperty<ChatModel>(_entities[0].properties[16]);
+
+  /// see [ChatModel.readBy]
+  static final readBy =
+      QueryStringProperty<ChatModel>(_entities[0].properties[17]);
 }
 
 /// [ContactModel] entity fields to define ObjectBox queries.
@@ -1882,6 +1990,10 @@ class AttendanceModel_ {
   /// see [AttendanceModel.server]
   static final server =
       QueryBooleanProperty<AttendanceModel>(_entities[9].properties[8]);
+
+  /// see [AttendanceModel.idLocationDb]
+  static final idLocationDb =
+      QueryIntegerProperty<AttendanceModel>(_entities[9].properties[9]);
 }
 
 /// [AttendanceHistoryModel] entity fields to define ObjectBox queries.
@@ -1913,6 +2025,10 @@ class AttendanceHistoryModel_ {
   /// see [AttendanceHistoryModel.server]
   static final server =
       QueryBooleanProperty<AttendanceHistoryModel>(_entities[10].properties[6]);
+
+  /// see [AttendanceHistoryModel.idLocationDb]
+  static final idLocationDb =
+      QueryIntegerProperty<AttendanceHistoryModel>(_entities[10].properties[7]);
 }
 
 /// [GroupNotifModel] entity fields to define ObjectBox queries.
@@ -1947,4 +2063,31 @@ class SavedModel_ {
   /// see [SavedModel.value]
   static final value =
       QueryBooleanProperty<SavedModel>(_entities[12].properties[2]);
+}
+
+/// [AttendanceLocationModel] entity fields to define ObjectBox queries.
+class AttendanceLocationModel_ {
+  /// see [AttendanceLocationModel.id]
+  static final id = QueryIntegerProperty<AttendanceLocationModel>(
+      _entities[13].properties[0]);
+
+  /// see [AttendanceLocationModel.idDb]
+  static final idDb = QueryIntegerProperty<AttendanceLocationModel>(
+      _entities[13].properties[1]);
+
+  /// see [AttendanceLocationModel.name]
+  static final name =
+      QueryStringProperty<AttendanceLocationModel>(_entities[13].properties[2]);
+
+  /// see [AttendanceLocationModel.latitude]
+  static final latitude =
+      QueryDoubleProperty<AttendanceLocationModel>(_entities[13].properties[3]);
+
+  /// see [AttendanceLocationModel.longitude]
+  static final longitude =
+      QueryDoubleProperty<AttendanceLocationModel>(_entities[13].properties[4]);
+
+  /// see [AttendanceLocationModel.range]
+  static final range = QueryIntegerProperty<AttendanceLocationModel>(
+      _entities[13].properties[5]);
 }
